@@ -10,33 +10,235 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ForPetOwnersRouteImport } from './routes/for-pet-owners'
+import { Route as ForVeterinaryTeamsRouteImport } from './routes/for-veterinary-teams'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as IntakeRouteImport } from './routes/intake'
+import { Route as MyPetsRouteImport } from './routes/my-pets'
+import { Route as PlatformRouteImport } from './routes/platform'
+import { Route as WorkspaceRouteRouteImport } from './routes/workspace/route'
+import { Route as WorkspaceIndexRouteImport } from './routes/workspace/index'
+import { Route as WorkspaceAnalyticsRouteImport } from './routes/workspace/analytics'
+import { Route as WorkspaceAppointmentsRouteImport } from './routes/workspace/appointments'
+import { Route as WorkspaceLocationsRouteImport } from './routes/workspace/locations'
+import { Route as WorkspacePatientsRouteImport } from './routes/workspace/patients'
+import { Route as WorkspaceServicesRouteImport } from './routes/workspace/services'
+import { Route as WorkspaceVeterinariansRouteImport } from './routes/workspace/veterinarians'
+import { Route as WorkspaceIntakesIndexRouteImport } from './routes/workspace/intakes/index'
+import { Route as WorkspaceIntakesIntakeIdRouteImport } from './routes/workspace/intakes/$intakeId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForPetOwnersRoute = ForPetOwnersRouteImport.update({
+  id: '/for-pet-owners',
+  path: '/for-pet-owners',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForVeterinaryTeamsRoute = ForVeterinaryTeamsRouteImport.update({
+  id: '/for-veterinary-teams',
+  path: '/for-veterinary-teams',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntakeRoute = IntakeRouteImport.update({
+  id: '/intake',
+  path: '/intake',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyPetsRoute = MyPetsRouteImport.update({
+  id: '/my-pets',
+  path: '/my-pets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformRoute = PlatformRouteImport.update({
+  id: '/platform',
+  path: '/platform',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkspaceRouteRoute = WorkspaceRouteRouteImport.update({
+  id: '/workspace',
+  path: '/workspace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkspaceIndexRoute = WorkspaceIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => WorkspaceRouteRoute,
+} as any)
+const WorkspaceAnalyticsRoute = WorkspaceAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => WorkspaceRouteRoute,
+} as any)
+const WorkspaceAppointmentsRoute = WorkspaceAppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
+  getParentRoute: () => WorkspaceRouteRoute,
+} as any)
+const WorkspaceLocationsRoute = WorkspaceLocationsRouteImport.update({
+  id: '/locations',
+  path: '/locations',
+  getParentRoute: () => WorkspaceRouteRoute,
+} as any)
+const WorkspacePatientsRoute = WorkspacePatientsRouteImport.update({
+  id: '/patients',
+  path: '/patients',
+  getParentRoute: () => WorkspaceRouteRoute,
+} as any)
+const WorkspaceServicesRoute = WorkspaceServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => WorkspaceRouteRoute,
+} as any)
+const WorkspaceVeterinariansRoute = WorkspaceVeterinariansRouteImport.update({
+  id: '/veterinarians',
+  path: '/veterinarians',
+  getParentRoute: () => WorkspaceRouteRoute,
+} as any)
+const WorkspaceIntakesIndexRoute = WorkspaceIntakesIndexRouteImport.update({
+  id: '/intakes/',
+  path: '/intakes/',
+  getParentRoute: () => WorkspaceRouteRoute,
+} as any)
+const WorkspaceIntakesIntakeIdRoute =
+  WorkspaceIntakesIntakeIdRouteImport.update({
+    id: '/intakes/$intakeId',
+    path: '/intakes/$intakeId',
+    getParentRoute: () => WorkspaceRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/workspace': typeof WorkspaceRouteRouteWithChildren
+  '/for-pet-owners': typeof ForPetOwnersRoute
+  '/for-veterinary-teams': typeof ForVeterinaryTeamsRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/intake': typeof IntakeRoute
+  '/my-pets': typeof MyPetsRoute
+  '/platform': typeof PlatformRoute
+  '/workspace/analytics': typeof WorkspaceAnalyticsRoute
+  '/workspace/appointments': typeof WorkspaceAppointmentsRoute
+  '/workspace/locations': typeof WorkspaceLocationsRoute
+  '/workspace/patients': typeof WorkspacePatientsRoute
+  '/workspace/services': typeof WorkspaceServicesRoute
+  '/workspace/veterinarians': typeof WorkspaceVeterinariansRoute
+  '/workspace/': typeof WorkspaceIndexRoute
+  '/workspace/intakes/$intakeId': typeof WorkspaceIntakesIntakeIdRoute
+  '/workspace/intakes/': typeof WorkspaceIntakesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/for-pet-owners': typeof ForPetOwnersRoute
+  '/for-veterinary-teams': typeof ForVeterinaryTeamsRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/intake': typeof IntakeRoute
+  '/my-pets': typeof MyPetsRoute
+  '/platform': typeof PlatformRoute
+  '/workspace/analytics': typeof WorkspaceAnalyticsRoute
+  '/workspace/appointments': typeof WorkspaceAppointmentsRoute
+  '/workspace/locations': typeof WorkspaceLocationsRoute
+  '/workspace/patients': typeof WorkspacePatientsRoute
+  '/workspace/services': typeof WorkspaceServicesRoute
+  '/workspace/veterinarians': typeof WorkspaceVeterinariansRoute
+  '/workspace': typeof WorkspaceIndexRoute
+  '/workspace/intakes/$intakeId': typeof WorkspaceIntakesIntakeIdRoute
+  '/workspace/intakes': typeof WorkspaceIntakesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/workspace': typeof WorkspaceRouteRouteWithChildren
+  '/for-pet-owners': typeof ForPetOwnersRoute
+  '/for-veterinary-teams': typeof ForVeterinaryTeamsRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/intake': typeof IntakeRoute
+  '/my-pets': typeof MyPetsRoute
+  '/platform': typeof PlatformRoute
+  '/workspace/analytics': typeof WorkspaceAnalyticsRoute
+  '/workspace/appointments': typeof WorkspaceAppointmentsRoute
+  '/workspace/locations': typeof WorkspaceLocationsRoute
+  '/workspace/patients': typeof WorkspacePatientsRoute
+  '/workspace/services': typeof WorkspaceServicesRoute
+  '/workspace/veterinarians': typeof WorkspaceVeterinariansRoute
+  '/workspace/': typeof WorkspaceIndexRoute
+  '/workspace/intakes/$intakeId': typeof WorkspaceIntakesIntakeIdRoute
+  '/workspace/intakes/': typeof WorkspaceIntakesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/workspace'
+    | '/for-pet-owners'
+    | '/for-veterinary-teams'
+    | '/how-it-works'
+    | '/intake'
+    | '/my-pets'
+    | '/platform'
+    | '/workspace/analytics'
+    | '/workspace/appointments'
+    | '/workspace/locations'
+    | '/workspace/patients'
+    | '/workspace/services'
+    | '/workspace/veterinarians'
+    | '/workspace/'
+    | '/workspace/intakes/$intakeId'
+    | '/workspace/intakes/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/for-pet-owners'
+    | '/for-veterinary-teams'
+    | '/how-it-works'
+    | '/intake'
+    | '/my-pets'
+    | '/platform'
+    | '/workspace/analytics'
+    | '/workspace/appointments'
+    | '/workspace/locations'
+    | '/workspace/patients'
+    | '/workspace/services'
+    | '/workspace/veterinarians'
+    | '/workspace'
+    | '/workspace/intakes/$intakeId'
+    | '/workspace/intakes'
+  id:
+    | '__root__'
+    | '/'
+    | '/workspace'
+    | '/for-pet-owners'
+    | '/for-veterinary-teams'
+    | '/how-it-works'
+    | '/intake'
+    | '/my-pets'
+    | '/platform'
+    | '/workspace/analytics'
+    | '/workspace/appointments'
+    | '/workspace/locations'
+    | '/workspace/patients'
+    | '/workspace/services'
+    | '/workspace/veterinarians'
+    | '/workspace/'
+    | '/workspace/intakes/$intakeId'
+    | '/workspace/intakes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  WorkspaceRouteRoute: typeof WorkspaceRouteRouteWithChildren
+  ForPetOwnersRoute: typeof ForPetOwnersRoute
+  ForVeterinaryTeamsRoute: typeof ForVeterinaryTeamsRoute
+  HowItWorksRoute: typeof HowItWorksRoute
+  IntakeRoute: typeof IntakeRoute
+  MyPetsRoute: typeof MyPetsRoute
+  PlatformRoute: typeof PlatformRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +250,158 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/for-pet-owners': {
+      id: '/for-pet-owners'
+      path: '/for-pet-owners'
+      fullPath: '/for-pet-owners'
+      preLoaderRoute: typeof ForPetOwnersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-veterinary-teams': {
+      id: '/for-veterinary-teams'
+      path: '/for-veterinary-teams'
+      fullPath: '/for-veterinary-teams'
+      preLoaderRoute: typeof ForVeterinaryTeamsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intake': {
+      id: '/intake'
+      path: '/intake'
+      fullPath: '/intake'
+      preLoaderRoute: typeof IntakeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-pets': {
+      id: '/my-pets'
+      path: '/my-pets'
+      fullPath: '/my-pets'
+      preLoaderRoute: typeof MyPetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platform': {
+      id: '/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof PlatformRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/workspace': {
+      id: '/workspace'
+      path: '/workspace'
+      fullPath: '/workspace'
+      preLoaderRoute: typeof WorkspaceRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/workspace/': {
+      id: '/workspace/'
+      path: '/'
+      fullPath: '/workspace/'
+      preLoaderRoute: typeof WorkspaceIndexRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
+    '/workspace/analytics': {
+      id: '/workspace/analytics'
+      path: '/analytics'
+      fullPath: '/workspace/analytics'
+      preLoaderRoute: typeof WorkspaceAnalyticsRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
+    '/workspace/appointments': {
+      id: '/workspace/appointments'
+      path: '/appointments'
+      fullPath: '/workspace/appointments'
+      preLoaderRoute: typeof WorkspaceAppointmentsRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
+    '/workspace/locations': {
+      id: '/workspace/locations'
+      path: '/locations'
+      fullPath: '/workspace/locations'
+      preLoaderRoute: typeof WorkspaceLocationsRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
+    '/workspace/patients': {
+      id: '/workspace/patients'
+      path: '/patients'
+      fullPath: '/workspace/patients'
+      preLoaderRoute: typeof WorkspacePatientsRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
+    '/workspace/services': {
+      id: '/workspace/services'
+      path: '/services'
+      fullPath: '/workspace/services'
+      preLoaderRoute: typeof WorkspaceServicesRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
+    '/workspace/veterinarians': {
+      id: '/workspace/veterinarians'
+      path: '/veterinarians'
+      fullPath: '/workspace/veterinarians'
+      preLoaderRoute: typeof WorkspaceVeterinariansRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
+    '/workspace/intakes/': {
+      id: '/workspace/intakes/'
+      path: '/intakes'
+      fullPath: '/workspace/intakes/'
+      preLoaderRoute: typeof WorkspaceIntakesIndexRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
+    '/workspace/intakes/$intakeId': {
+      id: '/workspace/intakes/$intakeId'
+      path: '/intakes/$intakeId'
+      fullPath: '/workspace/intakes/$intakeId'
+      preLoaderRoute: typeof WorkspaceIntakesIntakeIdRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
   }
 }
 
+interface WorkspaceRouteRouteChildren {
+  WorkspaceAnalyticsRoute: typeof WorkspaceAnalyticsRoute
+  WorkspaceAppointmentsRoute: typeof WorkspaceAppointmentsRoute
+  WorkspaceLocationsRoute: typeof WorkspaceLocationsRoute
+  WorkspacePatientsRoute: typeof WorkspacePatientsRoute
+  WorkspaceServicesRoute: typeof WorkspaceServicesRoute
+  WorkspaceVeterinariansRoute: typeof WorkspaceVeterinariansRoute
+  WorkspaceIndexRoute: typeof WorkspaceIndexRoute
+  WorkspaceIntakesIntakeIdRoute: typeof WorkspaceIntakesIntakeIdRoute
+  WorkspaceIntakesIndexRoute: typeof WorkspaceIntakesIndexRoute
+}
+
+const WorkspaceRouteRouteChildren: WorkspaceRouteRouteChildren = {
+  WorkspaceAnalyticsRoute: WorkspaceAnalyticsRoute,
+  WorkspaceAppointmentsRoute: WorkspaceAppointmentsRoute,
+  WorkspaceLocationsRoute: WorkspaceLocationsRoute,
+  WorkspacePatientsRoute: WorkspacePatientsRoute,
+  WorkspaceServicesRoute: WorkspaceServicesRoute,
+  WorkspaceVeterinariansRoute: WorkspaceVeterinariansRoute,
+  WorkspaceIndexRoute: WorkspaceIndexRoute,
+  WorkspaceIntakesIntakeIdRoute: WorkspaceIntakesIntakeIdRoute,
+  WorkspaceIntakesIndexRoute: WorkspaceIntakesIndexRoute,
+}
+
+const WorkspaceRouteRouteWithChildren = WorkspaceRouteRoute._addFileChildren(
+  WorkspaceRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  WorkspaceRouteRoute: WorkspaceRouteRouteWithChildren,
+  ForPetOwnersRoute: ForPetOwnersRoute,
+  ForVeterinaryTeamsRoute: ForVeterinaryTeamsRoute,
+  HowItWorksRoute: HowItWorksRoute,
+  IntakeRoute: IntakeRoute,
+  MyPetsRoute: MyPetsRoute,
+  PlatformRoute: PlatformRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
