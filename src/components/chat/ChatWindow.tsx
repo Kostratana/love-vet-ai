@@ -73,7 +73,7 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
         id = data.id;
       }
       const meta: AttachmentMeta[] = atts.map(({ kind, name, size, durationSec }) => ({ kind, name, size, durationSec }));
-      const { error } = await supabase.from("conversation_messages").insert({ conversation_id: id, user_id: user.id, role: "user", content, attachments: meta });
+      const { error } = await supabase.from("conversation_messages").insert({ conversation_id: id, user_id: user.id, role: "user", content, attachments: meta as never });
       if (error) throw error;
       await supabase.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", id);
       setText("");

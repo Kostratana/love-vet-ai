@@ -28,7 +28,7 @@ export type AttachmentMeta = {
   kind: "photo" | "video" | "voice";
   name: string;
   size: number;
-  durationSec?: number;
+  durationSec?: number | undefined;
 };
 
 /**
