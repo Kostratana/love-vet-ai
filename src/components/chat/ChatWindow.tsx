@@ -1,50 +1,28 @@
-import { useNavigate } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { ArrowUp, FileVideo, Globe, ImageIcon, Mic, ShieldCheck, Square, Trash2, Video, X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { HeartsMark } from "@/components/kit/Wordmark";
+import { AssistantAvatar } from "@/components/chat/AssistantAvatar";
+import { ChatDecor } from "@/components/chat/ChatDecor";
 import { OPENING_MESSAGE, UPLOAD_LIMITS, formatBytes, type AttachmentMeta } from "@/lib/chat-config";
 import { cn } from "@/lib/utils";
 
 type Pending = AttachmentMeta & { id: string; url: string };
 type Msg = { id: string; role: string; content: string; attachments: AttachmentMeta[]; created_at: string };
 
-const msgKey = (id: string) => ["conversation", id] as const;
-
-export function ChatWindow({ threadId }: { threadId: string | null }) {
-  const { user } = useAuth();
-  const qc = useQueryClient();
-  const navigate = useNavigate();
+/** Frontend-only chat. Messages live in memory until the assistant backend is connected. */
+export function ChatWindow(_props: { threadId: string | null }) {
   const [text, setText] = useState("");
   const [pending, setPending] = useState<Pending[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [sending, setSending] = useState(false);
-  const [guestMsgs, setGuestMsgs] = useState<Msg[]>([]);
+  const [messages, setMessages] = useState<Msg[]>([]);
   const taRef = useRef<HTMLTextAreaElement>(null);
-  const endRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
 
-  const { data: savedMessages = [] } = useQuery({
-    queryKey: msgKey(threadId ?? "new"),
-    enabled: !!threadId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("conversation_messages")
-        .select("id,role,content,attachments,created_at")
-        .eq("conversation_id", threadId!)
-        .order("created_at");
-      if (error) throw error;
-      return data as unknown as Msg[];
-    },
-  });
-
-  const messages = user ? savedMessages : guestMsgs;
-
-  useEffect(() => { taRef.current?.focus(); }, [threadId, sending]);
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages.length]);
+  useEffect(() => {
+    const el = listRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, [messages.length]);
 
   function addFiles(files: FileList | null, kind: "photo" | "video") {
     if (!files) return;
@@ -61,87 +39,61 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
     setPending((p) => [...p, ...next]);
   }
 
-  async function send(extra?: Pending) {
+  function send(extra?: Pending) {
     const atts = extra ? [...pending, extra] : pending;
     const content = text.trim();
-    if ((!content && atts.length === 0) || sending) return;
-    if (!user) {
-      const meta: AttachmentMeta[] = atts.map(({ kind, name, size, durationSec }) => ({ kind, name, size, durationSec }));
-      setGuestMsgs((m) => [...m, { id: crypto.randomUUID(), role: "user", content, attachments: meta, created_at: new Date().toISOString() }]);
-      setText("");
-      setPending([]);
-      return;
-    }
-    setSending(true);
+    if (!content && atts.length === 0) return;
+    const meta: AttachmentMeta[] = atts.map(({ kind, name, size, durationSec }) => ({ kind, name, size, durationSec }));
+    setMessages((m) => [...m, { id: crypto.randomUUID(), role: "user", content, attachments: meta, created_at: new Date().toISOString() }]);
+    setText("");
+    setPending([]);
     setError(null);
-    try {
-      let id = threadId;
-      if (!id) {
-        const title = (content || (atts[0]?.kind === "voice" ? "Voice message" : "Media message")).slice(0, 48);
-        const { data, error } = await supabase.from("conversations").insert({ user_id: user.id, title }).select("id").single();
-        if (error) throw error;
-        id = data.id;
-      }
-      const meta: AttachmentMeta[] = atts.map(({ kind, name, size, durationSec }) => ({ kind, name, size, durationSec }));
-      const { error } = await supabase.from("conversation_messages").insert({ conversation_id: id, user_id: user.id, role: "user", content, attachments: meta as never });
-      if (error) throw error;
-      await supabase.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", id);
-      setText("");
-      setPending([]);
-      await qc.invalidateQueries({ queryKey: ["conversations"] });
-      await qc.invalidateQueries({ queryKey: msgKey(id) });
-      if (!threadId) navigate({ to: "/chat/$threadId", params: { threadId: id } });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Your message couldn't be saved. Please try again.");
-    } finally {
-      setSending(false);
-    }
   }
 
-  const hasUserMessages = messages.some((m) => m.role === "user");
+  const hasUserMessages = messages.length > 0;
 
   return (
-    <div className="glass chat-hero flex h-full flex-col overflow-hidden rounded-3xl">
-      <header className="flex items-center gap-3 border-b border-silver/70 px-5 py-3.5 pl-16 lg:pl-6">
-        <HeartsMark className="h-6 w-9" />
+    <div className="chat-frame relative flex h-[min(78vh,760px)] min-h-[520px] flex-col overflow-hidden rounded-3xl">
+      <ChatDecor />
+      <header className="relative flex items-center gap-3 border-b border-ice-lum/40 px-5 py-3.5">
+        <AssistantAvatar className="size-10" />
         <div className="min-w-0">
           <p className="text-sm font-bold text-navy">Love Vet AI</p>
-          <p className="truncate text-xs text-graphite">AI Veterinary Appointment Assistant</p>
+          <p className="truncate text-xs font-medium text-deep/80">AI Veterinary Appointment Assistant</p>
         </div>
-        <div className="ml-auto hidden items-center gap-4 text-xs text-graphite sm:flex">
+        <div className="ml-auto hidden items-center gap-4 text-xs font-medium text-graphite md:flex">
           <span className="inline-flex items-center gap-1.5"><Globe className="size-3.5 text-deep" strokeWidth={1.6} /> Language detection is automatic</span>
-          <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-3.5 text-deep" strokeWidth={1.6} /> Automatic safety check</span>
+          <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-3.5 text-deep" strokeWidth={1.6} /> Automatic safety analysis</span>
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-8">
+      <div ref={listRef} className="relative flex-1 overflow-y-auto overscroll-contain px-4 py-6 sm:px-8">
         <div className="mx-auto max-w-3xl space-y-6">
           <AssistantBubble text={OPENING_MESSAGE} />
           {messages.map((m) => (m.role === "user" ? <UserBubble key={m.id} m={m} /> : <AssistantBubble key={m.id} text={m.content} />))}
           {hasUserMessages && (
-            <p role="status" className="mx-auto w-fit rounded-full border border-silver-strong/60 bg-card/70 px-4 py-1.5 text-center text-xs text-graphite">
-              {user ? "Your message is saved." : "Sign in to save this conversation."} The assistant service is not connected yet — replies will appear here once it is.
+            <p role="status" className="mx-auto w-fit rounded-full border border-ice-lum/60 bg-card/70 px-4 py-1.5 text-center text-xs font-medium text-graphite">
+              The assistant service is not connected yet — replies will appear here once it is.
             </p>
           )}
-          <div ref={endRef} />
         </div>
       </div>
 
-      <div className="border-t border-silver/70 px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-8">
+      <div className="relative border-t border-ice-lum/40 bg-card/30 px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-8">
         <div className="mx-auto max-w-3xl">
           {pending.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-2">
               {pending.map((p) => (
                 <div key={p.id} className="relative">
                   {p.kind === "photo" ? (
-                    <img src={p.url} alt={p.name} className="size-16 rounded-xl border border-silver-strong/60 object-cover" />
+                    <img src={p.url} alt={p.name} className="size-16 rounded-xl border border-ice-lum/60 object-cover" />
                   ) : (
-                    <div className="grid size-16 place-items-center rounded-xl border border-silver-strong/60 bg-card text-deep"><FileVideo className="size-5" /></div>
+                    <div className="grid size-16 place-items-center rounded-xl border border-ice-lum/60 bg-card text-deep"><FileVideo className="size-5" /></div>
                   )}
                   <button
                     onClick={() => setPending((ps) => ps.filter((x) => x.id !== p.id))}
                     aria-label={`Remove ${p.name}`}
-                    className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-navy text-primary-foreground"
+                    className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-deep text-primary-foreground"
                   ><X className="size-3" /></button>
                 </div>
               ))}
@@ -156,9 +108,9 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
             onVoice={(v) => send(v)}
             onPhoto={() => photoRef.current?.click()}
             onVideo={() => videoRef.current?.click()}
-            disabled={sending}
+            disabled={false}
           />
-          <p className="mt-2 text-center text-[0.68rem] text-graphite">
+          <p className="mt-2 text-center text-[0.68rem] font-medium text-graphite">
             Photos: {UPLOAD_LIMITS.photo.extensions} · up to {UPLOAD_LIMITS.photo.maxCount}, {formatBytes(UPLOAD_LIMITS.photo.maxBytes)} each · Video: {UPLOAD_LIMITS.video.extensions} · {UPLOAD_LIMITS.video.maxCount}, up to {formatBytes(UPLOAD_LIMITS.video.maxBytes)} · The assistant does not diagnose.
           </p>
           <input ref={photoRef} type="file" hidden multiple accept={UPLOAD_LIMITS.photo.accept.join(",")} onChange={(e) => { addFiles(e.target.files, "photo"); e.target.value = ""; }} />
@@ -172,26 +124,30 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
 function AssistantBubble({ text }: { text: string }) {
   return (
     <div className="flex gap-3">
-      <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full border border-silver-strong/60 bg-card">
-        <HeartsMark className="h-4 w-6" />
-      </span>
-      <div className="min-w-0 space-y-3 text-[0.95rem] leading-relaxed whitespace-pre-line text-navy">{text}</div>
+      <AssistantAvatar className="mt-5 size-9 shrink-0" />
+      <div className="min-w-0 max-w-[85%]">
+        <p className="mb-1 text-[0.7rem] font-bold tracking-[0.08em] text-deep uppercase">Love Vet AI</p>
+        <div className="rounded-2xl rounded-tl-md border border-ice-lum/60 bg-card/80 px-4 py-3 text-[0.95rem] leading-relaxed whitespace-pre-line text-navy shadow-[0_8px_24px_-16px_rgb(109_74_255/0.5)] backdrop-blur">
+          {text}
+        </div>
+      </div>
     </div>
   );
 }
 
 function UserBubble({ m }: { m: Msg }) {
   return (
-    <div className="ml-auto w-fit max-w-[85%] space-y-2">
+    <div className="ml-auto w-fit max-w-[85%] space-y-1.5">
+      <p className="text-right text-[0.7rem] font-bold tracking-[0.08em] text-graphite uppercase">Client</p>
       {m.content && (
-        <div className="rounded-2xl rounded-br-md bg-[image:var(--gradient-primary)] px-4 py-2.5 text-[0.95rem] whitespace-pre-wrap text-primary-foreground shadow-[var(--glow-primary)]">
+        <div className="rounded-2xl rounded-tr-md bg-[image:var(--gradient-primary)] px-4 py-2.5 text-[0.95rem] whitespace-pre-wrap text-primary-foreground shadow-[var(--glow-primary)]">
           {m.content}
         </div>
       )}
       {m.attachments?.length > 0 && (
         <div className="flex flex-wrap justify-end gap-1.5">
           {m.attachments.map((a, i) => (
-            <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-silver-strong/60 bg-card/80 px-3 py-1 text-xs text-graphite">
+            <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-ice-lum/60 bg-card/80 px-3 py-1 text-xs font-medium text-deep">
               {a.kind === "photo" ? <ImageIcon className="size-3.5" /> : a.kind === "video" ? <Video className="size-3.5" /> : <Mic className="size-3.5" />}
               {a.kind === "voice" ? `Voice message · ${a.durationSec ?? 0}s` : a.name}
             </span>

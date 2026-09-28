@@ -1,76 +1,17 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { PageHeader, DataTable } from "@/components/workspace/PageHeader";
-import {
-  GlowButton,
-  LanguageIndicator,
-  StatusBadge,
-  priorityTone,
-} from "@/components/kit/primitives";
-import { intakes, patientById } from "@/lib/love-vet-data";
+import { createFileRoute } from "@tanstack/react-router";
+import { Inbox } from "lucide-react";
+import { SectionPlaceholder } from "@/components/workspace/SectionPlaceholder";
 
 export const Route = createFileRoute("/workspace/intakes/")({
   head: () => ({
     meta: [
-      { title: "Client Requests · Clinic Staff Workspace" },
-      {
-        name: "description",
-        content:
-          "Every AI chat with detected language, reported concerns, priority and suggested care route, ready for veterinary review.",
-      },
-      { property: "og:title", content: "Client Requests · Clinic Staff Workspace" },
-      {
-        property: "og:description",
-        content: "Structured multilingual client requests with explainable routing for your team.",
-      },
+      { title: "Client Requests · Clinic Staff Workspace · Love Vet AI" },
+      { name: "description", content: "Conversations prepared by the assistant for your team." },
+      { property: "og:title", content: "Client Requests · Love Vet AI" },
+      { property: "og:description", content: "Conversations prepared by the assistant for your team." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: Intakes,
+  component: () => <SectionPlaceholder eyebrow="Clinic Staff Workspace" title="Client Requests" description="Conversations prepared by the assistant for your team." icon={Inbox} />,
 });
-
-function Intakes() {
-  return (
-    <div>
-      <PageHeader
-        eyebrow="Client Requests"
-        title="Pre-visit cases"
-        description="Received requests, structured and routed. Original audio, transcript and media are preserved on every case."
-      />
-
-      <DataTable
-        columns={["Patient", "Reported", "Language", "Inputs", "Priority", "Status", ""]}
-        rows={intakes.map((i) => {
-          const p = patientById(i.patientId)!;
-          return [
-            <div key="p">
-              <p className="font-semibold">{p.name}</p>
-              <p className="text-xs text-graphite">
-                {p.species} · {p.breed}
-              </p>
-            </div>,
-            <div key="c">
-              <p>{i.concerns.join(" · ")}</p>
-              <p className="text-xs text-graphite">Onset {i.onset.toLowerCase()}</p>
-            </div>,
-            <LanguageIndicator key="l" from={i.originalLanguage} to="English" />,
-            <span key="in" className="text-xs text-graphite">
-              {i.inputs.join(" · ")}
-            </span>,
-            <StatusBadge key="pr" tone={priorityTone(i.priority)}>
-              {i.priority}
-            </StatusBadge>,
-            <StatusBadge key="s" tone={i.status === "CONFIRMED" ? "success" : "neutral"}>
-              {i.status}
-            </StatusBadge>,
-            <Link key="a" to="/workspace/intakes/$intakeId" params={{ intakeId: i.id }}>
-              <GlowButton variant="secondary" size="sm">
-                Open
-              </GlowButton>
-            </Link>,
-          ];
-        })}
-      />
-    </div>
-  );
-}

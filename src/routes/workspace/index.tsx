@@ -1,146 +1,62 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowRight, Mic } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { FileVideo, ImageIcon, Mic, ShieldCheck } from "lucide-react";
 import { PageHeader } from "@/components/workspace/PageHeader";
-import {
-  FieldLabel,
-  GlassCard,
-  GlowButton,
-  LanguageIndicator,
-  StatusBadge,
-  priorityTone,
-} from "@/components/kit/primitives";
-import { dashboardMetrics, intakes, patientById } from "@/lib/love-vet-data";
 
 export const Route = createFileRoute("/workspace/")({
   head: () => ({
     meta: [
-      { title: "Workspace Overview · Love Vet AI" },
-      {
-        name: "description",
-        content:
-          "Today's appointments, AI-handled bookings, cases needing attention and the live Client requests for your veterinary team.",
-      },
-      { property: "og:title", content: "Workspace Overview · Love Vet AI" },
-      {
-        property: "og:description",
-        content: "Operational overview of AI chat, routing and bookings across your network.",
-      },
+      { title: "Clinic Staff Workspace · Love Vet AI" },
+      { name: "description", content: "Example of the case information a veterinary professional will receive from Love Vet AI before a visit." },
+      { property: "og:title", content: "Clinic Staff Workspace · Love Vet AI" },
+      { property: "og:description", content: "Sample interface showing the structure of a pre-visit case." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: Overview,
+  component: ExampleCase,
 });
 
-function Overview() {
+const groups: { title: string; rows: [string, string][] }[] = [
+  { title: "Owner information", rows: [["Name", "Sample Owner"], ["Phone", "+00 000 000 000"], ["Email", "owner@example.com"], ["Location", "Sample city"]] },
+  { title: "Pet information", rows: [["Species", "Rabbit"], ["Pet name", "Sample pet"], ["Age", "3 years"], ["Sex", "Female"]] },
+  { title: "Reason for visit", rows: [["Reported issue", "Eating less than usual"], ["When it started", "Two days ago"], ["Original language", "Spanish (auto-detected)"]] },
+  { title: "Appointment information", rows: [["Preferred date", "Sample date"], ["Preferred time", "Morning"], ["Status", "Awaiting client confirmation"]] },
+];
+
+function ExampleCase() {
   return (
     <div>
-      <PageHeader
-        eyebrow="Overview"
-        title="Today at Northline Veterinary Group"
-        description="AI chat, routing and scheduling across three locations. Clinical decisions remain with your veterinarians."
-        actions={
-          <Link to="/workspace/intakes">
-            <GlowButton size="sm">
-              Open client requests <ArrowRight />
-            </GlowButton>
-          </Link>
-        }
-      />
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {dashboardMetrics.map((m) => (
-          <GlassCard key={m.label} glow={m.urgent}>
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-[0.68rem] font-semibold tracking-[0.12em] uppercase text-graphite">
-                {m.label}
-              </p>
-              {m.urgent ? <StatusBadge tone="critical">Urgent</StatusBadge> : null}
-            </div>
-            <p className="mt-2 font-display text-3xl font-semibold text-navy">{m.value}</p>
-            <p className="mt-1 text-xs text-graphite">{m.note}</p>
-          </GlassCard>
-        ))}
-      </div>
-
-      <section className="mt-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-display text-xl font-semibold">Client requests</h2>
-          <StatusBadge tone="info">{intakes.length} active</StatusBadge>
+      <PageHeader eyebrow="Clinic Staff Workspace" title="Example of the case information a veterinary professional will receive" description="Sample interface — no real patient data. This card shows the future structure of a pre-visit case prepared by Love Vet AI." />
+      <article className="glass rounded-3xl p-6 sm:p-8">
+        <p className="inline-block rounded-full border border-ice-lum bg-ice px-3 py-1 text-xs font-extrabold tracking-[0.14em] text-deep uppercase">Sample case · fictional</p>
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          {groups.map((g) => (
+            <section key={g.title}>
+              <h2 className="text-sm font-bold text-navy">{g.title}</h2>
+              <dl className="mt-2 space-y-1.5 text-sm">
+                {g.rows.map(([k, v]) => (
+                  <div key={k} className="flex justify-between gap-4 border-b border-ice-lum/30 pb-1.5"><dt className="text-deep/80">{k}</dt><dd className="text-right font-medium text-navy">{v}</dd></div>
+                ))}
+              </dl>
+            </section>
+          ))}
         </div>
-
-        <div className="mt-4 space-y-3">
-          {intakes.map((intake) => {
-            const patient = patientById(intake.patientId)!;
-            const featured = intake.id === "int_luna";
-            return (
-              <GlassCard key={intake.id} glow={featured} pad="md">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="font-display text-lg font-semibold tracking-tight uppercase">
-                        {patient.name}
-                      </h3>
-                      <StatusBadge tone={priorityTone(intake.priority)}>
-                        {intake.priority}
-                      </StatusBadge>
-                      <StatusBadge tone={intake.status === "CONFIRMED" ? "success" : "neutral"}>
-                        {intake.status}
-                      </StatusBadge>
-                    </div>
-                    <p className="mt-1 text-sm text-graphite">
-                      {patient.species} · {patient.breed} · {patient.age}
-                    </p>
-                  </div>
-                  <Link to="/workspace/intakes/$intakeId" params={{ intakeId: intake.id }}>
-                    <GlowButton variant="secondary" size="sm">
-                      Open case
-                    </GlowButton>
-                  </Link>
-                </div>
-
-                <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                  <div>
-                    <FieldLabel>Reported</FieldLabel>
-                    <p className="mt-1 text-sm text-navy">{intake.concerns.join(" · ")}</p>
-                  </div>
-                  <div>
-                    <FieldLabel>Language</FieldLabel>
-                    <div className="mt-1">
-                      <LanguageIndicator from={intake.originalLanguage} to="English" />
-                    </div>
-                  </div>
-                  <div>
-                    <FieldLabel>Inputs</FieldLabel>
-                    <p className="mt-1 flex items-center gap-1.5 text-sm text-navy">
-                      {intake.inputs.includes("Voice") ? (
-                        <Mic className="size-3.5 text-deep" aria-hidden />
-                      ) : null}
-                      {intake.inputs.join(" · ")}
-                    </p>
-                  </div>
-                  <div>
-                    <FieldLabel>Route</FieldLabel>
-                    <p className="mt-1 text-sm text-navy">{intake.route}</p>
-                  </div>
-                </div>
-
-                {featured ? (
-                  <div className="mt-4 flex flex-wrap items-center gap-2 rounded-lg border border-silver bg-silver-white/80 px-3 py-2.5">
-                    <FieldLabel>Appointment</FieldLabel>
-                    <p className="text-sm text-navy">Dr. Daniel Rivera · 3:30 PM</p>
-                    <span className="text-silver-strong">·</span>
-                    <p className="text-sm text-navy">Central Veterinary Center</p>
-                    <StatusBadge tone="success" className="ml-auto">
-                      Booked with 0 staff actions
-                    </StatusBadge>
-                  </div>
-                ) : null}
-              </GlassCard>
-            );
-          })}
-        </div>
-      </section>
+        <section className="mt-8">
+          <h2 className="text-sm font-bold text-navy">Original client message</h2>
+          <p className="mt-2 rounded-2xl border border-ice-lum/50 bg-card/70 p-4 text-sm text-navy">"Mi conejita come menos desde hace dos días y está más quieta."</p>
+          <h2 className="mt-5 text-sm font-bold text-navy">Media</h2>
+          <div className="mt-2 flex flex-wrap gap-2 text-xs font-medium text-deep">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-ice-lum/60 bg-card/70 px-3 py-1"><Mic className="size-3.5" /> Voice message · transcript attached</span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-ice-lum/60 bg-card/70 px-3 py-1"><ImageIcon className="size-3.5" /> 2 photos</span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-ice-lum/60 bg-card/70 px-3 py-1"><FileVideo className="size-3.5" /> 1 short video</span>
+          </div>
+          <h2 className="mt-5 text-sm font-bold text-navy">AI-prepared structured summary</h2>
+          <p className="mt-2 text-sm text-graphite">Owner reports reduced appetite and lower activity for two days. No diagnosis is made — the veterinarian decides.</p>
+          <h2 className="mt-5 text-sm font-bold text-navy">Routing context</h2>
+          <p className="mt-2 text-sm text-graphite">Matched on species support (small mammals / rabbits), service type and availability — not just distance.</p>
+          <p className="mt-5 inline-flex items-center gap-1.5 rounded-full border border-ice-lum/60 bg-card/70 px-3 py-1 text-xs font-semibold text-deep"><ShieldCheck className="size-3.5" /> Safety status: no urgent warning signs reported</p>
+        </section>
+      </article>
     </div>
   );
 }

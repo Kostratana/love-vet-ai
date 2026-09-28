@@ -1,69 +1,72 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { CheckCircle2 } from "lucide-react";
 import { PublicPage } from "@/components/layout/PublicPage";
-import { ChipToggle, Field, PageShell, SectionTitle, TextArea, TextInput } from "@/components/kit/form";
-import { GlowButton } from "@/components/kit/primitives";
-import { SPECIES, setAccount, useAccount, type VetProfile } from "@/lib/account-store";
+import { ChipToggle, Field, PageShell, SectionTitle, Select, TextArea, TextInput } from "@/components/kit/form";
+import { GlowButton, buttonVariants } from "@/components/kit/primitives";
+import { SPECIES } from "@/lib/account-store";
 
 export const Route = createFileRoute("/join/veterinarian")({
   head: () => ({
     meta: [
-      { title: "Veterinarian registration · Love Vet AI" },
-      { name: "description", content: "Create a Love Vet AI professional profile with specialties, species treated, clinics, languages and availability." },
-      { property: "og:title", content: "Veterinarian registration · Love Vet AI" },
-      { property: "og:description", content: "Professional profiles for veterinarians." },
+      { title: "Clinic / Veterinarian Registration · Love Vet AI" },
+      { name: "description", content: "Register a veterinary clinic or veterinary professional with Love Vet AI — separate from pet owner accounts." },
+      { property: "og:title", content: "Clinic / Veterinarian Registration · Love Vet AI" },
+      { property: "og:description", content: "Registration for veterinary clinics and professionals, leading to the Clinic Staff Workspace." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: VetRegistration,
+  component: ClinicRegistration,
 });
 
 const SPECIALTIES = ["General practice", "Surgery", "Orthopedics", "Dermatology", "Cardiology", "Dentistry", "Internal medicine", "Emergency & critical care", "Exotic animal medicine", "Avian medicine", "Behavior"];
+const SERVICES = ["Consultations", "Vaccinations", "Diagnostics", "Surgery", "Dental care", "Emergency care", "Preventive care", "Grooming"];
+const CAPABILITIES = ["Laboratory", "X-ray", "Ultrasound", "Hospitalization", "24/7 emergency", "Exotic animal handling", "Home visits"];
 
-const EMPTY: VetProfile = { firstName: "", lastName: "", title: "", specialties: [], species: [], experience: "", education: "", languages: "", services: "", clinics: "", locations: "", availability: "", price: "", description: "" };
-
-function VetRegistration() {
-  const acct = useAccount();
-  const navigate = useNavigate();
-  const [v, setV] = useState<VetProfile>(acct.vet ?? EMPTY);
-  const t = (k: keyof VetProfile) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setV({ ...v, [k]: e.target.value });
-
+function ClinicRegistration() {
+  const [done, setDone] = useState(false);
+  const [species, setSpecies] = useState<string[]>([]);
+  const [services, setServices] = useState<string[]>([]);
+  const [specialties, setSpecialties] = useState<string[]>([]);
+  const [caps, setCaps] = useState<string[]>([]);
   return (
     <PublicPage>
-      <PageShell narrow eyebrow="Veterinarian" title="Create your professional profile" intro={<p>Your profile helps Love Vet AI match owners with the right professional — by species, specialty, services and availability, not just distance.</p>}>
-        <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); setAccount({ role: "veterinarian", vet: v }); navigate({ to: "/veterinarian-profile" }); }}>
-          <div className="glass rounded-3xl p-6 sm:p-8">
-            <SectionTitle>Identity</SectionTitle>
+      <PageShell narrow eyebrow="For veterinary clinics & professionals" title="Clinic / Veterinarian Registration"
+        intro={<p>This registration is separate from Pet Owner Accounts. Once connected, it will lead to the Clinic Staff Workspace. Nothing is stored or approved in this preview.</p>}>
+        {done ? (
+          <div className="glass rounded-3xl p-8 text-center">
+            <CheckCircle2 className="mx-auto size-8 text-deep" />
+            <p className="mt-3 text-graphite">Details received in this preview only. Accounts are not created until registration is connected.</p>
+            <Link to="/workspace" className={buttonVariants() + " mt-5"}>Open Clinic Staff Workspace</Link>
+          </div>
+        ) : (
+          <form className="glass space-y-5 rounded-3xl p-6 sm:p-8" onSubmit={(e) => { e.preventDefault(); setDone(true); window.scrollTo({ top: 0 }); }}>
+            <Field label="Registering as">
+              <Select required defaultValue=""><option value="" disabled>Select…</option><option>Veterinary Clinic</option><option>Veterinarian / Veterinary Professional</option></Select>
+            </Field>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="First name"><TextInput required value={v.firstName} onChange={t("firstName")} /></Field>
-              <Field label="Last name"><TextInput required value={v.lastName} onChange={t("lastName")} /></Field>
-              <Field label="Professional title"><TextInput value={v.title} onChange={t("title")} placeholder="e.g. DVM" /></Field>
-              <Field label="Professional photo"><TextInput type="file" accept="image/*" /></Field>
+              <Field label="Organization / Clinic name"><TextInput required /></Field>
+              <Field label="Professional name"><TextInput /></Field>
+              <Field label="Professional role"><TextInput placeholder="e.g. Veterinarian, Practice manager" /></Field>
+              <Field label="Email"><TextInput type="email" required /></Field>
+              <Field label="Phone"><TextInput type="tel" /></Field>
+              <Field label="Website"><TextInput type="url" placeholder="https://" /></Field>
             </div>
-          </div>
-          <div className="glass space-y-5 rounded-3xl p-6 sm:p-8">
-            <SectionTitle>Practice</SectionTitle>
-            <ChipToggle label="Veterinary specialties" options={SPECIALTIES} value={v.specialties} onChange={(x) => setV({ ...v, specialties: x })} />
-            <ChipToggle label="Animal species treated" options={SPECIES} value={v.species} onChange={(x) => setV({ ...v, species: x })} />
-            <Field label="Services provided"><TextInput value={v.services} onChange={t("services")} /></Field>
+            <Field label="Clinic address"><TextInput /></Field>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Professional experience"><TextInput value={v.experience} onChange={t("experience")} /></Field>
-              <Field label="Education / qualifications"><TextInput value={v.education} onChange={t("education")} /></Field>
-              <Field label="Languages spoken"><TextInput value={v.languages} onChange={t("languages")} /></Field>
-              <Field label="Consultation price or range"><TextInput value={v.price} onChange={t("price")} /></Field>
+              <Field label="City / Region"><TextInput /></Field>
+              <Field label="Country"><TextInput /></Field>
             </div>
-          </div>
-          <div className="glass space-y-4 rounded-3xl p-6 sm:p-8">
-            <SectionTitle sub="You can work at more than one clinic.">Clinics & schedule</SectionTitle>
-            <Field label="Clinic affiliation(s)"><TextInput value={v.clinics} onChange={t("clinics")} /></Field>
-            <Field label="Locations"><TextInput value={v.locations} onChange={t("locations")} /></Field>
-            <Field label="Availability / schedule"><TextInput value={v.availability} onChange={t("availability")} /></Field>
-            <Field label="Professional description"><TextArea value={v.description} onChange={t("description")} /></Field>
-          </div>
-          <div className="flex justify-end"><GlowButton type="submit" size="lg">Save profile</GlowButton></div>
-          <p className="text-xs text-graphite">Preview: your profile stays in this browser until professional sign-in is connected.</p>
-        </form>
+            <SectionTitle>Care profile</SectionTitle>
+            <ChipToggle label="Animal species treated" options={[...SPECIES]} value={species} onChange={setSpecies} />
+            <ChipToggle label="Veterinary services" options={SERVICES} value={services} onChange={setServices} />
+            <ChipToggle label="Veterinarian specialties" options={SPECIALTIES} value={specialties} onChange={setSpecialties} />
+            <ChipToggle label="Clinic capabilities" options={CAPABILITIES} value={caps} onChange={setCaps} />
+            <Field label="Opening hours"><TextArea rows={3} placeholder="e.g. Mon–Fri 9:00–18:00, Sat 10:00–14:00" /></Field>
+            <GlowButton type="submit" className="w-full">Submit registration</GlowButton>
+          </form>
+        )}
       </PageShell>
     </PublicPage>
   );

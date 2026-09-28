@@ -23,12 +23,12 @@ function Business() {
   const [done, setDone] = useState(false);
   return (
     <PublicPage>
-      <PageShell narrow eyebrow="Professionals & Clinics" title="Register a Pet-Care Business">
+      <PageShell narrow eyebrow="Information Desk" title="Register a Pet-Care Business">
         {done ? (
           <div className="glass rounded-3xl p-8 text-center">
             <CheckCircle2 className="mx-auto size-8 text-deep" />
             <p className="mt-3 text-graphite">Details received in this preview. Nothing is stored or published until registration is connected.</p>
-            <Link to="/professionals" className={buttonVariants({ variant: "secondary" }) + " mt-5"}>Back to Professionals & Clinics</Link>
+            <Link to="/information-desk" className={buttonVariants({ variant: "secondary" }) + " mt-5"}>Back to Information Desk</Link>
           </div>
         ) : (
           <form className="glass space-y-4 rounded-3xl p-6 sm:p-8" onSubmit={(e) => { e.preventDefault(); setDone(true); }}>

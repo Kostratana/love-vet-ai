@@ -1,67 +1,17 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { DataTable, PageHeader } from "@/components/workspace/PageHeader";
-import { GlowButton, StatusBadge } from "@/components/kit/primitives";
-import { intakes, patients } from "@/lib/love-vet-data";
+import { createFileRoute } from "@tanstack/react-router";
+import { PawPrint } from "lucide-react";
+import { SectionPlaceholder } from "@/components/workspace/SectionPlaceholder";
 
 export const Route = createFileRoute("/workspace/patients")({
   head: () => ({
     meta: [
-      { title: "Patients · Clinic Staff Workspace" },
-      {
-        name: "description",
-        content:
-          "Patient records with species, breed, age, owner and the most recent AI chat for each animal.",
-      },
-      { property: "og:title", content: "Patients · Clinic Staff Workspace" },
-      {
-        property: "og:description",
-        content: "Patient list linked to intake history and care routes.",
-      },
+      { title: "Patients · Clinic Staff Workspace · Love Vet AI" },
+      { name: "description", content: "Animals seen by your clinic through Love Vet AI." },
+      { property: "og:title", content: "Patients · Love Vet AI" },
+      { property: "og:description", content: "Animals seen by your clinic through Love Vet AI." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: Patients,
+  component: () => <SectionPlaceholder eyebrow="Clinic Staff Workspace" title="Patients" description="Animals seen by your clinic through Love Vet AI." icon={PawPrint} />,
 });
-
-function Patients() {
-  return (
-    <div>
-      <PageHeader
-        eyebrow="Patients"
-        title="Patient records"
-        description="Care history stays attached to the animal, including original messages and media from every intake."
-      />
-      <DataTable
-        columns={["Patient", "Species", "Breed", "Age", "Owner", "Latest intake", ""]}
-        rows={patients.map((p) => {
-          const intake = intakes.find((i) => i.patientId === p.id);
-          return [
-            <span key="n" className="font-semibold">
-              {p.name}
-            </span>,
-            p.species,
-            p.breed,
-            p.age,
-            p.ownerName,
-            intake ? (
-              <span key="i" className="flex flex-wrap items-center gap-2">
-                <span>{intake.route}</span>
-                <StatusBadge tone="neutral">{intake.receivedAt}</StatusBadge>
-              </span>
-            ) : (
-              "—"
-            ),
-            intake ? (
-              <Link key="a" to="/workspace/intakes/$intakeId" params={{ intakeId: intake.id }}>
-                <GlowButton variant="secondary" size="sm">
-                  Open case
-                </GlowButton>
-              </Link>
-            ) : null,
-          ];
-        })}
-      />
-    </div>
-  );
-}
