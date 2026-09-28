@@ -24,7 +24,7 @@ export const Route = createFileRoute("/platform")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Platform;
+  component: Platform,
 });
 
 const hierarchy = [
