@@ -91,6 +91,10 @@ function WorkspaceLayout() {
           </div>
 
           <main className="px-4 pb-16 lg:px-0">
+            <p className="mb-4 rounded-full border border-silver-strong/60 bg-card/70 px-4 py-2 text-xs text-graphite">
+              For veterinary clinics and staff. No clinics are connected yet — all organizations,
+              locations, veterinarians and cases shown are sample placeholders.
+            </p>
             <Outlet />
           </main>
         </div>
