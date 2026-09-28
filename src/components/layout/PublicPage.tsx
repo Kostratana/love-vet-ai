@@ -6,7 +6,7 @@ export function PublicPage({ children }: { children: ReactNode }) {
   return (
     <div className="ambient-bg min-h-screen">
       <SiteNav />
-      {children}
+      <main className="page-enter">{children}</main>
       <SiteFooter />
     </div>
   );

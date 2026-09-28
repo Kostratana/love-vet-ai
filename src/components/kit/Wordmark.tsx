@@ -22,24 +22,24 @@ export function HeartsMark({ className = "size-9" }: { className?: string }) {
           <path d={HEART} transform="translate(10.5 0)" stroke="black" strokeWidth="5" />
         </mask>
       </defs>
-      <path d={HEART} transform="translate(0.5 0)" stroke={`url(#v${id})`} strokeWidth="2.4" strokeLinejoin="round" mask={`url(#m${id})`} />
-      <path d={HEART} transform="translate(10.5 0)" stroke="#D92D3A" strokeWidth="2.4" strokeLinejoin="round" />
+      <g className="heart-owner"><path d={HEART} transform="translate(0.5 0)" stroke={`url(#v${id})`} strokeWidth="2.4" strokeLinejoin="round" mask={`url(#m${id})`} /></g>
+      <g className="heart-pet"><path d={HEART} transform="translate(10.5 0)" stroke="#D92D3A" strokeWidth="2.4" strokeLinejoin="round" /></g>
       {/* re-draw violet over red on the lower crossing for the interlock */}
-      <path d={HEART} transform="translate(0.5 0)" stroke={`url(#v${id})`} strokeWidth="2.4" strokeLinejoin="round" style={{ clipPath: "inset(55% 0 0 0)" }} />
+      <g className="heart-owner"><path d={HEART} transform="translate(0.5 0)" stroke={`url(#v${id})`} strokeWidth="2.4" strokeLinejoin="round" style={{ clipPath: "inset(55% 0 0 0)" }} /></g>
     </svg>
   );
 }
 
-export function Wordmark({ compact = false, to = "/" }: { compact?: boolean; to?: "/" | "/workspace" }) {
+export function Wordmark({ compact = false, to = "/" }: { compact?: boolean; to?: "/" }) {
   return (
     <Link to={to} className="group inline-flex items-center gap-2.5" aria-label="Love Vet AI home">
       <span className="relative grid place-items-center">
-        <span aria-hidden className="absolute inset-0 -z-10 rounded-full bg-ice-lum/40 blur-md transition-opacity group-hover:opacity-100" />
+        <span aria-hidden className="heart-glow absolute inset-0 -z-10 rounded-full bg-ice-lum/60 blur-md" />
         <HeartsMark className="h-7 w-10" />
       </span>
       {!compact && (
-        <span className="text-[1.02rem] font-bold tracking-[-0.02em] text-navy">
-          Love Vet <span className="text-deep">AI</span>
+        <span className="text-gradient-brand text-[1.08rem] font-extrabold tracking-[0.04em] uppercase">
+          Love Vet AI
         </span>
       )}
     </Link>

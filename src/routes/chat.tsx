@@ -5,6 +5,7 @@ import { LogOut, Menu, Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Wordmark } from "@/components/kit/Wordmark";
+import { SiteNav } from "@/components/layout/SiteNav";
 import { GlowButton } from "@/components/kit/primitives";
 import { cn } from "@/lib/utils";
 
@@ -46,14 +47,12 @@ function ChatLayout() {
   if (!user) {
     // Guests can chat immediately — no registration required.
     return (
-      <div className="ambient-bg flex h-[100dvh] flex-col gap-3 p-0 lg:p-4">
-        <div className="flex items-center justify-between gap-3 px-4 pt-3 lg:px-2 lg:pt-0">
-          <Wordmark />
-          <p className="text-xs text-graphite">
-            <Link to="/auth" className="font-semibold text-deep hover:underline">Sign in</Link> to save your conversations.
-          </p>
-        </div>
-        <main className="relative flex min-h-0 flex-1 flex-col"><Outlet /></main>
+      <div className="ambient-bg flex h-[100dvh] flex-col">
+        <SiteNav />
+        <p className="px-4 pt-2 text-center text-xs text-graphite">
+          No account needed. <Link to="/owner" className="font-semibold text-deep hover:underline">Create a Pet Owner Account</Link> to save your conversations.
+        </p>
+        <main className="page-enter relative mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col p-3 lg:p-5"><Outlet /></main>
       </div>
     );
   }
