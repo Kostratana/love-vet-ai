@@ -101,7 +101,7 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
   const hasUserMessages = messages.some((m) => m.role === "user");
 
   return (
-    <div className="glass violet-glow flex h-full flex-col overflow-hidden lg:rounded-3xl">
+    <div className="glass chat-hero flex h-full flex-col overflow-hidden rounded-3xl">
       <header className="flex items-center gap-3 border-b border-silver/70 px-5 py-3.5 pl-16 lg:pl-6">
         <HeartsMark className="h-6 w-9" />
         <div className="min-w-0">

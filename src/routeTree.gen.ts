@@ -13,12 +13,15 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ChatRouteImport } from './routes/chat'
+import { Route as OwnerRouteImport } from './routes/owner'
+import { Route as ProfessionalsRouteImport } from './routes/professionals'
 import { Route as ReviewRouteImport } from './routes/review'
 import { Route as VeterinarianProfileRouteImport } from './routes/veterinarian-profile'
 import { Route as WorkspaceRouteRouteImport } from './routes/workspace/route'
 import { Route as ChatIndexRouteImport } from './routes/chat/index'
 import { Route as ChatThreadIdRouteImport } from './routes/chat/$threadId'
 import { Route as JoinIndexRouteImport } from './routes/join.index'
+import { Route as JoinBusinessRouteImport } from './routes/join.business'
 import { Route as JoinOwnerRouteImport } from './routes/join.owner'
 import { Route as JoinVeterinarianRouteImport } from './routes/join.veterinarian'
 import { Route as WorkspaceIndexRouteImport } from './routes/workspace/index'
@@ -54,6 +57,16 @@ const ChatRoute = ChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OwnerRoute = OwnerRouteImport.update({
+  id: '/owner',
+  path: '/owner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfessionalsRoute = ProfessionalsRouteImport.update({
+  id: '/professionals',
+  path: '/professionals',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReviewRoute = ReviewRouteImport.update({
   id: '/review',
   path: '/review',
@@ -82,6 +95,11 @@ const ChatThreadIdRoute = ChatThreadIdRouteImport.update({
 const JoinIndexRoute = JoinIndexRouteImport.update({
   id: '/join/',
   path: '/join/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoinBusinessRoute = JoinBusinessRouteImport.update({
+  id: '/join/business',
+  path: '/join/business',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JoinOwnerRoute = JoinOwnerRouteImport.update({
@@ -162,9 +180,12 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRouteWithChildren
+  '/owner': typeof OwnerRoute
+  '/professionals': typeof ProfessionalsRoute
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
+  '/join/business': typeof JoinBusinessRoute
   '/join/owner': typeof JoinOwnerRoute
   '/join/veterinarian': typeof JoinVeterinarianRoute
   '/workspace/analytics': typeof WorkspaceAnalyticsRoute
@@ -186,9 +207,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
+  '/owner': typeof OwnerRoute
+  '/professionals': typeof ProfessionalsRoute
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
+  '/join/business': typeof JoinBusinessRoute
   '/join/owner': typeof JoinOwnerRoute
   '/join/veterinarian': typeof JoinVeterinarianRoute
   '/workspace/analytics': typeof WorkspaceAnalyticsRoute
@@ -213,9 +237,12 @@ export interface FileRoutesById {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRouteWithChildren
+  '/owner': typeof OwnerRoute
+  '/professionals': typeof ProfessionalsRoute
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
+  '/join/business': typeof JoinBusinessRoute
   '/join/owner': typeof JoinOwnerRoute
   '/join/veterinarian': typeof JoinVeterinarianRoute
   '/workspace/analytics': typeof WorkspaceAnalyticsRoute
@@ -241,9 +268,12 @@ export interface FileRouteTypes {
     | '/account'
     | '/auth'
     | '/chat'
+    | '/owner'
+    | '/professionals'
     | '/review'
     | '/veterinarian-profile'
     | '/chat/$threadId'
+    | '/join/business'
     | '/join/owner'
     | '/join/veterinarian'
     | '/workspace/analytics'
@@ -265,9 +295,12 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/auth'
+    | '/owner'
+    | '/professionals'
     | '/review'
     | '/veterinarian-profile'
     | '/chat/$threadId'
+    | '/join/business'
     | '/join/owner'
     | '/join/veterinarian'
     | '/workspace/analytics'
@@ -291,9 +324,12 @@ export interface FileRouteTypes {
     | '/account'
     | '/auth'
     | '/chat'
+    | '/owner'
+    | '/professionals'
     | '/review'
     | '/veterinarian-profile'
     | '/chat/$threadId'
+    | '/join/business'
     | '/join/owner'
     | '/join/veterinarian'
     | '/workspace/analytics'
@@ -318,8 +354,11 @@ export interface RootRouteChildren {
   AccountRoute: typeof AccountRoute
   AuthRoute: typeof AuthRoute
   ChatRoute: typeof ChatRouteWithChildren
+  OwnerRoute: typeof OwnerRoute
+  ProfessionalsRoute: typeof ProfessionalsRoute
   ReviewRoute: typeof ReviewRoute
   VeterinarianProfileRoute: typeof VeterinarianProfileRoute
+  JoinBusinessRoute: typeof JoinBusinessRoute
   JoinOwnerRoute: typeof JoinOwnerRoute
   JoinVeterinarianRoute: typeof JoinVeterinarianRoute
   JoinIndexRoute: typeof JoinIndexRoute
@@ -353,6 +392,20 @@ declare module '@tanstack/react-router' {
       path: '/chat'
       fullPath: '/chat'
       preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner': {
+      id: '/owner'
+      path: '/owner'
+      fullPath: '/owner'
+      preLoaderRoute: typeof OwnerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/professionals': {
+      id: '/professionals'
+      path: '/professionals'
+      fullPath: '/professionals'
+      preLoaderRoute: typeof ProfessionalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/review': {
@@ -395,6 +448,13 @@ declare module '@tanstack/react-router' {
       path: '/join'
       fullPath: '/join/'
       preLoaderRoute: typeof JoinIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/join/business': {
+      id: '/join/business'
+      path: '/join/business'
+      fullPath: '/join/business'
+      preLoaderRoute: typeof JoinBusinessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/join/owner': {
@@ -550,8 +610,11 @@ const rootRouteChildren: RootRouteChildren = {
   AccountRoute: AccountRoute,
   AuthRoute: AuthRoute,
   ChatRoute: ChatRouteWithChildren,
+  OwnerRoute: OwnerRoute,
+  ProfessionalsRoute: ProfessionalsRoute,
   ReviewRoute: ReviewRoute,
   VeterinarianProfileRoute: VeterinarianProfileRoute,
+  JoinBusinessRoute: JoinBusinessRoute,
   JoinOwnerRoute: JoinOwnerRoute,
   JoinVeterinarianRoute: JoinVeterinarianRoute,
   JoinIndexRoute: JoinIndexRoute,

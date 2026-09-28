@@ -1,4 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   ArrowRight,
   Building2,
@@ -52,19 +53,20 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-const steps = [
-  { icon: MessageCircle, title: "Chat with the AI assistant" },
-  { icon: User, title: "Tell us about yourself and your pet" },
-  { icon: FileText, title: "Describe what happened" },
-  { icon: Mic, title: "Speak, type, or add photos and video" },
+type StepAction = { to: "/chat" | "/owner" | "/professionals"; hash?: string; label: string } | { info: string };
+const steps: { icon: typeof MessageCircle; title: string; actions?: StepAction[] }[] = [
+  { icon: MessageCircle, title: "Chat with the AI assistant", actions: [{ to: "/chat", label: "Open Chat with AI" }] },
+  { icon: User, title: "Tell us about yourself and your pet", actions: [{ to: "/chat", label: "Start in chat" }, { to: "/owner", label: "Create an account" }] },
+  { icon: FileText, title: "Describe what happened", actions: [{ to: "/chat", label: "Describe in chat" }] },
+  { icon: Mic, title: "Speak, type, or add photos and video", actions: [{ to: "/chat", label: "Open chat" }] },
   { icon: ShieldCheck, title: "Automatic safety analysis" },
-  { icon: Search, title: "AI identifies suitable veterinary care" },
-  { icon: Building2, title: "Suitable clinics and veterinary professionals are checked" },
-  { icon: CalendarDays, title: "Review available appointment options" },
-  { icon: CheckCircle2, title: "Confirm your appointment" },
-  { icon: ClipboardCheck, title: "Information is prepared for the veterinary professional" },
-  { icon: UserPlus, title: "Create your account to securely save your pets, conversations, appointments and visit history" },
-  { icon: Star, title: "After your completed visit, leave a verified review of the veterinarian and clinic" },
+  { icon: Search, title: "AI identifies suitable veterinary care", actions: [{ to: "/professionals", label: "About the care network" }] },
+  { icon: Building2, title: "Suitable clinics and veterinary professionals are checked", actions: [{ to: "/professionals", label: "Professionals & Clinics" }] },
+  { icon: CalendarDays, title: "Review available appointment options", actions: [{ info: "Appointment options will appear inside Chat with AI after matching. Booking is not connected yet in this preview." }] },
+  { icon: CheckCircle2, title: "Confirm your appointment", actions: [{ info: "You'll confirm the appointment yourself inside Chat with AI. Booking is a future step and is not connected yet." }] },
+  { icon: ClipboardCheck, title: "Information is prepared for the veterinary professional", actions: [{ info: "Pre-visit handoff: your description, pet details, voice message, photos and video are organized into a short summary for the veterinary professional. The AI never diagnoses — the veterinarian decides." }] },
+  { icon: UserPlus, title: "Create your account and save your pets, conversations, appointments and visit history", actions: [{ to: "/owner", label: "Pet Owner Account" }] },
+  { icon: Star, title: "After your completed visit, leave a verified review", actions: [{ to: "/owner", hash: "reviews", label: "Leave a review" }] },
 ];
 
 const criteria = [
@@ -91,11 +93,43 @@ function IconDot({ icon: Icon, size = "md" }: { icon: typeof MessageCircle; size
   );
 }
 
+function JourneyStep({ step, n }: { step: (typeof steps)[number]; n: number }) {
+  const [open, setOpen] = useState(false);
+  const info = step.actions?.find((a): a is { info: string } => "info" in a);
+  const links = step.actions?.filter((a): a is Exclude<StepAction, { info: string }> => "to" in a) ?? [];
+  return (
+    <li className="relative">
+      <span className="absolute top-2 -left-[3.05rem]"><IconDot icon={step.icon} /></span>
+      <div className={`glass rounded-2xl px-4 py-3 ${step.actions ? "hover-lift" : ""}`}>
+        <p className="text-[0.95rem] font-semibold text-navy">
+          <span className="mr-2 text-xs font-bold text-deep">{String(n).padStart(2, "0")}</span>
+          {step.title}
+        </p>
+        {(links.length > 0 || info) && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {links.map((l) => (
+              <Link key={l.label} to={l.to} hash={l.hash} className="inline-flex items-center gap-1 rounded-full border border-ice-lum bg-ice/70 px-3 py-1 text-xs font-bold text-deep transition-all hover:bg-ice hover:shadow-[var(--glow-silver-blue)]">
+                {l.label} <ArrowRight className="size-3" />
+              </Link>
+            ))}
+            {info && (
+              <button type="button" aria-expanded={open} onClick={() => setOpen((v) => !v)} className="inline-flex items-center gap-1 rounded-full border border-ice-lum bg-ice/70 px-3 py-1 text-xs font-bold text-deep hover:bg-ice">
+                {open ? "Hide details" : "What happens here?"}
+              </button>
+            )}
+          </div>
+        )}
+        {info && open && <p className="page-enter mt-3 rounded-xl bg-card/70 p-3 text-sm text-graphite">{info.info}</p>}
+      </div>
+    </li>
+  );
+}
+
 function HeroPreview() {
   return (
     <div className="relative">
       <div aria-hidden className="absolute -inset-10 -z-10 rounded-full bg-[radial-gradient(closest-side,rgb(128_104_255/0.28),transparent)] blur-2xl" />
-      <div className="glass violet-glow rounded-3xl p-4 sm:p-5">
+      <div className="glass chat-hero rounded-3xl p-4 sm:p-5">
         <div className="flex items-center gap-3 border-b border-silver/70 pb-3">
           <HeartsMark className="h-6 w-9" />
           <div>
@@ -132,6 +166,7 @@ function Landing() {
   return (
     <div className="ambient-bg min-h-screen">
       <SiteNav />
+      <div className="page-enter">
 
       {/* Hero */}
       <section className="mx-auto grid max-w-6xl items-center gap-14 px-6 pt-16 pb-10 lg:grid-cols-[1.1fr_1fr] lg:pt-24">
@@ -174,16 +209,8 @@ function Landing() {
         <p className="mx-auto mt-3 max-w-xl text-center text-graphite">
           One conversation. The assistant asks only for what it doesn't already know.
         </p>
-        <ol className="relative mt-12 space-y-7 border-l border-ice-lum/70 pl-8">
-          {steps.map((s, i) => (
-            <li key={s.title} className="relative">
-              <span className="absolute top-0 -left-[3.05rem]"><IconDot icon={s.icon} /></span>
-              <p className="pt-2 text-[0.95rem] font-semibold text-navy">
-                <span className="mr-2 text-xs font-bold text-deep">{String(i + 1).padStart(2, "0")}</span>
-                {s.title}
-              </p>
-            </li>
-          ))}
+        <ol className="relative mt-12 space-y-4 border-l border-ice-lum/70 pl-8">
+          {steps.map((s, i) => <JourneyStep key={s.title} step={s} n={i + 1} />)}
         </ol>
         <p className="mt-10 text-center text-sm text-graphite">
           After your visit, you can rate your experience with the veterinarian and clinic and leave a
@@ -239,6 +266,9 @@ function Landing() {
             veterinarians, capabilities and schedules — and receive appointments with the client's
             description and media already prepared.
           </p>
+          <Link to="/professionals" className="mt-7 mr-3 inline-block">
+            <GlowButton size="lg">Professionals & Clinics <ArrowRight /></GlowButton>
+          </Link>
           <Link to="/workspace" className="mt-7 inline-block">
             <GlowButton size="lg" variant="secondary">Clinic Staff Workspace <ArrowRight /></GlowButton>
           </Link>
@@ -252,6 +282,7 @@ function Landing() {
         </ul>
       </section>
 
+      </div>
       <SiteFooter />
     </div>
   );
