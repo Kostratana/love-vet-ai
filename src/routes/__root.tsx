@@ -77,17 +77,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Love Vet AI — Multilingual AI veterinary front desk" },
+      { title: "Love Vet AI — AI veterinary appointment coordination" },
       {
         name: "description",
         content:
-          "Love Vet AI turns voice, text, photo and video pet-owner requests into structured veterinary intake, safe routing and confirmed bookings.",
+          "Chat with an AI assistant in your own language to find suitable veterinary care and confirm an appointment.",
       },
-      { property: "og:title", content: "Love Vet AI — Multilingual AI veterinary front desk" },
+      { property: "og:title", content: "Love Vet AI — AI veterinary appointment coordination" },
       {
         property: "og:description",
-        content:
-          "Multimodal multilingual AI intake, explainable care routing and booking for veterinary clinics and networks.",
+        content: "Type or speak, add photos or video, and get matched to suitable veterinary care.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
