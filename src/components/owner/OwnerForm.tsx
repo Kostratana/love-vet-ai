@@ -8,7 +8,7 @@ import { SPECIES, setAccount, useAccount, type OwnerProfile, type Pet } from "@/
 void Link;
 const newPet = (): Pet => ({ id: crypto.randomUUID(), name: "", species: "", breed: "", age: "", sex: "" });
 
-export function OwnerForm({ redirect, onModeChange }: { redirect?: string; onModeChange?: (m: "register" | "signin") => void }) {
+export function OwnerForm({ redirect, onModeChange }: { redirect?: string | undefined; onModeChange?: (m: "register" | "signin") => void }) {
   const router = useRouter();
   const acct = useAccount();
   const [owner, setOwner] = useState<Omit<OwnerProfile, "pets">>(

@@ -108,7 +108,7 @@ function JourneyStep({ step, n }: { step: (typeof steps)[number]; n: number }) {
         {(links.length > 0 || info) && (
           <div className="mt-2 flex flex-wrap gap-2">
             {links.map((l) => (
-              <Link key={l.label} to={l.to} hash={l.hash} className="inline-flex items-center gap-1 rounded-full border border-ice-lum bg-ice/70 px-3 py-1 text-xs font-bold text-deep transition-all hover:bg-ice hover:shadow-[var(--glow-silver-blue)]">
+              <Link key={l.label} to={l.to} {...(l.hash ? { hash: l.hash } : {})} className="inline-flex items-center gap-1 rounded-full border border-ice-lum bg-ice/70 px-3 py-1 text-xs font-bold text-deep transition-all hover:bg-ice hover:shadow-[var(--glow-silver-blue)]">
                 {l.label} <ArrowRight className="size-3" />
               </Link>
             ))}
