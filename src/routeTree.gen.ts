@@ -17,6 +17,7 @@ import { Route as IntakeRouteImport } from './routes/intake'
 import { Route as MyPetsRouteImport } from './routes/my-pets'
 import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as WorkspaceRouteRouteImport } from './routes/workspace/route'
+import { Route as WorkspaceIndexRouteImport } from './routes/workspace/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,37 +59,44 @@ const WorkspaceRouteRoute = WorkspaceRouteRouteImport.update({
   path: '/workspace',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkspaceIndexRoute = WorkspaceIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => WorkspaceRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/workspace': typeof WorkspaceRouteRoute
+  '/workspace': typeof WorkspaceRouteRouteWithChildren
   '/for-pet-owners': typeof ForPetOwnersRoute
   '/for-veterinary-teams': typeof ForVeterinaryTeamsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/intake': typeof IntakeRoute
   '/my-pets': typeof MyPetsRoute
   '/platform': typeof PlatformRoute
+  '/workspace/': typeof WorkspaceIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/workspace': typeof WorkspaceRouteRoute
   '/for-pet-owners': typeof ForPetOwnersRoute
   '/for-veterinary-teams': typeof ForVeterinaryTeamsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/intake': typeof IntakeRoute
   '/my-pets': typeof MyPetsRoute
   '/platform': typeof PlatformRoute
+  '/workspace': typeof WorkspaceIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/workspace': typeof WorkspaceRouteRoute
+  '/workspace': typeof WorkspaceRouteRouteWithChildren
   '/for-pet-owners': typeof ForPetOwnersRoute
   '/for-veterinary-teams': typeof ForVeterinaryTeamsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/intake': typeof IntakeRoute
   '/my-pets': typeof MyPetsRoute
   '/platform': typeof PlatformRoute
+  '/workspace/': typeof WorkspaceIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,16 +109,17 @@ export interface FileRouteTypes {
     | '/intake'
     | '/my-pets'
     | '/platform'
+    | '/workspace/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/workspace'
     | '/for-pet-owners'
     | '/for-veterinary-teams'
     | '/how-it-works'
     | '/intake'
     | '/my-pets'
     | '/platform'
+    | '/workspace'
   id:
     | '__root__'
     | '/'
@@ -121,11 +130,12 @@ export interface FileRouteTypes {
     | '/intake'
     | '/my-pets'
     | '/platform'
+    | '/workspace/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  WorkspaceRouteRoute: typeof WorkspaceRouteRoute
+  WorkspaceRouteRoute: typeof WorkspaceRouteRouteWithChildren
   ForPetOwnersRoute: typeof ForPetOwnersRoute
   ForVeterinaryTeamsRoute: typeof ForVeterinaryTeamsRoute
   HowItWorksRoute: typeof HowItWorksRoute
@@ -192,12 +202,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workspace/': {
+      id: '/workspace/'
+      path: '/'
+      fullPath: '/workspace/'
+      preLoaderRoute: typeof WorkspaceIndexRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
   }
 }
 
+interface WorkspaceRouteRouteChildren {
+  WorkspaceIndexRoute: typeof WorkspaceIndexRoute
+}
+
+const WorkspaceRouteRouteChildren: WorkspaceRouteRouteChildren = {
+  WorkspaceIndexRoute: WorkspaceIndexRoute,
+}
+
+const WorkspaceRouteRouteWithChildren = WorkspaceRouteRoute._addFileChildren(
+  WorkspaceRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  WorkspaceRouteRoute: WorkspaceRouteRoute,
+  WorkspaceRouteRoute: WorkspaceRouteRouteWithChildren,
   ForPetOwnersRoute: ForPetOwnersRoute,
   ForVeterinaryTeamsRoute: ForVeterinaryTeamsRoute,
   HowItWorksRoute: HowItWorksRoute,
