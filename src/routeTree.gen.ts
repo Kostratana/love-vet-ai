@@ -18,6 +18,7 @@ import { Route as MyPetsRouteImport } from './routes/my-pets'
 import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as WorkspaceRouteRouteImport } from './routes/workspace/route'
 import { Route as WorkspaceIndexRouteImport } from './routes/workspace/index'
+import { Route as WorkspaceIntakesIndexRouteImport } from './routes/workspace/intakes/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +65,11 @@ const WorkspaceIndexRoute = WorkspaceIndexRouteImport.update({
   path: '/',
   getParentRoute: () => WorkspaceRouteRoute,
 } as any)
+const WorkspaceIntakesIndexRoute = WorkspaceIntakesIndexRouteImport.update({
+  id: '/intakes/',
+  path: '/intakes/',
+  getParentRoute: () => WorkspaceRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/my-pets': typeof MyPetsRoute
   '/platform': typeof PlatformRoute
   '/workspace/': typeof WorkspaceIndexRoute
+  '/workspace/intakes/': typeof WorkspaceIntakesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/my-pets': typeof MyPetsRoute
   '/platform': typeof PlatformRoute
   '/workspace': typeof WorkspaceIndexRoute
+  '/workspace/intakes': typeof WorkspaceIntakesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/my-pets': typeof MyPetsRoute
   '/platform': typeof PlatformRoute
   '/workspace/': typeof WorkspaceIndexRoute
+  '/workspace/intakes/': typeof WorkspaceIntakesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -110,6 +119,7 @@ export interface FileRouteTypes {
     | '/my-pets'
     | '/platform'
     | '/workspace/'
+    | '/workspace/intakes/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/my-pets'
     | '/platform'
     | '/workspace'
+    | '/workspace/intakes'
   id:
     | '__root__'
     | '/'
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/my-pets'
     | '/platform'
     | '/workspace/'
+    | '/workspace/intakes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -209,15 +221,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceIndexRouteImport
       parentRoute: typeof WorkspaceRouteRoute
     }
+    '/workspace/intakes/': {
+      id: '/workspace/intakes/'
+      path: '/intakes'
+      fullPath: '/workspace/intakes/'
+      preLoaderRoute: typeof WorkspaceIntakesIndexRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
   }
 }
 
 interface WorkspaceRouteRouteChildren {
   WorkspaceIndexRoute: typeof WorkspaceIndexRoute
+  WorkspaceIntakesIndexRoute: typeof WorkspaceIntakesIndexRoute
 }
 
 const WorkspaceRouteRouteChildren: WorkspaceRouteRouteChildren = {
   WorkspaceIndexRoute: WorkspaceIndexRoute,
+  WorkspaceIntakesIndexRoute: WorkspaceIntakesIndexRoute,
 }
 
 const WorkspaceRouteRouteWithChildren = WorkspaceRouteRoute._addFileChildren(
