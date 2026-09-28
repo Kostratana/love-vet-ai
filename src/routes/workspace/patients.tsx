@@ -6,13 +6,13 @@ import { intakes, patients } from "@/lib/love-vet-data";
 export const Route = createFileRoute("/workspace/patients")({
   head: () => ({
     meta: [
-      { title: "Patients · Love Vet AI Workspace" },
+      { title: "Patients · Clinic Staff Workspace" },
       {
         name: "description",
         content:
-          "Patient records with species, breed, age, owner and the most recent AI intake for each animal.",
+          "Patient records with species, breed, age, owner and the most recent AI chat for each animal.",
       },
-      { property: "og:title", content: "Patients · Love Vet AI Workspace" },
+      { property: "og:title", content: "Patients · Clinic Staff Workspace" },
       {
         property: "og:description",
         content: "Patient list linked to intake history and care routes.",

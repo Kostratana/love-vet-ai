@@ -18,13 +18,13 @@ import { intakeById, lunaAppointment, patientById } from "@/lib/love-vet-data";
 export const Route = createFileRoute("/workspace/intakes/$intakeId")({
   head: () => ({
     meta: [
-      { title: "Intake case · Love Vet AI Workspace" },
+      { title: "Pre-visit case · Clinic Staff Workspace" },
       {
         name: "description",
         content:
           "Full intake case: original message, translation, structured concerns, media, priority and the reason behind the suggested care route.",
       },
-      { property: "og:title", content: "Intake case · Love Vet AI Workspace" },
+      { property: "og:title", content: "Pre-visit case · Clinic Staff Workspace" },
       {
         property: "og:description",
         content: "Original audio, transcript, translation and explainable routing in one case view.",

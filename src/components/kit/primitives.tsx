@@ -35,14 +35,14 @@ export function GlassCard({
 /* ---------------- Buttons ---------------- */
 
 export const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all duration-200 ease-out disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 active:translate-y-0",
+  "inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-[220ms] ease-out disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 active:translate-y-0",
   {
     variants: {
       variant: {
         primary:
-          "bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--glow-primary)] hover:-translate-y-0.5 hover:shadow-[0_14px_34px_-12px_oklch(0.4637_0.0709_240.7_/_55%),0_0_0_1px_oklch(0.4637_0.0709_240.7_/_35%)]",
+          "bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--glow-primary)] hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgb(255_255_255_/_30%),0_0_0_1px_rgb(75_47_207_/_45%),0_16px_38px_-12px_rgb(109_74_255_/_70%)]",
         secondary:
-          "glass text-navy hover:-translate-y-0.5 hover:shadow-[var(--shadow-float)]",
+          "glass text-navy hover:-translate-y-0.5 hover:border-ice-lum hover:text-deep hover:shadow-[var(--glow-silver-blue)]",
         ghost: "text-graphite hover:bg-silver-white hover:text-navy",
         critical:
           "bg-destructive text-destructive-foreground shadow-[0_10px_26px_-12px_oklch(0.5785_0.2061_23.19_/_55%)] hover:-translate-y-0.5",

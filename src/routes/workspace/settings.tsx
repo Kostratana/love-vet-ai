@@ -12,13 +12,13 @@ import { organization } from "@/lib/love-vet-data";
 export const Route = createFileRoute("/workspace/settings")({
   head: () => ({
     meta: [
-      { title: "Settings · Love Vet AI Workspace" },
+      { title: "Settings · Clinic Staff Workspace" },
       {
         name: "description",
         content:
           "Configure organization details, branding, supported languages, scheduling rules and AI routing rules for your veterinary network.",
       },
-      { property: "og:title", content: "Settings · Love Vet AI Workspace" },
+      { property: "og:title", content: "Settings · Clinic Staff Workspace" },
       {
         property: "og:description",
         content: "White-label configuration: branding, languages, scheduling and routing rules.",

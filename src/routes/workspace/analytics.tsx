@@ -6,16 +6,16 @@ import { analytics } from "@/lib/love-vet-data";
 export const Route = createFileRoute("/workspace/analytics")({
   head: () => ({
     meta: [
-      { title: "Analytics · Love Vet AI Workspace" },
+      { title: "Analytics · Clinic Staff Workspace" },
       {
         name: "description",
         content:
           "AI-handled booking share, average booking completion time, staff actions avoided, and volume by location, service and language.",
       },
-      { property: "og:title", content: "Analytics · Love Vet AI Workspace" },
+      { property: "og:title", content: "Analytics · Clinic Staff Workspace" },
       {
         property: "og:description",
-        content: "Operational impact of AI intake across locations, services and languages.",
+        content: "Operational impact of AI chat across locations, services and languages.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -66,7 +66,7 @@ function Analytics() {
 
       <div className="mt-6">
         <Disclaimer>
-          Demo figures from seeded data. Connect your practice management system to report on real
+          Sample figures for layout only. Connect your practice management system to report on real
           volume.
         </Disclaimer>
       </div>
