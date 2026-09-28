@@ -232,11 +232,12 @@
 
 @utility ambient-bg {
   background:
-    radial-gradient(45% 40% at 12% 8%, rgb(128 104 255 / 20%), transparent 70%),
-    radial-gradient(40% 38% at 88% 18%, rgb(183 168 255 / 34%), transparent 70%),
-    radial-gradient(55% 45% at 50% 100%, rgb(232 224 255 / 90%), transparent 70%),
-    radial-gradient(30% 30% at 70% 60%, rgb(255 255 255 / 45%), transparent 70%),
-    linear-gradient(180deg, #F7F4FF 0%, #F3EEFF 40%, #EEE8FF 100%);
+    radial-gradient(45% 40% at 10% 6%, rgb(128 104 255 / 30%), transparent 70%),
+    radial-gradient(40% 38% at 90% 14%, rgb(255 170 214 / 30%), transparent 70%),
+    radial-gradient(45% 40% at 80% 70%, rgb(140 150 255 / 22%), transparent 70%),
+    radial-gradient(50% 45% at 15% 85%, rgb(247 176 222 / 22%), transparent 70%),
+    radial-gradient(30% 30% at 55% 45%, rgb(231 234 240 / 55%), transparent 70%),
+    linear-gradient(180deg, #F4EEFF 0%, #EEE5FF 45%, #F3E6FA 100%);
   background-attachment: fixed;
 }
 

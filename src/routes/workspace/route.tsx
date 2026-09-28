@@ -9,7 +9,7 @@ import {
   PawPrint,
   Settings,
   Stethoscope,
-  Wrench,
+  Syringe,
 } from "lucide-react";
 import { SiteNav } from "@/components/layout/SiteNav";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -24,7 +24,7 @@ const nav = [
   { label: "Client Requests", to: "/workspace/intakes", icon: Inbox },
   { label: "Patients", to: "/workspace/patients", icon: PawPrint },
   { label: "Veterinarians", to: "/workspace/veterinarians", icon: Stethoscope },
-  { label: "Services", to: "/workspace/services", icon: Wrench },
+  { label: "Veterinary Services", to: "/workspace/services", icon: Syringe },
   { label: "Locations", to: "/workspace/locations", icon: Building2 },
   { label: "Reviews", to: "/workspace/reviews", icon: Star },
     { label: "Clinic Setup", to: "/workspace/clinic-setup", icon: ClipboardList },
