@@ -18,6 +18,7 @@ import { Route as MyPetsRouteImport } from './routes/my-pets'
 import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as WorkspaceRouteRouteImport } from './routes/workspace/route'
 import { Route as WorkspaceIndexRouteImport } from './routes/workspace/index'
+import { Route as WorkspaceAppointmentsRouteImport } from './routes/workspace/appointments'
 import { Route as WorkspaceIntakesIndexRouteImport } from './routes/workspace/intakes/index'
 import { Route as WorkspaceIntakesIntakeIdRouteImport } from './routes/workspace/intakes/$intakeId'
 
@@ -66,6 +67,11 @@ const WorkspaceIndexRoute = WorkspaceIndexRouteImport.update({
   path: '/',
   getParentRoute: () => WorkspaceRouteRoute,
 } as any)
+const WorkspaceAppointmentsRoute = WorkspaceAppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
+  getParentRoute: () => WorkspaceRouteRoute,
+} as any)
 const WorkspaceIntakesIndexRoute = WorkspaceIntakesIndexRouteImport.update({
   id: '/intakes/',
   path: '/intakes/',
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/intake': typeof IntakeRoute
   '/my-pets': typeof MyPetsRoute
   '/platform': typeof PlatformRoute
+  '/workspace/appointments': typeof WorkspaceAppointmentsRoute
   '/workspace/': typeof WorkspaceIndexRoute
   '/workspace/intakes/$intakeId': typeof WorkspaceIntakesIntakeIdRoute
   '/workspace/intakes/': typeof WorkspaceIntakesIndexRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/intake': typeof IntakeRoute
   '/my-pets': typeof MyPetsRoute
   '/platform': typeof PlatformRoute
+  '/workspace/appointments': typeof WorkspaceAppointmentsRoute
   '/workspace': typeof WorkspaceIndexRoute
   '/workspace/intakes/$intakeId': typeof WorkspaceIntakesIntakeIdRoute
   '/workspace/intakes': typeof WorkspaceIntakesIndexRoute
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/intake': typeof IntakeRoute
   '/my-pets': typeof MyPetsRoute
   '/platform': typeof PlatformRoute
+  '/workspace/appointments': typeof WorkspaceAppointmentsRoute
   '/workspace/': typeof WorkspaceIndexRoute
   '/workspace/intakes/$intakeId': typeof WorkspaceIntakesIntakeIdRoute
   '/workspace/intakes/': typeof WorkspaceIntakesIndexRoute
@@ -128,6 +137,7 @@ export interface FileRouteTypes {
     | '/intake'
     | '/my-pets'
     | '/platform'
+    | '/workspace/appointments'
     | '/workspace/'
     | '/workspace/intakes/$intakeId'
     | '/workspace/intakes/'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/intake'
     | '/my-pets'
     | '/platform'
+    | '/workspace/appointments'
     | '/workspace'
     | '/workspace/intakes/$intakeId'
     | '/workspace/intakes'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/intake'
     | '/my-pets'
     | '/platform'
+    | '/workspace/appointments'
     | '/workspace/'
     | '/workspace/intakes/$intakeId'
     | '/workspace/intakes/'
@@ -234,6 +246,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceIndexRouteImport
       parentRoute: typeof WorkspaceRouteRoute
     }
+    '/workspace/appointments': {
+      id: '/workspace/appointments'
+      path: '/appointments'
+      fullPath: '/workspace/appointments'
+      preLoaderRoute: typeof WorkspaceAppointmentsRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
     '/workspace/intakes/': {
       id: '/workspace/intakes/'
       path: '/intakes'
@@ -252,12 +271,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface WorkspaceRouteRouteChildren {
+  WorkspaceAppointmentsRoute: typeof WorkspaceAppointmentsRoute
   WorkspaceIndexRoute: typeof WorkspaceIndexRoute
   WorkspaceIntakesIntakeIdRoute: typeof WorkspaceIntakesIntakeIdRoute
   WorkspaceIntakesIndexRoute: typeof WorkspaceIntakesIndexRoute
 }
 
 const WorkspaceRouteRouteChildren: WorkspaceRouteRouteChildren = {
+  WorkspaceAppointmentsRoute: WorkspaceAppointmentsRoute,
   WorkspaceIndexRoute: WorkspaceIndexRoute,
   WorkspaceIntakesIntakeIdRoute: WorkspaceIntakesIntakeIdRoute,
   WorkspaceIntakesIndexRoute: WorkspaceIntakesIndexRoute,
