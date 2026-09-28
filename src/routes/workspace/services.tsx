@@ -15,7 +15,7 @@ export const Route = createFileRoute("/workspace/services")({
       { property: "og:title", content: "Services · Love Vet AI Workspace" },
       {
         property: "og:description",
-        content: "Service catalogue and routing categories used by AI intake.",
+        content: "Service catalogue and routing categories used by AI chat.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

@@ -10,7 +10,7 @@ export const Route = createFileRoute("/workspace/patients")({
       {
         name: "description",
         content:
-          "Patient records with species, breed, age, owner and the most recent AI intake for each animal.",
+          "Patient records with species, breed, age, owner and the most recent AI chat for each animal.",
       },
       { property: "og:title", content: "Patients · Love Vet AI Workspace" },
       {

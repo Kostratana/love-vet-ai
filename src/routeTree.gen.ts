@@ -10,12 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ForPetOwnersRouteImport } from './routes/for-pet-owners'
-import { Route as ForVeterinaryTeamsRouteImport } from './routes/for-veterinary-teams'
-import { Route as HowItWorksRouteImport } from './routes/how-it-works'
-import { Route as IntakeRouteImport } from './routes/intake'
-import { Route as MyPetsRouteImport } from './routes/my-pets'
-import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as WorkspaceRouteRouteImport } from './routes/workspace/route'
 import { Route as WorkspaceIndexRouteImport } from './routes/workspace/index'
 import { Route as WorkspaceAnalyticsRouteImport } from './routes/workspace/analytics'
@@ -31,36 +25,6 @@ import { Route as WorkspaceIntakesIntakeIdRouteImport } from './routes/workspace
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ForPetOwnersRoute = ForPetOwnersRouteImport.update({
-  id: '/for-pet-owners',
-  path: '/for-pet-owners',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ForVeterinaryTeamsRoute = ForVeterinaryTeamsRouteImport.update({
-  id: '/for-veterinary-teams',
-  path: '/for-veterinary-teams',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HowItWorksRoute = HowItWorksRouteImport.update({
-  id: '/how-it-works',
-  path: '/how-it-works',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IntakeRoute = IntakeRouteImport.update({
-  id: '/intake',
-  path: '/intake',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MyPetsRoute = MyPetsRouteImport.update({
-  id: '/my-pets',
-  path: '/my-pets',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlatformRoute = PlatformRouteImport.update({
-  id: '/platform',
-  path: '/platform',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WorkspaceRouteRoute = WorkspaceRouteRouteImport.update({
@@ -123,12 +87,6 @@ const WorkspaceIntakesIntakeIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/workspace': typeof WorkspaceRouteRouteWithChildren
-  '/for-pet-owners': typeof ForPetOwnersRoute
-  '/for-veterinary-teams': typeof ForVeterinaryTeamsRoute
-  '/how-it-works': typeof HowItWorksRoute
-  '/intake': typeof IntakeRoute
-  '/my-pets': typeof MyPetsRoute
-  '/platform': typeof PlatformRoute
   '/workspace/analytics': typeof WorkspaceAnalyticsRoute
   '/workspace/appointments': typeof WorkspaceAppointmentsRoute
   '/workspace/locations': typeof WorkspaceLocationsRoute
@@ -142,12 +100,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/for-pet-owners': typeof ForPetOwnersRoute
-  '/for-veterinary-teams': typeof ForVeterinaryTeamsRoute
-  '/how-it-works': typeof HowItWorksRoute
-  '/intake': typeof IntakeRoute
-  '/my-pets': typeof MyPetsRoute
-  '/platform': typeof PlatformRoute
   '/workspace/analytics': typeof WorkspaceAnalyticsRoute
   '/workspace/appointments': typeof WorkspaceAppointmentsRoute
   '/workspace/locations': typeof WorkspaceLocationsRoute
@@ -163,12 +115,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/workspace': typeof WorkspaceRouteRouteWithChildren
-  '/for-pet-owners': typeof ForPetOwnersRoute
-  '/for-veterinary-teams': typeof ForVeterinaryTeamsRoute
-  '/how-it-works': typeof HowItWorksRoute
-  '/intake': typeof IntakeRoute
-  '/my-pets': typeof MyPetsRoute
-  '/platform': typeof PlatformRoute
   '/workspace/analytics': typeof WorkspaceAnalyticsRoute
   '/workspace/appointments': typeof WorkspaceAppointmentsRoute
   '/workspace/locations': typeof WorkspaceLocationsRoute
@@ -185,12 +131,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/workspace'
-    | '/for-pet-owners'
-    | '/for-veterinary-teams'
-    | '/how-it-works'
-    | '/intake'
-    | '/my-pets'
-    | '/platform'
     | '/workspace/analytics'
     | '/workspace/appointments'
     | '/workspace/locations'
@@ -204,12 +144,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/for-pet-owners'
-    | '/for-veterinary-teams'
-    | '/how-it-works'
-    | '/intake'
-    | '/my-pets'
-    | '/platform'
     | '/workspace/analytics'
     | '/workspace/appointments'
     | '/workspace/locations'
@@ -224,12 +158,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/workspace'
-    | '/for-pet-owners'
-    | '/for-veterinary-teams'
-    | '/how-it-works'
-    | '/intake'
-    | '/my-pets'
-    | '/platform'
     | '/workspace/analytics'
     | '/workspace/appointments'
     | '/workspace/locations'
@@ -245,12 +173,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   WorkspaceRouteRoute: typeof WorkspaceRouteRouteWithChildren
-  ForPetOwnersRoute: typeof ForPetOwnersRoute
-  ForVeterinaryTeamsRoute: typeof ForVeterinaryTeamsRoute
-  HowItWorksRoute: typeof HowItWorksRoute
-  IntakeRoute: typeof IntakeRoute
-  MyPetsRoute: typeof MyPetsRoute
-  PlatformRoute: typeof PlatformRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -260,48 +182,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/for-pet-owners': {
-      id: '/for-pet-owners'
-      path: '/for-pet-owners'
-      fullPath: '/for-pet-owners'
-      preLoaderRoute: typeof ForPetOwnersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/for-veterinary-teams': {
-      id: '/for-veterinary-teams'
-      path: '/for-veterinary-teams'
-      fullPath: '/for-veterinary-teams'
-      preLoaderRoute: typeof ForVeterinaryTeamsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/how-it-works': {
-      id: '/how-it-works'
-      path: '/how-it-works'
-      fullPath: '/how-it-works'
-      preLoaderRoute: typeof HowItWorksRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/intake': {
-      id: '/intake'
-      path: '/intake'
-      fullPath: '/intake'
-      preLoaderRoute: typeof IntakeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/my-pets': {
-      id: '/my-pets'
-      path: '/my-pets'
-      fullPath: '/my-pets'
-      preLoaderRoute: typeof MyPetsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/platform': {
-      id: '/platform'
-      path: '/platform'
-      fullPath: '/platform'
-      preLoaderRoute: typeof PlatformRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/workspace': {
@@ -417,12 +297,6 @@ const WorkspaceRouteRouteWithChildren = WorkspaceRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   WorkspaceRouteRoute: WorkspaceRouteRouteWithChildren,
-  ForPetOwnersRoute: ForPetOwnersRoute,
-  ForVeterinaryTeamsRoute: ForVeterinaryTeamsRoute,
-  HowItWorksRoute: HowItWorksRoute,
-  IntakeRoute: IntakeRoute,
-  MyPetsRoute: MyPetsRoute,
-  PlatformRoute: PlatformRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

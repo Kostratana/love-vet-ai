@@ -10,7 +10,7 @@ export const Route = createFileRoute("/workspace/appointments")({
       {
         name: "description",
         content:
-          "Scheduled visits across all locations, showing which bookings were completed by AI intake and which needed staff.",
+          "Scheduled visits across all locations, showing which bookings were completed by AI chat and which needed staff.",
       },
       { property: "og:title", content: "Appointments · Love Vet AI Workspace" },
       {
@@ -43,7 +43,7 @@ function Appointments() {
           a.service,
           a.veterinarian,
           a.location,
-          <StatusBadge key="src" tone={a.source === "AI Intake" ? "info" : "neutral"}>
+          <StatusBadge key="src" tone={a.source === "AI Chat" ? "info" : "neutral"}>
             {a.source}
           </StatusBadge>,
           <StatusBadge key="s" tone={a.status === "CONFIRMED" ? "success" : "attention"}>

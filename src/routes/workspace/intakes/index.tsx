@@ -15,7 +15,7 @@ export const Route = createFileRoute("/workspace/intakes/")({
       {
         name: "description",
         content:
-          "Every AI intake with detected language, reported concerns, priority and suggested care route, ready for veterinary review.",
+          "Every AI chat with detected language, reported concerns, priority and suggested care route, ready for veterinary review.",
       },
       { property: "og:title", content: "AI Intakes · Love Vet AI Workspace" },
       {

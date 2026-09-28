@@ -1,7 +1,7 @@
 /**
- * Seeded demo data for Love Vet AI.
+ * Sample placeholder data (not real clinics or patients) for Love Vet AI.
  *
- * This module is the single source of mock data for the frontend demo.
+ * This module is the single source of mock data for frontend development.
  * Every shape here mirrors the future backend hierarchy:
  * Organization → Locations → Services → Veterinarians → Schedules →
  * Appointments → Patients → Intakes → Media.
@@ -146,7 +146,7 @@ export const veterinarians: Veterinarian[] = [
 export const patients: Patient[] = [
   {
     id: "pat_luna",
-    name: "Luna",
+    name: "Nova",
     species: "Dog",
     breed: "Golden Retriever",
     age: "6 years",
@@ -182,7 +182,7 @@ export const intakes: Intake[] = [
     originalLanguage: "Russian",
     originalText: lunaOriginalText,
     translatedText:
-      "My dog Luna, a Golden Retriever, six years old. Since yesterday she started limping on a front leg and coughs occasionally. I attached a photo and a short video.",
+      "My dog Nova, a Golden Retriever, six years old. Since yesterday she started limping on a front leg and coughs occasionally. I attached a photo and a short video.",
     concerns: ["Front-leg limping", "Intermittent cough"],
     onset: "Yesterday",
     priority: "SAME-DAY",
@@ -242,7 +242,7 @@ export const emergencyIntake = {
 };
 
 export const lunaAppointment = {
-  patient: "Luna",
+  patient: "Nova",
   service: "Mobility / Orthopedic Consultation",
   veterinarian: "Dr. Daniel Rivera",
   location: "Central Veterinary Center",
@@ -288,11 +288,11 @@ export const appointments = [
   {
     id: "apt_1",
     time: "3:30 PM",
-    patient: "Luna",
+    patient: "Nova",
     service: "Mobility / Orthopedic Consultation",
     veterinarian: "Dr. Daniel Rivera",
     location: "Central Veterinary Center",
-    source: "AI Intake",
+    source: "AI Chat",
     status: "CONFIRMED" as const,
   },
   {
@@ -302,7 +302,7 @@ export const appointments = [
     service: "Dermatology Consultation",
     veterinarian: "Dr. Sofia Martins",
     location: "Harbor Veterinary Center",
-    source: "AI Intake",
+    source: "AI Chat",
     status: "CONFIRMED" as const,
   },
   {
@@ -322,7 +322,7 @@ export const appointments = [
     service: "General Veterinary Consultation",
     veterinarian: "Dr. Maya Chen",
     location: "North Veterinary Center",
-    source: "AI Intake",
+    source: "AI Chat",
     status: "CONFIRMED" as const,
   },
 ];

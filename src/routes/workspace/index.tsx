@@ -18,12 +18,12 @@ export const Route = createFileRoute("/workspace/")({
       {
         name: "description",
         content:
-          "Today's appointments, AI-handled bookings, cases needing attention and the live AI intake queue for your veterinary team.",
+          "Today's appointments, AI-handled bookings, cases needing attention and the live Client requests for your veterinary team.",
       },
       { property: "og:title", content: "Workspace Overview · Love Vet AI" },
       {
         property: "og:description",
-        content: "Operational overview of AI intake, routing and bookings across your network.",
+        content: "Operational overview of AI chat, routing and bookings across your network.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -38,11 +38,11 @@ function Overview() {
       <PageHeader
         eyebrow="Overview"
         title="Today at Northline Veterinary Group"
-        description="AI intake, routing and scheduling across three locations. Clinical decisions remain with your veterinarians."
+        description="AI chat, routing and scheduling across three locations. Clinical decisions remain with your veterinarians."
         actions={
           <Link to="/workspace/intakes">
             <GlowButton size="sm">
-              Open AI intake queue <ArrowRight />
+              Open client requests <ArrowRight />
             </GlowButton>
           </Link>
         }
@@ -65,7 +65,7 @@ function Overview() {
 
       <section className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-display text-xl font-semibold">AI intake queue</h2>
+          <h2 className="font-display text-xl font-semibold">Client requests</h2>
           <StatusBadge tone="info">{intakes.length} active</StatusBadge>
         </div>
 
