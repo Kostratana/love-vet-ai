@@ -284,5 +284,49 @@ export const analytics = {
   ],
 };
 
+export const appointments = [
+  {
+    id: "apt_1",
+    time: "3:30 PM",
+    patient: "Luna",
+    service: "Mobility / Orthopedic Consultation",
+    veterinarian: "Dr. Daniel Rivera",
+    location: "Central Veterinary Center",
+    source: "AI Intake",
+    status: "CONFIRMED" as const,
+  },
+  {
+    id: "apt_2",
+    time: "4:15 PM",
+    patient: "Miso",
+    service: "Dermatology Consultation",
+    veterinarian: "Dr. Sofia Martins",
+    location: "Harbor Veterinary Center",
+    source: "AI Intake",
+    status: "CONFIRMED" as const,
+  },
+  {
+    id: "apt_3",
+    time: "5:00 PM",
+    patient: "Bruno",
+    service: "General Veterinary Consultation",
+    veterinarian: "Dr. Maya Chen",
+    location: "Central Veterinary Center",
+    source: "Staff",
+    status: "PENDING" as const,
+  },
+  {
+    id: "apt_4",
+    time: "Tomorrow · 9:00 AM",
+    patient: "Nori",
+    service: "General Veterinary Consultation",
+    veterinarian: "Dr. Maya Chen",
+    location: "North Veterinary Center",
+    source: "AI Intake",
+    status: "CONFIRMED" as const,
+  },
+];
+
 export const patientById = (id: string) => patients.find((p) => p.id === id);
 export const intakeById = (id: string) => intakes.find((i) => i.id === id);
+export const locationById = (id: string) => locations.find((l) => l.id === id);
