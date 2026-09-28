@@ -26,7 +26,7 @@ import { VoiceNote } from "@/components/care/VoiceNote";
 import { MediaAttachment } from "@/components/care/MediaAttachment";
 import { LiveIntakePanel, type IntakeSnapshot } from "@/components/care/LiveIntakePanel";
 import { RoutingExplanation } from "@/components/care/RoutingExplanation";
-import { SafetyAlert } from "@/components/care/LiveSafetyAlert";
+import { SafetyAlert } from "@/components/care/SafetyAlert";
 import { LocationCard } from "@/components/care/LocationCard";
 import { VeterinarianCard } from "@/components/care/VeterinarianCard";
 import { SlotPicker, demoDays } from "@/components/care/SlotPicker";
