@@ -5,7 +5,7 @@ import { PublicPage } from "@/components/layout/PublicPage";
 import { EmptyState } from "@/components/kit/form";
 import { GlowButton, buttonVariants } from "@/components/kit/primitives";
 
-export const Route = createFileRoute("/professionals")({
+export const Route = createFileRoute("/information-desk")({
   head: () => ({
     meta: [
       { title: "Professionals & Clinics · Love Vet AI" },

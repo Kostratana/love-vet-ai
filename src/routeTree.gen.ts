@@ -13,8 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ChatRouteImport } from './routes/chat'
+import { Route as InformationDeskRouteImport } from './routes/information-desk'
 import { Route as OwnerRouteImport } from './routes/owner'
-import { Route as ProfessionalsRouteImport } from './routes/professionals'
 import { Route as ReviewRouteImport } from './routes/review'
 import { Route as VeterinarianProfileRouteImport } from './routes/veterinarian-profile'
 import { Route as WorkspaceRouteRouteImport } from './routes/workspace/route'
@@ -25,7 +25,6 @@ import { Route as JoinBusinessRouteImport } from './routes/join.business'
 import { Route as JoinOwnerRouteImport } from './routes/join.owner'
 import { Route as JoinVeterinarianRouteImport } from './routes/join.veterinarian'
 import { Route as WorkspaceIndexRouteImport } from './routes/workspace/index'
-import { Route as WorkspaceAnalyticsRouteImport } from './routes/workspace/analytics'
 import { Route as WorkspaceAppointmentsRouteImport } from './routes/workspace/appointments'
 import { Route as WorkspaceClinicSetupRouteImport } from './routes/workspace/clinic-setup'
 import { Route as WorkspaceLocationsRouteImport } from './routes/workspace/locations'
@@ -35,7 +34,6 @@ import { Route as WorkspaceServicesRouteImport } from './routes/workspace/servic
 import { Route as WorkspaceSettingsRouteImport } from './routes/workspace/settings'
 import { Route as WorkspaceVeterinariansRouteImport } from './routes/workspace/veterinarians'
 import { Route as WorkspaceIntakesIndexRouteImport } from './routes/workspace/intakes/index'
-import { Route as WorkspaceIntakesIntakeIdRouteImport } from './routes/workspace/intakes/$intakeId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -57,14 +55,14 @@ const ChatRoute = ChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InformationDeskRoute = InformationDeskRouteImport.update({
+  id: '/information-desk',
+  path: '/information-desk',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OwnerRoute = OwnerRouteImport.update({
   id: '/owner',
   path: '/owner',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfessionalsRoute = ProfessionalsRouteImport.update({
-  id: '/professionals',
-  path: '/professionals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReviewRoute = ReviewRouteImport.update({
@@ -117,11 +115,6 @@ const WorkspaceIndexRoute = WorkspaceIndexRouteImport.update({
   path: '/',
   getParentRoute: () => WorkspaceRouteRoute,
 } as any)
-const WorkspaceAnalyticsRoute = WorkspaceAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
-  getParentRoute: () => WorkspaceRouteRoute,
-} as any)
 const WorkspaceAppointmentsRoute = WorkspaceAppointmentsRouteImport.update({
   id: '/appointments',
   path: '/appointments',
@@ -167,12 +160,6 @@ const WorkspaceIntakesIndexRoute = WorkspaceIntakesIndexRouteImport.update({
   path: '/intakes/',
   getParentRoute: () => WorkspaceRouteRoute,
 } as any)
-const WorkspaceIntakesIntakeIdRoute =
-  WorkspaceIntakesIntakeIdRouteImport.update({
-    id: '/intakes/$intakeId',
-    path: '/intakes/$intakeId',
-    getParentRoute: () => WorkspaceRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -180,15 +167,14 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRouteWithChildren
+  '/information-desk': typeof InformationDeskRoute
   '/owner': typeof OwnerRoute
-  '/professionals': typeof ProfessionalsRoute
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/join/business': typeof JoinBusinessRoute
   '/join/owner': typeof JoinOwnerRoute
   '/join/veterinarian': typeof JoinVeterinarianRoute
-  '/workspace/analytics': typeof WorkspaceAnalyticsRoute
   '/workspace/appointments': typeof WorkspaceAppointmentsRoute
   '/workspace/clinic-setup': typeof WorkspaceClinicSetupRoute
   '/workspace/locations': typeof WorkspaceLocationsRoute
@@ -200,22 +186,20 @@ export interface FileRoutesByFullPath {
   '/chat/': typeof ChatIndexRoute
   '/join/': typeof JoinIndexRoute
   '/workspace/': typeof WorkspaceIndexRoute
-  '/workspace/intakes/$intakeId': typeof WorkspaceIntakesIntakeIdRoute
   '/workspace/intakes/': typeof WorkspaceIntakesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
+  '/information-desk': typeof InformationDeskRoute
   '/owner': typeof OwnerRoute
-  '/professionals': typeof ProfessionalsRoute
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/join/business': typeof JoinBusinessRoute
   '/join/owner': typeof JoinOwnerRoute
   '/join/veterinarian': typeof JoinVeterinarianRoute
-  '/workspace/analytics': typeof WorkspaceAnalyticsRoute
   '/workspace/appointments': typeof WorkspaceAppointmentsRoute
   '/workspace/clinic-setup': typeof WorkspaceClinicSetupRoute
   '/workspace/locations': typeof WorkspaceLocationsRoute
@@ -227,7 +211,6 @@ export interface FileRoutesByTo {
   '/chat': typeof ChatIndexRoute
   '/join': typeof JoinIndexRoute
   '/workspace': typeof WorkspaceIndexRoute
-  '/workspace/intakes/$intakeId': typeof WorkspaceIntakesIntakeIdRoute
   '/workspace/intakes': typeof WorkspaceIntakesIndexRoute
 }
 export interface FileRoutesById {
@@ -237,15 +220,14 @@ export interface FileRoutesById {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRouteWithChildren
+  '/information-desk': typeof InformationDeskRoute
   '/owner': typeof OwnerRoute
-  '/professionals': typeof ProfessionalsRoute
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/join/business': typeof JoinBusinessRoute
   '/join/owner': typeof JoinOwnerRoute
   '/join/veterinarian': typeof JoinVeterinarianRoute
-  '/workspace/analytics': typeof WorkspaceAnalyticsRoute
   '/workspace/appointments': typeof WorkspaceAppointmentsRoute
   '/workspace/clinic-setup': typeof WorkspaceClinicSetupRoute
   '/workspace/locations': typeof WorkspaceLocationsRoute
@@ -257,7 +239,6 @@ export interface FileRoutesById {
   '/chat/': typeof ChatIndexRoute
   '/join/': typeof JoinIndexRoute
   '/workspace/': typeof WorkspaceIndexRoute
-  '/workspace/intakes/$intakeId': typeof WorkspaceIntakesIntakeIdRoute
   '/workspace/intakes/': typeof WorkspaceIntakesIndexRoute
 }
 export interface FileRouteTypes {
@@ -268,15 +249,14 @@ export interface FileRouteTypes {
     | '/account'
     | '/auth'
     | '/chat'
+    | '/information-desk'
     | '/owner'
-    | '/professionals'
     | '/review'
     | '/veterinarian-profile'
     | '/chat/$threadId'
     | '/join/business'
     | '/join/owner'
     | '/join/veterinarian'
-    | '/workspace/analytics'
     | '/workspace/appointments'
     | '/workspace/clinic-setup'
     | '/workspace/locations'
@@ -288,22 +268,20 @@ export interface FileRouteTypes {
     | '/chat/'
     | '/join/'
     | '/workspace/'
-    | '/workspace/intakes/$intakeId'
     | '/workspace/intakes/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/account'
     | '/auth'
+    | '/information-desk'
     | '/owner'
-    | '/professionals'
     | '/review'
     | '/veterinarian-profile'
     | '/chat/$threadId'
     | '/join/business'
     | '/join/owner'
     | '/join/veterinarian'
-    | '/workspace/analytics'
     | '/workspace/appointments'
     | '/workspace/clinic-setup'
     | '/workspace/locations'
@@ -315,7 +293,6 @@ export interface FileRouteTypes {
     | '/chat'
     | '/join'
     | '/workspace'
-    | '/workspace/intakes/$intakeId'
     | '/workspace/intakes'
   id:
     | '__root__'
@@ -324,15 +301,14 @@ export interface FileRouteTypes {
     | '/account'
     | '/auth'
     | '/chat'
+    | '/information-desk'
     | '/owner'
-    | '/professionals'
     | '/review'
     | '/veterinarian-profile'
     | '/chat/$threadId'
     | '/join/business'
     | '/join/owner'
     | '/join/veterinarian'
-    | '/workspace/analytics'
     | '/workspace/appointments'
     | '/workspace/clinic-setup'
     | '/workspace/locations'
@@ -344,7 +320,6 @@ export interface FileRouteTypes {
     | '/chat/'
     | '/join/'
     | '/workspace/'
-    | '/workspace/intakes/$intakeId'
     | '/workspace/intakes/'
   fileRoutesById: FileRoutesById
 }
@@ -354,8 +329,8 @@ export interface RootRouteChildren {
   AccountRoute: typeof AccountRoute
   AuthRoute: typeof AuthRoute
   ChatRoute: typeof ChatRouteWithChildren
+  InformationDeskRoute: typeof InformationDeskRoute
   OwnerRoute: typeof OwnerRoute
-  ProfessionalsRoute: typeof ProfessionalsRoute
   ReviewRoute: typeof ReviewRoute
   VeterinarianProfileRoute: typeof VeterinarianProfileRoute
   JoinBusinessRoute: typeof JoinBusinessRoute
@@ -394,18 +369,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/information-desk': {
+      id: '/information-desk'
+      path: '/information-desk'
+      fullPath: '/information-desk'
+      preLoaderRoute: typeof InformationDeskRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/owner': {
       id: '/owner'
       path: '/owner'
       fullPath: '/owner'
       preLoaderRoute: typeof OwnerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/professionals': {
-      id: '/professionals'
-      path: '/professionals'
-      fullPath: '/professionals'
-      preLoaderRoute: typeof ProfessionalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/review': {
@@ -478,13 +453,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceIndexRouteImport
       parentRoute: typeof WorkspaceRouteRoute
     }
-    '/workspace/analytics': {
-      id: '/workspace/analytics'
-      path: '/analytics'
-      fullPath: '/workspace/analytics'
-      preLoaderRoute: typeof WorkspaceAnalyticsRouteImport
-      parentRoute: typeof WorkspaceRouteRoute
-    }
     '/workspace/appointments': {
       id: '/workspace/appointments'
       path: '/appointments'
@@ -548,18 +516,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceIntakesIndexRouteImport
       parentRoute: typeof WorkspaceRouteRoute
     }
-    '/workspace/intakes/$intakeId': {
-      id: '/workspace/intakes/$intakeId'
-      path: '/intakes/$intakeId'
-      fullPath: '/workspace/intakes/$intakeId'
-      preLoaderRoute: typeof WorkspaceIntakesIntakeIdRouteImport
-      parentRoute: typeof WorkspaceRouteRoute
-    }
   }
 }
 
 interface WorkspaceRouteRouteChildren {
-  WorkspaceAnalyticsRoute: typeof WorkspaceAnalyticsRoute
   WorkspaceAppointmentsRoute: typeof WorkspaceAppointmentsRoute
   WorkspaceClinicSetupRoute: typeof WorkspaceClinicSetupRoute
   WorkspaceLocationsRoute: typeof WorkspaceLocationsRoute
@@ -569,12 +529,10 @@ interface WorkspaceRouteRouteChildren {
   WorkspaceSettingsRoute: typeof WorkspaceSettingsRoute
   WorkspaceVeterinariansRoute: typeof WorkspaceVeterinariansRoute
   WorkspaceIndexRoute: typeof WorkspaceIndexRoute
-  WorkspaceIntakesIntakeIdRoute: typeof WorkspaceIntakesIntakeIdRoute
   WorkspaceIntakesIndexRoute: typeof WorkspaceIntakesIndexRoute
 }
 
 const WorkspaceRouteRouteChildren: WorkspaceRouteRouteChildren = {
-  WorkspaceAnalyticsRoute: WorkspaceAnalyticsRoute,
   WorkspaceAppointmentsRoute: WorkspaceAppointmentsRoute,
   WorkspaceClinicSetupRoute: WorkspaceClinicSetupRoute,
   WorkspaceLocationsRoute: WorkspaceLocationsRoute,
@@ -584,7 +542,6 @@ const WorkspaceRouteRouteChildren: WorkspaceRouteRouteChildren = {
   WorkspaceSettingsRoute: WorkspaceSettingsRoute,
   WorkspaceVeterinariansRoute: WorkspaceVeterinariansRoute,
   WorkspaceIndexRoute: WorkspaceIndexRoute,
-  WorkspaceIntakesIntakeIdRoute: WorkspaceIntakesIntakeIdRoute,
   WorkspaceIntakesIndexRoute: WorkspaceIntakesIndexRoute,
 }
 
@@ -610,8 +567,8 @@ const rootRouteChildren: RootRouteChildren = {
   AccountRoute: AccountRoute,
   AuthRoute: AuthRoute,
   ChatRoute: ChatRouteWithChildren,
+  InformationDeskRoute: InformationDeskRoute,
   OwnerRoute: OwnerRoute,
-  ProfessionalsRoute: ProfessionalsRoute,
   ReviewRoute: ReviewRoute,
   VeterinarianProfileRoute: VeterinarianProfileRoute,
   JoinBusinessRoute: JoinBusinessRoute,

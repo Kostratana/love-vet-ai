@@ -1,39 +1,48 @@
-import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { ArrowUp } from "lucide-react";
 import { Wordmark } from "@/components/kit/Wordmark";
 
-const ext = "font-medium text-deep hover:underline";
+const ext = "font-semibold text-deep underline-offset-4 hover:underline";
+
+export function BackToTop() {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const on = () => setShow(window.scrollY > 600);
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  }, []);
+  if (!show) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })}
+      aria-label="Back to top"
+      title="Back to top"
+      className="glass page-enter fixed right-4 bottom-4 z-40 grid size-10 place-items-center rounded-full text-deep transition-shadow hover:shadow-[var(--glow-silver-blue)]"
+    >
+      <ArrowUp className="size-4" />
+    </button>
+  );
+}
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 border-t border-silver/80">
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-[1.2fr_1fr_1fr]">
-        <div className="space-y-3">
-          <Wordmark />
-          <p className="max-w-sm text-xs leading-relaxed text-graphite">
-            AI-powered veterinary appointment coordination. Love Vet AI does not diagnose — final
-            assessment and treatment decisions belong to a veterinary professional.
-          </p>
-        </div>
-        <nav aria-label="Footer" className="flex flex-col gap-2 text-sm text-graphite">
-          <Link to="/" className="hover:text-deep">Home</Link>
-          <Link to="/chat" className="hover:text-deep">Chat with AI</Link>
-          <Link to="/owner" className="hover:text-deep">Pet Owner Account</Link>
-          <Link to="/professionals" className="hover:text-deep">Professionals & Clinics</Link>
-          <Link to="/workspace" className="hover:text-deep">Clinic Staff Workspace</Link>
-        </nav>
-        <div className="space-y-1.5 text-sm text-graphite">
-          <p className="font-bold text-navy">Svetlana Rumyantseva</p>
-          <p>AI Engineer · Data Scientist</p>
-          <p>Golden Dragon AI</p>
-          <p><a className={ext} href="mailto:srumyantseva7@gmail.com">srumyantseva7@gmail.com</a></p>
-          <p><a className={ext} href="https://www.goldendragonai.com" target="_blank" rel="noreferrer">goldendragonai.com</a></p>
-          <p className="flex gap-4">
-            <a className={ext} href="https://github.com/Kostratana" target="_blank" rel="noreferrer">GitHub</a>
-            <a className={ext} href="https://www.linkedin.com/in/svetlana-rumyantseva-ai" target="_blank" rel="noreferrer">LinkedIn</a>
-          </p>
-          <p className="pt-2 text-xs">Created for the Contra × Lovable Challenge 2026</p>
-        </div>
+    <footer className="mt-20 border-t border-ice-lum/40 px-6 py-10 text-center">
+      <div className="flex justify-center"><Wordmark quiet /></div>
+      <div className="mt-4 space-y-1 text-sm text-graphite">
+        <p className="font-bold text-navy">Svetlana Rumyantseva</p>
+        <p>AI Engineer · Data Scientist</p>
+        <p>Golden Dragon AI</p>
+        <p className="flex flex-wrap justify-center gap-x-4 gap-y-1 pt-2">
+          <a className={ext} href="mailto:srumyantseva7@gmail.com">srumyantseva7@gmail.com</a>
+          <a className={ext} href="https://www.goldendragonai.com/" target="_blank" rel="noopener noreferrer">Website</a>
+          <a className={ext} href="https://github.com/Kostratana" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a className={ext} href="https://www.linkedin.com/in/svetlana-rumyantseva-ai" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        </p>
+        <p className="pt-3 text-xs text-deep/80">Created for the Contra × Lovable Challenge 2026</p>
       </div>
+      <BackToTop />
     </footer>
   );
 }
