@@ -3,22 +3,15 @@ import { useState } from "react";
 import {
   ArrowRight,
   Building2,
-  CalendarCheck,
   CalendarDays,
   CheckCircle2,
-  Clock,
   ClipboardCheck,
   ImageIcon,
-  MapPin,
   MessageCircle,
   Mic,
-  PawPrint,
   ShieldCheck,
-  Stethoscope,
-  Sun,
   User,
   Video,
-  Wrench,
   FileText,
   Search,
   Star,
@@ -53,15 +46,15 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-type StepAction = { to: "/chat" | "/owner" | "/professionals"; hash?: string; label: string } | { info: string };
+type StepAction = { to: "/chat" | "/owner" | "/information-desk" | "/join/veterinarian"; hash?: string; label: string } | { info: string };
 const steps: { icon: typeof MessageCircle; title: string; actions?: StepAction[] }[] = [
   { icon: MessageCircle, title: "Chat with the AI assistant", actions: [{ to: "/chat", label: "Open Chat with AI" }] },
   { icon: User, title: "Tell us about yourself and your pet", actions: [{ to: "/chat", label: "Start in chat" }, { to: "/owner", label: "Create an account" }] },
   { icon: FileText, title: "Describe what happened", actions: [{ to: "/chat", label: "Describe in chat" }] },
   { icon: Mic, title: "Speak, type, or add photos and video", actions: [{ to: "/chat", label: "Open chat" }] },
   { icon: ShieldCheck, title: "Automatic safety analysis" },
-  { icon: Search, title: "AI identifies suitable veterinary care", actions: [{ to: "/professionals", label: "About the care network" }] },
-  { icon: Building2, title: "Suitable clinics and veterinary professionals are checked", actions: [{ to: "/professionals", label: "Professionals & Clinics" }] },
+  { icon: Search, title: "AI identifies suitable veterinary care", actions: [{ to: "/information-desk", label: "Information Desk" }] },
+  { icon: Building2, title: "Suitable clinics and veterinary professionals are checked", actions: [{ to: "/join/veterinarian", label: "Clinic / Veterinarian Registration" }] },
   { icon: CalendarDays, title: "Review available appointment options", actions: [{ info: "Appointment options will appear inside Chat with AI after matching. Booking is not connected yet in this preview." }] },
   { icon: CheckCircle2, title: "Confirm your appointment", actions: [{ info: "You'll confirm the appointment yourself inside Chat with AI. Booking is a future step and is not connected yet." }] },
   { icon: ClipboardCheck, title: "Information is prepared for the veterinary professional", actions: [{ info: "Pre-visit handoff: your description, pet details, voice message, photos and video are organized into a short summary for the veterinary professional. The AI never diagnoses — the veterinarian decides." }] },
@@ -69,19 +62,6 @@ const steps: { icon: typeof MessageCircle; title: string; actions?: StepAction[]
   { icon: Star, title: "After your completed visit, leave a verified review", actions: [{ to: "/owner", hash: "reviews", label: "Leave a review" }] },
 ];
 
-const criteria = [
-  { icon: PawPrint, label: "Animal species" },
-  { icon: Stethoscope, label: "Veterinary service" },
-  { icon: User, label: "Veterinarian specialization" },
-  { icon: Wrench, label: "Clinic capabilities" },
-  { icon: MapPin, label: "Location" },
-  { icon: Clock, label: "Opening hours" },
-  { icon: Sun, label: "Holiday status" },
-  { icon: CalendarDays, label: "Schedule" },
-  { icon: CalendarCheck, label: "Appointment availability" },
-  { icon: FileText, label: "Price range" },
-  { icon: Star, label: "Verified reviews" },
-];
 
 function IconDot({ icon: Icon, size = "md" }: { icon: typeof MessageCircle; size?: "md" | "lg" }) {
   return (
@@ -225,35 +205,6 @@ function Landing() {
 
       <JourneyActions />
 
-      {/* Platform */}
-      <section id="platform" className="mx-auto max-w-6xl scroll-mt-28 px-6 py-20">
-        <div className="glass rounded-[2rem] px-6 py-14 sm:px-12">
-          <p className="text-center text-xs font-semibold tracking-[0.2em] text-deep uppercase">Platform</p>
-          <h2 className="mt-3 text-center text-3xl font-bold tracking-[-0.03em] sm:text-4xl">
-            More than finding the nearest clinic
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-center text-graphite">
-            Love Vet AI is designed to identify suitable veterinary care based on the specific
-            animal, reported problem, clinic capabilities, appropriate veterinary service, location
-            and availability. A nearby clinic that treats only cats and dogs isn't a match for a hamster —
-            a farther clinic with a veterinarian experienced in small or exotic mammals may be. Reviews
-            help compare suitable options; they never override suitability.
-          </p>
-          <div className="mx-auto mt-10 flex max-w-4xl flex-wrap justify-center gap-3">
-            {criteria.map((c) => (
-              <span key={c.label} className="inline-flex items-center gap-2 rounded-full border border-silver-strong/60 bg-card/70 px-4 py-2 text-sm font-medium text-navy">
-                <c.icon className="size-4 text-deep" strokeWidth={1.6} aria-hidden />
-                {c.label}
-              </span>
-            ))}
-          </div>
-          <p className="mx-auto mt-10 max-w-2xl text-center text-xs text-graphite">
-            The assistant never diagnoses. It organizes your information and helps you reach a
-            veterinary professional, who makes every medical assessment and treatment decision.
-          </p>
-        </div>
-      </section>
-
       {/* For clinics */}
       <section id="for-clinics" className="mx-auto grid max-w-6xl scroll-mt-28 items-center gap-10 px-6 py-20 md:grid-cols-2">
         <div>
@@ -266,8 +217,8 @@ function Landing() {
             veterinarians, capabilities and schedules — and receive appointments with the client's
             description and media already prepared.
           </p>
-          <Link to="/professionals" className="mt-7 mr-3 inline-block">
-            <GlowButton size="lg">Professionals & Clinics <ArrowRight /></GlowButton>
+          <Link to="/join/veterinarian" className="mt-7 mr-3 inline-block">
+            <GlowButton size="lg">Clinic / Veterinarian Registration <ArrowRight /></GlowButton>
           </Link>
           <Link to="/workspace" className="mt-7 inline-block">
             <GlowButton size="lg" variant="secondary">Clinic Staff Workspace <ArrowRight /></GlowButton>
