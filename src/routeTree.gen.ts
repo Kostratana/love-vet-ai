@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ForPetOwnersRouteImport } from './routes/for-pet-owners'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as IntakeRouteImport } from './routes/intake'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForPetOwnersRoute = ForPetOwnersRouteImport.update({
+  id: '/for-pet-owners',
+  path: '/for-pet-owners',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HowItWorksRoute = HowItWorksRouteImport.update({
@@ -31,30 +37,34 @@ const IntakeRoute = IntakeRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/for-pet-owners': typeof ForPetOwnersRoute
   '/how-it-works': typeof HowItWorksRoute
   '/intake': typeof IntakeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/for-pet-owners': typeof ForPetOwnersRoute
   '/how-it-works': typeof HowItWorksRoute
   '/intake': typeof IntakeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/for-pet-owners': typeof ForPetOwnersRoute
   '/how-it-works': typeof HowItWorksRoute
   '/intake': typeof IntakeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/how-it-works' | '/intake'
+  fullPaths: '/' | '/for-pet-owners' | '/how-it-works' | '/intake'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/how-it-works' | '/intake'
-  id: '__root__' | '/' | '/how-it-works' | '/intake'
+  to: '/' | '/for-pet-owners' | '/how-it-works' | '/intake'
+  id: '__root__' | '/' | '/for-pet-owners' | '/how-it-works' | '/intake'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ForPetOwnersRoute: typeof ForPetOwnersRoute
   HowItWorksRoute: typeof HowItWorksRoute
   IntakeRoute: typeof IntakeRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-pet-owners': {
+      id: '/for-pet-owners'
+      path: '/for-pet-owners'
+      fullPath: '/for-pet-owners'
+      preLoaderRoute: typeof ForPetOwnersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/how-it-works': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ForPetOwnersRoute: ForPetOwnersRoute,
   HowItWorksRoute: HowItWorksRoute,
   IntakeRoute: IntakeRoute,
 }
