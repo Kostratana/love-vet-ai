@@ -57,7 +57,7 @@ export function SiteNav() {
           {open ? <X className="size-4" /> : <Menu className="size-4" />}
         </button>
         {open && (
-          <div id="mobile-menu" className="glass page-enter absolute top-full right-2 mt-2 w-56 rounded-2xl p-2 lg:hidden">
+          <div id="mobile-menu" className="glass page-enter absolute top-full right-2 mt-2 w-56 rounded-2xl !bg-background/95 p-2 shadow-[var(--shadow-float)] lg:hidden">
             {links.map((l) => (
               <Link key={l.to} to={l.to} activeOptions={{ exact: l.exact }} onClick={() => setOpen(false)} className={cn(item, "block rounded-xl py-2.5")} activeProps={{ className: active, "aria-current": "page" }}>
                 {l.label}
