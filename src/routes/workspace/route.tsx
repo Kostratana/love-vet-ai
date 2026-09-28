@@ -1,7 +1,7 @@
+import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
 import {
   Star,
-  ClipboardList, Link, Outlet, createFileRoute } from "@tanstack/react-router";
-import {
+  ClipboardList,
   BarChart3,
   Building2,
   CalendarDays,
