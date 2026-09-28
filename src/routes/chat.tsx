@@ -1,6 +1,6 @@
-import { Link, Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { LogOut, Menu, Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,12 +26,8 @@ export const conversationsKey = ["conversations"] as const;
 
 function ChatLayout() {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth" });
-  }, [loading, user, navigate]);
 
   const { data: threads = [] } = useQuery({
     queryKey: conversationsKey,
@@ -46,7 +42,21 @@ function ChatLayout() {
     },
   });
 
-  if (!user) return <div className="ambient-bg min-h-screen" />;
+  if (loading) return <div className="ambient-bg min-h-screen" />;
+  if (!user) {
+    // Guests can chat immediately — no registration required.
+    return (
+      <div className="ambient-bg flex h-[100dvh] flex-col gap-3 p-0 lg:p-4">
+        <div className="flex items-center justify-between gap-3 px-4 pt-3 lg:px-2 lg:pt-0">
+          <Wordmark />
+          <p className="text-xs text-graphite">
+            <Link to="/auth" className="font-semibold text-deep hover:underline">Sign in</Link> to save your conversations.
+          </p>
+        </div>
+        <main className="relative flex min-h-0 flex-1 flex-col"><Outlet /></main>
+      </div>
+    );
+  }
 
   const sidebar = (
     <div className="flex h-full flex-col">

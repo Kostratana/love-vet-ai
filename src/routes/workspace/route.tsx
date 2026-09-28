@@ -1,5 +1,7 @@
 import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
 import {
+  Star,
+  ClipboardList,
   BarChart3,
   Building2,
   CalendarDays,
@@ -25,7 +27,9 @@ const nav = [
   { label: "Veterinarians", to: "/workspace/veterinarians", icon: Stethoscope },
   { label: "Services", to: "/workspace/services", icon: Wrench },
   { label: "Locations", to: "/workspace/locations", icon: Building2 },
+  { label: "Reviews", to: "/workspace/reviews", icon: Star },
   { label: "Analytics", to: "/workspace/analytics", icon: BarChart3 },
+  { label: "Clinic Setup", to: "/workspace/clinic-setup", icon: ClipboardList },
   { label: "Settings", to: "/workspace/settings", icon: Settings },
 ] as const;
 
