@@ -88,7 +88,7 @@ function IntakeCase() {
             <GlassCard>
               <FieldLabel>Voice note</FieldLabel>
               <div className="mt-3">
-                <VoiceNote duration={voice.meta} label={voice.fileName} />
+                <VoiceNote language={intake.originalLanguage} transcript={intake.originalText} />
               </div>
             </GlassCard>
           ) : null}
@@ -147,7 +147,6 @@ function IntakeCase() {
             route={intake.route}
             priority={intake.priority}
             reason={intake.routeReason}
-            signals={intake.concerns}
           />
 
           {intake.status === "CONFIRMED" ? (
