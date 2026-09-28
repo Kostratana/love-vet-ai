@@ -1,7 +1,6 @@
-import { Clock, Globe2, MapPin, ShieldCheck, Sparkles as _s, Star, Stethoscope } from "lucide-react";
+import { Clock, Globe2, MapPin, ShieldCheck, Star, Stethoscope } from "lucide-react";
 import { GlowButton } from "@/components/kit/primitives";
 
-void _s;
 
 /**
  * Love Vet AI verified reviews and external public reputation are ALWAYS shown separately.
