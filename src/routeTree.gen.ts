@@ -14,6 +14,7 @@ import { Route as ForPetOwnersRouteImport } from './routes/for-pet-owners'
 import { Route as ForVeterinaryTeamsRouteImport } from './routes/for-veterinary-teams'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as IntakeRouteImport } from './routes/intake'
+import { Route as PlatformRouteImport } from './routes/platform'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +41,11 @@ const IntakeRoute = IntakeRouteImport.update({
   path: '/intake',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlatformRoute = PlatformRouteImport.update({
+  id: '/platform',
+  path: '/platform',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/for-veterinary-teams': typeof ForVeterinaryTeamsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/intake': typeof IntakeRoute
+  '/platform': typeof PlatformRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/for-veterinary-teams': typeof ForVeterinaryTeamsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/intake': typeof IntakeRoute
+  '/platform': typeof PlatformRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,6 +70,7 @@ export interface FileRoutesById {
   '/for-veterinary-teams': typeof ForVeterinaryTeamsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/intake': typeof IntakeRoute
+  '/platform': typeof PlatformRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -71,6 +80,7 @@ export interface FileRouteTypes {
     | '/for-veterinary-teams'
     | '/how-it-works'
     | '/intake'
+    | '/platform'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -78,6 +88,7 @@ export interface FileRouteTypes {
     | '/for-veterinary-teams'
     | '/how-it-works'
     | '/intake'
+    | '/platform'
   id:
     | '__root__'
     | '/'
@@ -85,6 +96,7 @@ export interface FileRouteTypes {
     | '/for-veterinary-teams'
     | '/how-it-works'
     | '/intake'
+    | '/platform'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -93,6 +105,7 @@ export interface RootRouteChildren {
   ForVeterinaryTeamsRoute: typeof ForVeterinaryTeamsRoute
   HowItWorksRoute: typeof HowItWorksRoute
   IntakeRoute: typeof IntakeRoute
+  PlatformRoute: typeof PlatformRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -132,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IntakeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/platform': {
+      id: '/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof PlatformRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -141,6 +161,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForVeterinaryTeamsRoute: ForVeterinaryTeamsRoute,
   HowItWorksRoute: HowItWorksRoute,
   IntakeRoute: IntakeRoute,
+  PlatformRoute: PlatformRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
