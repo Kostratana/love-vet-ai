@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   Clock,
   ClipboardCheck,
-  Globe,
   ImageIcon,
   MapPin,
   MessageCircle,
@@ -78,6 +77,8 @@ const criteria = [
   { icon: Sun, label: "Holiday status" },
   { icon: CalendarDays, label: "Schedule" },
   { icon: CalendarCheck, label: "Appointment availability" },
+  { icon: FileText, label: "Price range" },
+  { icon: Star, label: "Verified reviews" },
 ];
 
 function IconDot({ icon: Icon, size = "md" }: { icon: typeof MessageCircle; size?: "md" | "lg" }) {
@@ -208,7 +209,9 @@ function Landing() {
           <p className="mx-auto mt-4 max-w-2xl text-center text-graphite">
             Love Vet AI is designed to identify suitable veterinary care based on the specific
             animal, reported problem, clinic capabilities, appropriate veterinary service, location
-            and availability. A closer clinic that doesn't treat your animal isn't a match.
+            and availability. A nearby clinic that treats only cats and dogs isn't a match for a hamster —
+            a farther clinic with a veterinarian experienced in small or exotic mammals may be. Reviews
+            help compare suitable options; they never override suitability.
           </p>
           <div className="mx-auto mt-10 flex max-w-4xl flex-wrap justify-center gap-3">
             {criteria.map((c) => (
