@@ -105,7 +105,7 @@ function HowItWorks() {
             <Link to="/intake">
               <GlowButton>Start AI Intake</GlowButton>
             </Link>
-            <Link to="/workspace/intakes/int_luna">
+            <Link to="/workspace/intakes/$intakeId" params={{ intakeId: "int_luna" }}>
               <GlowButton variant="secondary">Open the veterinary case</GlowButton>
             </Link>
           </div>

@@ -123,7 +123,7 @@ function MyPets() {
                 <div className="mt-2">
                   <LanguageIndicator from="Russian" to="English" />
                 </div>
-                <Link to="/workspace/intakes/int_luna" className="mt-3 inline-block">
+                <Link to="/workspace/intakes/$intakeId" params={{ intakeId: "int_luna" }} className="mt-3 inline-block">
                   <GlowButton variant="secondary" size="sm">
                     View structured case
                   </GlowButton>
