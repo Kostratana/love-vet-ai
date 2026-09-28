@@ -102,20 +102,20 @@
   --graphite: #5F6170;
   --heart: #D92D3A;
 
-  --chart-1: oklch(0.6316 0.0816 244.84);
-  --chart-2: oklch(0.8168 0.0446 237.74);
-  --chart-3: oklch(0.4637 0.0709 240.7);
+  --chart-1: #6D4AFF;
+  --chart-2: #B7A8FF;
+  --chart-3: #4B2FCF;
   --chart-4: oklch(0.8611 0.0173 242.46);
   --chart-5: #171622;
 
   --sidebar: oklch(0.9747 0.0051 247.88);
   --sidebar-foreground: #171622;
-  --sidebar-primary: oklch(0.4637 0.0709 240.7);
+  --sidebar-primary: #4B2FCF;
   --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.9295 0.0202 238.68);
   --sidebar-accent-foreground: #171622;
   --sidebar-border: oklch(0.9282 0.0104 247.94);
-  --sidebar-ring: oklch(0.6316 0.0816 244.84);
+  --sidebar-ring: #6D4AFF;
 
   /* elevation + light */
   --shadow-glass: 0 1px 1px oklch(0.3065 0.0484 243.53 / 4%), 0 12px 32px -12px oklch(0.3065 0.0484 243.53 / 12%);
