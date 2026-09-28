@@ -113,12 +113,11 @@ function HeroPreview() {
             Speak or write in the language you're most comfortable with. Language detection is
             automatic.
           </p>
-</div>
         </div>
         <Link to="/chat" aria-label="Open Chat with AI" className="flex items-center gap-1 rounded-full border border-silver-strong/60 bg-card/80 py-1.5 pr-1.5 pl-4 transition-shadow duration-200 hover:shadow-[var(--glow-silver-blue)]">
           <span className="flex-1 truncate text-sm text-graphite">Tell me what's happening with your pet...</span>
           {[Mic, ImageIcon, Video].map((I, i) => (
-            <span key={i} className="grid size-8 place-items-center rounded-full text-graphite"><I className="size-4" strokeWidth={1.6} /></span>
+            <span key={i} aria-hidden className="grid size-8 place-items-center rounded-full text-graphite"><I className="size-4" strokeWidth={1.6} /></span>
           ))}
           <span className="grid size-9 place-items-center rounded-full bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--glow-primary)]">
             <ArrowRight className="size-4" />
