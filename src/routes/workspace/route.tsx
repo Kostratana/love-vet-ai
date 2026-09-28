@@ -1,5 +1,6 @@
 import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
 import {
+  ArrowLeft,
   Star,
   ClipboardList,
   BarChart3,
@@ -29,18 +30,19 @@ const nav = [
   { label: "Locations", to: "/workspace/locations", icon: Building2 },
   { label: "Reviews", to: "/workspace/reviews", icon: Star },
   { label: "Analytics", to: "/workspace/analytics", icon: BarChart3 },
-  { label: "Clinic Setup", to: "/workspace/clinic-setup", icon: ClipboardList },
-  { label: "Settings", to: "/workspace/settings", icon: Settings },
+    { label: "Clinic Setup", to: "/workspace/clinic-setup", icon: ClipboardList },
+  { label: "Clinic Settings", to: "/workspace/settings", icon: Settings },
 ] as const;
 
 function WorkspaceLayout() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="ambient-bg min-h-screen">
       <div className="mx-auto flex max-w-[1500px] gap-0 lg:gap-6 lg:px-6 lg:py-6">
         {/* Sidebar (desktop) */}
         <aside className="glass sticky top-6 hidden h-[calc(100vh-3rem)] w-60 shrink-0 flex-col rounded-xl p-3 lg:flex">
+          <Link to="/" className="mb-2 inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-semibold text-deep hover:bg-ice"><ArrowLeft className="size-3.5" /> Back to Love Vet AI</Link>
           <div className="px-2 py-2">
-            <Wordmark to="/workspace" />
+            <Wordmark />
           </div>
           <p className="mt-3 px-2 text-sm font-bold text-navy">Clinic Staff Workspace</p>
           <p className="px-2 text-[0.68rem] leading-relaxed text-graphite">
@@ -52,10 +54,10 @@ function WorkspaceLayout() {
                 key={n.label}
                 to={n.to}
                 activeOptions={{ exact: "exact" in n ? n.exact : false }}
-                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-graphite transition-colors hover:bg-card hover:text-navy"
+                className="flex items-center gap-2.5 rounded-xl border border-transparent px-3 py-2 text-sm font-medium text-graphite transition-all duration-200 hover:bg-ice/70 hover:text-deep"
                 activeProps={{
                   className:
-                    "bg-card text-navy shadow-[var(--shadow-glass)] border border-silver-strong/50",
+                    "!border-ice-lum bg-ice !text-deep font-semibold shadow-[0_0_0_1px_rgb(128_104_255/0.25),0_8px_24px_-12px_rgb(109_74_255/0.6)]",
                 }}
               >
                 <n.icon className="size-4" aria-hidden />
@@ -76,8 +78,8 @@ function WorkspaceLayout() {
           <div className="glass sticky top-0 z-40 flex items-center gap-3 rounded-none px-4 py-3 lg:hidden">
             <Wordmark compact />
             <StatusBadge tone="info">Clinic Staff Workspace</StatusBadge>
-            <Link to="/" className="ml-auto text-xs font-semibold text-deep">
-              Exit
+            <Link to="/" className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-deep">
+              <ArrowLeft className="size-3.5" /> Back to Love Vet AI
             </Link>
           </div>
           <div className="flex gap-1.5 overflow-x-auto px-4 py-3 lg:hidden">
@@ -86,8 +88,8 @@ function WorkspaceLayout() {
                 key={n.label}
                 to={n.to}
                 activeOptions={{ exact: "exact" in n ? n.exact : false }}
-                className="shrink-0 rounded-lg border border-silver bg-card px-3 py-2 text-xs font-medium text-graphite"
-                activeProps={{ className: "border-ice-lum text-navy" }}
+                className="shrink-0 rounded-full border border-silver bg-card/70 px-3 py-2 text-xs font-medium text-graphite"
+                activeProps={{ className: "!border-ice-lum bg-ice !text-deep font-semibold" }}
               >
                 {n.label}
               </Link>
@@ -95,9 +97,10 @@ function WorkspaceLayout() {
           </div>
 
           <main className="px-4 pb-16 lg:px-0">
-            <p className="mb-4 rounded-full border border-silver-strong/60 bg-card/70 px-4 py-2 text-xs text-graphite">
-              For veterinary clinics and staff. No clinics are connected yet — all organizations,
-              locations, veterinarians and cases shown are sample placeholders.
+            <p role="note" className="glass mb-5 rounded-2xl px-4 py-2.5 text-xs leading-relaxed text-navy">
+              <span className="mr-1.5 font-extrabold tracking-[0.12em] text-deep">SAMPLE WORKSPACE</span>
+              — No real clinics, veterinarians, patients or appointments are connected. All information
+              shown here is fictional placeholder data for product demonstration.
             </p>
             <Outlet />
           </main>
