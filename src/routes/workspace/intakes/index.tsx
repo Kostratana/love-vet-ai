@@ -11,16 +11,16 @@ import { intakes, patientById } from "@/lib/love-vet-data";
 export const Route = createFileRoute("/workspace/intakes/")({
   head: () => ({
     meta: [
-      { title: "AI Intakes · Love Vet AI Workspace" },
+      { title: "Client Requests · Clinic Staff Workspace" },
       {
         name: "description",
         content:
           "Every AI chat with detected language, reported concerns, priority and suggested care route, ready for veterinary review.",
       },
-      { property: "og:title", content: "AI Intakes · Love Vet AI Workspace" },
+      { property: "og:title", content: "Client Requests · Clinic Staff Workspace" },
       {
         property: "og:description",
-        content: "Structured multilingual intake queue with explainable routing for your team.",
+        content: "Structured multilingual client requests with explainable routing for your team.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -33,8 +33,8 @@ function Intakes() {
   return (
     <div>
       <PageHeader
-        eyebrow="AI Intakes"
-        title="Intake queue"
+        eyebrow="Client Requests"
+        title="Pre-visit cases"
         description="Received requests, structured and routed. Original audio, transcript and media are preserved on every case."
       />
 
