@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Wrench } from "lucide-react";
+import { Syringe } from "lucide-react";
 import { SectionPlaceholder } from "@/components/workspace/SectionPlaceholder";
 
 export const Route = createFileRoute("/workspace/services")({
@@ -13,5 +13,5 @@ export const Route = createFileRoute("/workspace/services")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: () => <SectionPlaceholder eyebrow="Clinic Staff Workspace" title="Services" description="Veterinary services, capabilities and preparation instructions." icon={Wrench} />,
+  component: () => <SectionPlaceholder eyebrow="Clinic Staff Workspace" title="Veterinary Services" description="Veterinary services your clinic offers, with capabilities and preparation instructions." icon={Syringe} />,
 });

@@ -113,8 +113,8 @@ function HeroPreview() {
         <div className="flex items-center gap-3 border-b border-silver/70 pb-3">
           <HeartsMark className="h-6 w-9" />
           <div>
-            <p className="text-sm font-bold text-navy">Love Vet AI</p>
-            <p className="text-[0.72rem] text-graphite">AI Veterinary Appointment Assistant</p>
+            <p className="text-[0.78rem] font-extrabold tracking-[0.16em] text-deep uppercase">Love Vet AI</p>
+            <p className="text-[0.74rem] font-medium text-primary/80">Veterinary Appointment Assistant</p>
           </div>
         </div>
         <div className="space-y-3 py-5 text-sm leading-relaxed">
@@ -154,13 +154,13 @@ function Landing() {
           <p className="text-xs font-semibold tracking-[0.2em] text-deep uppercase">
             AI-powered veterinary appointment coordination
           </p>
-          <h1 className="mt-4 text-4xl leading-[1.08] font-extrabold tracking-[-0.035em] sm:text-5xl lg:text-[3.3rem]">
-            <span className="text-gradient-hero">Find the right veterinary care for your pet</span>
+          <h1 className="mt-4 max-w-[15ch] text-4xl leading-[1.1] font-extrabold tracking-[-0.035em] [text-wrap:balance] sm:text-5xl lg:max-w-none lg:text-[3rem]">
+            <span className="text-gradient-hero">Find the right veterinary <br className="hidden lg:inline" />care for your pet</span>
           </h1>
           <p className="mt-5 text-lg font-semibold text-navy">
             Tell us about yourself, your pet, and what happened.
           </p>
-          <div className="mt-4 max-w-xl space-y-3 text-[0.95rem] leading-relaxed text-graphite">
+          <div className="mt-4 max-w-xl space-y-3 text-[0.95rem] leading-relaxed text-navy/85">
             <p>
               Describe what is happening with your pet — type or speak naturally, and attach photos
               or a short video if you have them. Language detection is automatic.
