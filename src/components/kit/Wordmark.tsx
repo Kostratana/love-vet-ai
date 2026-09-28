@@ -25,7 +25,7 @@ export function HeartsMark({ className = "size-9" }: { className?: string }) {
       <path d={HEART} transform="translate(0.5 0)" stroke={`url(#v${id})`} strokeWidth="2.4" strokeLinejoin="round" mask={`url(#m${id})`} />
       <path d={HEART} transform="translate(10.5 0)" stroke="#D92D3A" strokeWidth="2.4" strokeLinejoin="round" />
       {/* re-draw violet over red on the lower crossing for the interlock */}
-      <path d={HEART} transform="translate(0.5 0)" stroke={`url(#v${id})`} strokeWidth="2.4" strokeLinejoin="round" clipPath="inset(55% 0 0 0)" style={{ clipPath: "inset(55% 0 0 0)" }} />
+      <path d={HEART} transform="translate(0.5 0)" stroke={`url(#v${id})`} strokeWidth="2.4" strokeLinejoin="round" style={{ clipPath: "inset(55% 0 0 0)" }} />
     </svg>
   );
 }
