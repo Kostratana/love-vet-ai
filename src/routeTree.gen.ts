@@ -20,6 +20,7 @@ import { Route as WorkspaceRouteRouteImport } from './routes/workspace/route'
 import { Route as WorkspaceIndexRouteImport } from './routes/workspace/index'
 import { Route as WorkspaceAppointmentsRouteImport } from './routes/workspace/appointments'
 import { Route as WorkspacePatientsRouteImport } from './routes/workspace/patients'
+import { Route as WorkspaceServicesRouteImport } from './routes/workspace/services'
 import { Route as WorkspaceVeterinariansRouteImport } from './routes/workspace/veterinarians'
 import { Route as WorkspaceIntakesIndexRouteImport } from './routes/workspace/intakes/index'
 import { Route as WorkspaceIntakesIntakeIdRouteImport } from './routes/workspace/intakes/$intakeId'
@@ -79,6 +80,11 @@ const WorkspacePatientsRoute = WorkspacePatientsRouteImport.update({
   path: '/patients',
   getParentRoute: () => WorkspaceRouteRoute,
 } as any)
+const WorkspaceServicesRoute = WorkspaceServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => WorkspaceRouteRoute,
+} as any)
 const WorkspaceVeterinariansRoute = WorkspaceVeterinariansRouteImport.update({
   id: '/veterinarians',
   path: '/veterinarians',
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/platform': typeof PlatformRoute
   '/workspace/appointments': typeof WorkspaceAppointmentsRoute
   '/workspace/patients': typeof WorkspacePatientsRoute
+  '/workspace/services': typeof WorkspaceServicesRoute
   '/workspace/veterinarians': typeof WorkspaceVeterinariansRoute
   '/workspace/': typeof WorkspaceIndexRoute
   '/workspace/intakes/$intakeId': typeof WorkspaceIntakesIntakeIdRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/platform': typeof PlatformRoute
   '/workspace/appointments': typeof WorkspaceAppointmentsRoute
   '/workspace/patients': typeof WorkspacePatientsRoute
+  '/workspace/services': typeof WorkspaceServicesRoute
   '/workspace/veterinarians': typeof WorkspaceVeterinariansRoute
   '/workspace': typeof WorkspaceIndexRoute
   '/workspace/intakes/$intakeId': typeof WorkspaceIntakesIntakeIdRoute
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   '/platform': typeof PlatformRoute
   '/workspace/appointments': typeof WorkspaceAppointmentsRoute
   '/workspace/patients': typeof WorkspacePatientsRoute
+  '/workspace/services': typeof WorkspaceServicesRoute
   '/workspace/veterinarians': typeof WorkspaceVeterinariansRoute
   '/workspace/': typeof WorkspaceIndexRoute
   '/workspace/intakes/$intakeId': typeof WorkspaceIntakesIntakeIdRoute
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/platform'
     | '/workspace/appointments'
     | '/workspace/patients'
+    | '/workspace/services'
     | '/workspace/veterinarians'
     | '/workspace/'
     | '/workspace/intakes/$intakeId'
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
     | '/platform'
     | '/workspace/appointments'
     | '/workspace/patients'
+    | '/workspace/services'
     | '/workspace/veterinarians'
     | '/workspace'
     | '/workspace/intakes/$intakeId'
@@ -188,6 +199,7 @@ export interface FileRouteTypes {
     | '/platform'
     | '/workspace/appointments'
     | '/workspace/patients'
+    | '/workspace/services'
     | '/workspace/veterinarians'
     | '/workspace/'
     | '/workspace/intakes/$intakeId'
@@ -284,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspacePatientsRouteImport
       parentRoute: typeof WorkspaceRouteRoute
     }
+    '/workspace/services': {
+      id: '/workspace/services'
+      path: '/services'
+      fullPath: '/workspace/services'
+      preLoaderRoute: typeof WorkspaceServicesRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
     '/workspace/veterinarians': {
       id: '/workspace/veterinarians'
       path: '/veterinarians'
@@ -311,6 +330,7 @@ declare module '@tanstack/react-router' {
 interface WorkspaceRouteRouteChildren {
   WorkspaceAppointmentsRoute: typeof WorkspaceAppointmentsRoute
   WorkspacePatientsRoute: typeof WorkspacePatientsRoute
+  WorkspaceServicesRoute: typeof WorkspaceServicesRoute
   WorkspaceVeterinariansRoute: typeof WorkspaceVeterinariansRoute
   WorkspaceIndexRoute: typeof WorkspaceIndexRoute
   WorkspaceIntakesIntakeIdRoute: typeof WorkspaceIntakesIntakeIdRoute
@@ -320,6 +340,7 @@ interface WorkspaceRouteRouteChildren {
 const WorkspaceRouteRouteChildren: WorkspaceRouteRouteChildren = {
   WorkspaceAppointmentsRoute: WorkspaceAppointmentsRoute,
   WorkspacePatientsRoute: WorkspacePatientsRoute,
+  WorkspaceServicesRoute: WorkspaceServicesRoute,
   WorkspaceVeterinariansRoute: WorkspaceVeterinariansRoute,
   WorkspaceIndexRoute: WorkspaceIndexRoute,
   WorkspaceIntakesIntakeIdRoute: WorkspaceIntakesIntakeIdRoute,
