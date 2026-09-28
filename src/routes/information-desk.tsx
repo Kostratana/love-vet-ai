@@ -32,7 +32,7 @@ const areas = [
 
 function InformationDesk() {
   return (
-    <>
+    <PublicPage>
       <section className="mx-auto max-w-6xl px-6 pt-14">
         <p className="text-xs font-bold tracking-[0.2em] text-deep uppercase">Information Desk</p>
         <h1 className="mt-3 text-4xl font-extrabold tracking-[-0.03em] sm:text-5xl"><span className="text-gradient-hero">A curated hub for pet care</span></h1>
@@ -54,6 +54,6 @@ function InformationDesk() {
           </article>
         ))}
       </section>
-    </>
+    </PublicPage>
   );
 }

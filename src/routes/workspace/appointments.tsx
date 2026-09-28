@@ -1,56 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DataTable, PageHeader } from "@/components/workspace/PageHeader";
-import { GlowButton, StatusBadge } from "@/components/kit/primitives";
-import { appointments } from "@/lib/love-vet-data";
+import { CalendarDays } from "lucide-react";
+import { SectionPlaceholder } from "@/components/workspace/SectionPlaceholder";
 
 export const Route = createFileRoute("/workspace/appointments")({
   head: () => ({
     meta: [
-      { title: "Appointments · Clinic Staff Workspace" },
-      {
-        name: "description",
-        content:
-          "Scheduled visits across all locations, showing which bookings were completed by AI chat and which needed staff.",
-      },
-      { property: "og:title", content: "Appointments · Clinic Staff Workspace" },
-      {
-        property: "og:description",
-        content: "Network-wide appointment schedule with AI versus staff booking source.",
-      },
+      { title: "Appointments · Clinic Staff Workspace · Love Vet AI" },
+      { name: "description", content: "Confirmed appointments booked through Love Vet AI." },
+      { property: "og:title", content: "Appointments · Love Vet AI" },
+      { property: "og:description", content: "Confirmed appointments booked through Love Vet AI." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: Appointments,
+  component: () => <SectionPlaceholder eyebrow="Clinic Staff Workspace" title="Appointments" description="Confirmed appointments booked through Love Vet AI." icon={CalendarDays} />,
 });
-
-function Appointments() {
-  return (
-    <div>
-      <PageHeader
-        eyebrow="Appointments"
-        title="Schedule"
-        description="Every booking carries its intake context, so the veterinarian opens the room already informed."
-        actions={<GlowButton size="sm">New appointment</GlowButton>}
-      />
-      <DataTable
-        columns={["Time", "Patient", "Service", "Veterinarian", "Location", "Source", "Status"]}
-        rows={appointments.map((a) => [
-          <span key="t" className="font-medium">
-            {a.time}
-          </span>,
-          a.patient,
-          a.service,
-          a.veterinarian,
-          a.location,
-          <StatusBadge key="src" tone={a.source === "AI Chat" ? "info" : "neutral"}>
-            {a.source}
-          </StatusBadge>,
-          <StatusBadge key="s" tone={a.status === "CONFIRMED" ? "success" : "attention"}>
-            {a.status}
-          </StatusBadge>,
-        ])}
-      />
-    </div>
-  );
-}
