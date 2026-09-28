@@ -7,7 +7,7 @@ import { GlowButton } from "@/components/kit/primitives";
 import { SPECIES, safeRedirect, setAccount, useAccount, type OwnerProfile, type Pet } from "@/lib/account-store";
 
 export const Route = createFileRoute("/join/owner")({
-  validateSearch: (s: Record<string, unknown>) => ({ redirect: safeRedirect(s.redirect) }),
+  validateSearch: (s: Record<string, unknown>): { redirect?: string } => ({ redirect: safeRedirect(s["redirect"]) }),
   head: () => ({
     meta: [
       { title: "Create your pet owner account · Love Vet AI" },

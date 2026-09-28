@@ -7,7 +7,7 @@ import { safeRedirect } from "@/lib/account-store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/join/")({
-  validateSearch: (s: Record<string, unknown>) => ({ redirect: safeRedirect(s.redirect) }),
+  validateSearch: (s: Record<string, unknown>): { redirect?: string } => ({ redirect: safeRedirect(s["redirect"]) }),
   head: () => ({
     meta: [
       { title: "Sign in or create an account · Love Vet AI" },
