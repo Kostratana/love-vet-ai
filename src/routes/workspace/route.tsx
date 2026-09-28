@@ -12,16 +12,15 @@ import {
 } from "lucide-react";
 import { Wordmark } from "@/components/kit/Wordmark";
 import { GlowButton, StatusBadge } from "@/components/kit/primitives";
-import { organization } from "@/lib/love-vet-data";
 
 export const Route = createFileRoute("/workspace")({
   component: WorkspaceLayout,
 });
 
 const nav = [
-  { label: "Overview", to: "/workspace", icon: LayoutDashboard, exact: true },
-  { label: "AI Intakes", to: "/workspace/intakes", icon: Inbox },
+  { label: "Dashboard", to: "/workspace", icon: LayoutDashboard, exact: true },
   { label: "Appointments", to: "/workspace/appointments", icon: CalendarDays },
+  { label: "Client Requests", to: "/workspace/intakes", icon: Inbox },
   { label: "Patients", to: "/workspace/patients", icon: PawPrint },
   { label: "Veterinarians", to: "/workspace/veterinarians", icon: Stethoscope },
   { label: "Services", to: "/workspace/services", icon: Wrench },
@@ -37,10 +36,11 @@ function WorkspaceLayout() {
         {/* Sidebar (desktop) */}
         <aside className="glass sticky top-6 hidden h-[calc(100vh-3rem)] w-60 shrink-0 flex-col rounded-xl p-3 lg:flex">
           <div className="px-2 py-2">
-            <Wordmark />
+            <Wordmark to="/workspace" />
           </div>
-          <p className="mt-2 px-2 text-[0.68rem] leading-relaxed text-graphite">
-            {organization.name}
+          <p className="mt-3 px-2 text-sm font-bold text-navy">Clinic Staff Workspace</p>
+          <p className="px-2 text-[0.68rem] leading-relaxed text-graphite">
+            For veterinary clinics and staff · sample data
           </p>
           <nav className="mt-4 flex flex-1 flex-col gap-0.5">
             {nav.map((n) => (
@@ -71,7 +71,7 @@ function WorkspaceLayout() {
           {/* Mobile nav */}
           <div className="glass sticky top-0 z-40 flex items-center gap-3 rounded-none px-4 py-3 lg:hidden">
             <Wordmark compact />
-            <StatusBadge tone="info">Workspace</StatusBadge>
+            <StatusBadge tone="info">Clinic Staff Workspace</StatusBadge>
             <Link to="/" className="ml-auto text-xs font-semibold text-deep">
               Exit
             </Link>

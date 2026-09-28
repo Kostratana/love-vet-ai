@@ -14,7 +14,6 @@ import {
   Mic,
   PawPrint,
   ShieldCheck,
-  Sparkles as _unused,
   Stethoscope,
   Sun,
   User,
@@ -28,7 +27,6 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { GlowButton } from "@/components/kit/primitives";
 import { HeartsMark } from "@/components/kit/Wordmark";
 
-void _unused;
 
 export const Route = createFileRoute("/")({
   head: () => ({
