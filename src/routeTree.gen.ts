@@ -18,6 +18,7 @@ import { Route as MyPetsRouteImport } from './routes/my-pets'
 import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as WorkspaceRouteRouteImport } from './routes/workspace/route'
 import { Route as WorkspaceIndexRouteImport } from './routes/workspace/index'
+import { Route as WorkspaceAnalyticsRouteImport } from './routes/workspace/analytics'
 import { Route as WorkspaceAppointmentsRouteImport } from './routes/workspace/appointments'
 import { Route as WorkspaceLocationsRouteImport } from './routes/workspace/locations'
 import { Route as WorkspacePatientsRouteImport } from './routes/workspace/patients'
@@ -71,6 +72,11 @@ const WorkspaceIndexRoute = WorkspaceIndexRouteImport.update({
   path: '/',
   getParentRoute: () => WorkspaceRouteRoute,
 } as any)
+const WorkspaceAnalyticsRoute = WorkspaceAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => WorkspaceRouteRoute,
+} as any)
 const WorkspaceAppointmentsRoute = WorkspaceAppointmentsRouteImport.update({
   id: '/appointments',
   path: '/appointments',
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/intake': typeof IntakeRoute
   '/my-pets': typeof MyPetsRoute
   '/platform': typeof PlatformRoute
+  '/workspace/analytics': typeof WorkspaceAnalyticsRoute
   '/workspace/appointments': typeof WorkspaceAppointmentsRoute
   '/workspace/locations': typeof WorkspaceLocationsRoute
   '/workspace/patients': typeof WorkspacePatientsRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/intake': typeof IntakeRoute
   '/my-pets': typeof MyPetsRoute
   '/platform': typeof PlatformRoute
+  '/workspace/analytics': typeof WorkspaceAnalyticsRoute
   '/workspace/appointments': typeof WorkspaceAppointmentsRoute
   '/workspace/locations': typeof WorkspaceLocationsRoute
   '/workspace/patients': typeof WorkspacePatientsRoute
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/intake': typeof IntakeRoute
   '/my-pets': typeof MyPetsRoute
   '/platform': typeof PlatformRoute
+  '/workspace/analytics': typeof WorkspaceAnalyticsRoute
   '/workspace/appointments': typeof WorkspaceAppointmentsRoute
   '/workspace/locations': typeof WorkspaceLocationsRoute
   '/workspace/patients': typeof WorkspacePatientsRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/intake'
     | '/my-pets'
     | '/platform'
+    | '/workspace/analytics'
     | '/workspace/appointments'
     | '/workspace/locations'
     | '/workspace/patients'
@@ -190,6 +200,7 @@ export interface FileRouteTypes {
     | '/intake'
     | '/my-pets'
     | '/platform'
+    | '/workspace/analytics'
     | '/workspace/appointments'
     | '/workspace/locations'
     | '/workspace/patients'
@@ -208,6 +219,7 @@ export interface FileRouteTypes {
     | '/intake'
     | '/my-pets'
     | '/platform'
+    | '/workspace/analytics'
     | '/workspace/appointments'
     | '/workspace/locations'
     | '/workspace/patients'
@@ -294,6 +306,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceIndexRouteImport
       parentRoute: typeof WorkspaceRouteRoute
     }
+    '/workspace/analytics': {
+      id: '/workspace/analytics'
+      path: '/analytics'
+      fullPath: '/workspace/analytics'
+      preLoaderRoute: typeof WorkspaceAnalyticsRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
     '/workspace/appointments': {
       id: '/workspace/appointments'
       path: '/appointments'
@@ -347,6 +366,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface WorkspaceRouteRouteChildren {
+  WorkspaceAnalyticsRoute: typeof WorkspaceAnalyticsRoute
   WorkspaceAppointmentsRoute: typeof WorkspaceAppointmentsRoute
   WorkspaceLocationsRoute: typeof WorkspaceLocationsRoute
   WorkspacePatientsRoute: typeof WorkspacePatientsRoute
@@ -358,6 +378,7 @@ interface WorkspaceRouteRouteChildren {
 }
 
 const WorkspaceRouteRouteChildren: WorkspaceRouteRouteChildren = {
+  WorkspaceAnalyticsRoute: WorkspaceAnalyticsRoute,
   WorkspaceAppointmentsRoute: WorkspaceAppointmentsRoute,
   WorkspaceLocationsRoute: WorkspaceLocationsRoute,
   WorkspacePatientsRoute: WorkspacePatientsRoute,
