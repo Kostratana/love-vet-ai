@@ -21,12 +21,13 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
   const [pending, setPending] = useState<Pending[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [guestMsgs, setGuestMsgs] = useState<Msg[]>([]);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
 
-  const { data: messages = [] } = useQuery({
+  const { data: savedMessages = [] } = useQuery({
     queryKey: msgKey(threadId ?? "new"),
     enabled: !!threadId,
     queryFn: async () => {
@@ -39,6 +40,8 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
       return data as unknown as Msg[];
     },
   });
+
+  const messages = user ? savedMessages : guestMsgs;
 
   useEffect(() => { taRef.current?.focus(); }, [threadId, sending]);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages.length]);
@@ -61,7 +64,14 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
   async function send(extra?: Pending) {
     const atts = extra ? [...pending, extra] : pending;
     const content = text.trim();
-    if (!user || (!content && atts.length === 0) || sending) return;
+    if ((!content && atts.length === 0) || sending) return;
+    if (!user) {
+      const meta: AttachmentMeta[] = atts.map(({ kind, name, size, durationSec }) => ({ kind, name, size, durationSec }));
+      setGuestMsgs((m) => [...m, { id: crypto.randomUUID(), role: "user", content, attachments: meta, created_at: new Date().toISOString() }]);
+      setText("");
+      setPending([]);
+      return;
+    }
     setSending(true);
     setError(null);
     try {
@@ -110,7 +120,7 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
           {messages.map((m) => (m.role === "user" ? <UserBubble key={m.id} m={m} /> : <AssistantBubble key={m.id} text={m.content} />))}
           {hasUserMessages && (
             <p role="status" className="mx-auto w-fit rounded-full border border-silver-strong/60 bg-card/70 px-4 py-1.5 text-center text-xs text-graphite">
-              Your message is saved. The assistant service is not connected yet — replies will appear here once it is.
+              {user ? "Your message is saved." : "Sign in to save this conversation."} The assistant service is not connected yet — replies will appear here once it is.
             </p>
           )}
           <div ref={endRef} />

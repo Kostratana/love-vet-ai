@@ -17,6 +17,7 @@ export function SiteFooter() {
           <Link to="/" hash="platform" className="hover:text-deep">Platform</Link>
           <Link to="/" hash="for-clinics" className="hover:text-deep">For Clinics</Link>
           <Link to="/chat" className="hover:text-deep">Chat with AI</Link>
+          <Link to="/join/veterinarian" className="hover:text-deep">For Veterinarians</Link>
           <Link to="/workspace" className="hover:text-deep">Clinic Staff Workspace</Link>
         </div>
       </div>
