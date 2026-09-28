@@ -1,6 +1,6 @@
-import { Link, Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { LogOut, Menu, Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,10 +26,8 @@ export const conversationsKey = ["conversations"] as const;
 
 function ChatLayout() {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  void navigate; void useEffect;
 
   const { data: threads = [] } = useQuery({
     queryKey: conversationsKey,
