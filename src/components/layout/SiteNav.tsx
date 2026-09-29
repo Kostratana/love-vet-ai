@@ -35,7 +35,7 @@ export function SiteNav() {
     <header className="sticky top-0 z-50 px-3 pt-3 sm:px-4">
       <nav aria-label="Main" className="glass relative mx-auto flex max-w-6xl items-center gap-2 rounded-full px-3 py-1.5 sm:px-4">
         <Wordmark />
-        <div className="ml-auto hidden items-center gap-1 xl:flex">
+        <div className="ml-auto hidden items-center gap-1 lg:flex">
           {links.map((l) => (
             <Link key={l.to} to={l.to} activeOptions={{ exact: l.exact }} className={item} activeProps={{ className: active, "aria-current": "page" }}>
               {l.label}
@@ -45,7 +45,7 @@ export function SiteNav() {
             <MessageCircle className="size-3.5" strokeWidth={2} /> Chat with AI
           </Link>
         </div>
-        <Link to="/chat" className={cn(chat, "ml-auto px-3 xl:hidden")} aria-label="Chat with AI">
+        <Link to="/chat" className={cn(chat, "ml-auto px-3 lg:hidden")} aria-label="Chat with AI">
           <MessageCircle className="size-3.5" strokeWidth={2} /> <span className="hidden sm:inline">Chat with AI</span>
         </Link>
         <button
@@ -54,12 +54,12 @@ export function SiteNav() {
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           aria-controls="mobile-menu"
-          className="grid size-9 place-items-center rounded-full border border-ice-lum/70 bg-card/60 text-deep xl:hidden"
+          className="grid size-9 place-items-center rounded-full border border-ice-lum/70 bg-card/60 text-deep lg:hidden"
         >
           {open ? <X className="size-4" /> : <Menu className="size-4" />}
         </button>
         {open && (
-          <div id="mobile-menu" className="glass page-enter absolute top-full right-2 mt-2 w-56 rounded-2xl !bg-background/95 p-2 shadow-[var(--shadow-float)] xl:hidden">
+          <div id="mobile-menu" className="glass page-enter absolute top-full right-2 mt-2 w-56 rounded-2xl !bg-background/95 p-2 shadow-[var(--shadow-float)] lg:hidden">
             {links.map((l) => (
               <Link key={l.to} to={l.to} activeOptions={{ exact: l.exact }} onClick={() => setOpen(false)} className={cn(item, "block rounded-xl py-2.5")} activeProps={{ className: active, "aria-current": "page" }}>
                 {l.label}
