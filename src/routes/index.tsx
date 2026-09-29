@@ -107,7 +107,7 @@ function Landing() {
       <div className="page-enter">
 
       {/* Hero */}
-      <section className="mx-auto grid max-w-6xl items-center gap-14 px-6 pt-16 pb-10 lg:grid-cols-[1.1fr_1fr] lg:pt-24">
+      <section className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-14 px-6 pt-16 pb-10 [&>*]:min-w-0 lg:grid-cols-[1.1fr_1fr] lg:pt-24">
         <div>
           <p className="text-xs font-semibold tracking-[0.2em] text-deep uppercase">
             AI-powered veterinary appointment coordination
