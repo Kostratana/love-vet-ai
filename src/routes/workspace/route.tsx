@@ -1,16 +1,5 @@
 import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
-import {
-  Star,
-  ClipboardList,
-  Building2,
-  CalendarDays,
-  Inbox,
-  LayoutDashboard,
-  PawPrint,
-  Settings,
-  Stethoscope,
-  Syringe,
-} from "lucide-react";
+import { Building2, CalendarDays, ClipboardList, FolderHeart, PawPrint, Stethoscope } from "lucide-react";
 import { SiteNav } from "@/components/layout/SiteNav";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 
@@ -19,16 +8,12 @@ export const Route = createFileRoute("/workspace")({
 });
 
 const nav = [
-  { label: "Example Case", to: "/workspace", icon: LayoutDashboard, exact: true },
+  { label: "Cases", to: "/workspace", icon: FolderHeart, exact: true },
   { label: "Appointments", to: "/workspace/appointments", icon: CalendarDays },
-  { label: "Client Requests", to: "/workspace/intakes", icon: Inbox },
   { label: "Patients", to: "/workspace/patients", icon: PawPrint },
   { label: "Veterinarians", to: "/workspace/veterinarians", icon: Stethoscope },
-  { label: "Veterinary Services", to: "/workspace/services", icon: Syringe },
   { label: "Locations", to: "/workspace/locations", icon: Building2 },
-  { label: "Reviews", to: "/workspace/reviews", icon: Star },
-    { label: "Clinic Setup", to: "/workspace/clinic-setup", icon: ClipboardList },
-  { label: "Clinic Settings", to: "/workspace/settings", icon: Settings },
+  { label: "Clinic Setup", to: "/workspace/clinic-setup", icon: ClipboardList },
 ] as const;
 
 function WorkspaceLayout() {

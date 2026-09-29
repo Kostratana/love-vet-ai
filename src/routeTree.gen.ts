@@ -30,11 +30,7 @@ import { Route as WorkspaceAppointmentsRouteImport } from './routes/workspace/ap
 import { Route as WorkspaceClinicSetupRouteImport } from './routes/workspace/clinic-setup'
 import { Route as WorkspaceLocationsRouteImport } from './routes/workspace/locations'
 import { Route as WorkspacePatientsRouteImport } from './routes/workspace/patients'
-import { Route as WorkspaceReviewsRouteImport } from './routes/workspace/reviews'
-import { Route as WorkspaceServicesRouteImport } from './routes/workspace/services'
-import { Route as WorkspaceSettingsRouteImport } from './routes/workspace/settings'
 import { Route as WorkspaceVeterinariansRouteImport } from './routes/workspace/veterinarians'
-import { Route as WorkspaceIntakesIndexRouteImport } from './routes/workspace/intakes/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -141,29 +137,9 @@ const WorkspacePatientsRoute = WorkspacePatientsRouteImport.update({
   path: '/patients',
   getParentRoute: () => WorkspaceRouteRoute,
 } as any)
-const WorkspaceReviewsRoute = WorkspaceReviewsRouteImport.update({
-  id: '/reviews',
-  path: '/reviews',
-  getParentRoute: () => WorkspaceRouteRoute,
-} as any)
-const WorkspaceServicesRoute = WorkspaceServicesRouteImport.update({
-  id: '/services',
-  path: '/services',
-  getParentRoute: () => WorkspaceRouteRoute,
-} as any)
-const WorkspaceSettingsRoute = WorkspaceSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => WorkspaceRouteRoute,
-} as any)
 const WorkspaceVeterinariansRoute = WorkspaceVeterinariansRouteImport.update({
   id: '/veterinarians',
   path: '/veterinarians',
-  getParentRoute: () => WorkspaceRouteRoute,
-} as any)
-const WorkspaceIntakesIndexRoute = WorkspaceIntakesIndexRouteImport.update({
-  id: '/intakes/',
-  path: '/intakes/',
   getParentRoute: () => WorkspaceRouteRoute,
 } as any)
 
@@ -186,14 +162,10 @@ export interface FileRoutesByFullPath {
   '/workspace/clinic-setup': typeof WorkspaceClinicSetupRoute
   '/workspace/locations': typeof WorkspaceLocationsRoute
   '/workspace/patients': typeof WorkspacePatientsRoute
-  '/workspace/reviews': typeof WorkspaceReviewsRoute
-  '/workspace/services': typeof WorkspaceServicesRoute
-  '/workspace/settings': typeof WorkspaceSettingsRoute
   '/workspace/veterinarians': typeof WorkspaceVeterinariansRoute
   '/chat/': typeof ChatIndexRoute
   '/join/': typeof JoinIndexRoute
   '/workspace/': typeof WorkspaceIndexRoute
-  '/workspace/intakes/': typeof WorkspaceIntakesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -212,14 +184,10 @@ export interface FileRoutesByTo {
   '/workspace/clinic-setup': typeof WorkspaceClinicSetupRoute
   '/workspace/locations': typeof WorkspaceLocationsRoute
   '/workspace/patients': typeof WorkspacePatientsRoute
-  '/workspace/reviews': typeof WorkspaceReviewsRoute
-  '/workspace/services': typeof WorkspaceServicesRoute
-  '/workspace/settings': typeof WorkspaceSettingsRoute
   '/workspace/veterinarians': typeof WorkspaceVeterinariansRoute
   '/chat': typeof ChatIndexRoute
   '/join': typeof JoinIndexRoute
   '/workspace': typeof WorkspaceIndexRoute
-  '/workspace/intakes': typeof WorkspaceIntakesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -241,14 +209,10 @@ export interface FileRoutesById {
   '/workspace/clinic-setup': typeof WorkspaceClinicSetupRoute
   '/workspace/locations': typeof WorkspaceLocationsRoute
   '/workspace/patients': typeof WorkspacePatientsRoute
-  '/workspace/reviews': typeof WorkspaceReviewsRoute
-  '/workspace/services': typeof WorkspaceServicesRoute
-  '/workspace/settings': typeof WorkspaceSettingsRoute
   '/workspace/veterinarians': typeof WorkspaceVeterinariansRoute
   '/chat/': typeof ChatIndexRoute
   '/join/': typeof JoinIndexRoute
   '/workspace/': typeof WorkspaceIndexRoute
-  '/workspace/intakes/': typeof WorkspaceIntakesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -271,14 +235,10 @@ export interface FileRouteTypes {
     | '/workspace/clinic-setup'
     | '/workspace/locations'
     | '/workspace/patients'
-    | '/workspace/reviews'
-    | '/workspace/services'
-    | '/workspace/settings'
     | '/workspace/veterinarians'
     | '/chat/'
     | '/join/'
     | '/workspace/'
-    | '/workspace/intakes/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -297,14 +257,10 @@ export interface FileRouteTypes {
     | '/workspace/clinic-setup'
     | '/workspace/locations'
     | '/workspace/patients'
-    | '/workspace/reviews'
-    | '/workspace/services'
-    | '/workspace/settings'
     | '/workspace/veterinarians'
     | '/chat'
     | '/join'
     | '/workspace'
-    | '/workspace/intakes'
   id:
     | '__root__'
     | '/'
@@ -325,14 +281,10 @@ export interface FileRouteTypes {
     | '/workspace/clinic-setup'
     | '/workspace/locations'
     | '/workspace/patients'
-    | '/workspace/reviews'
-    | '/workspace/services'
-    | '/workspace/settings'
     | '/workspace/veterinarians'
     | '/chat/'
     | '/join/'
     | '/workspace/'
-    | '/workspace/intakes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -501,39 +453,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspacePatientsRouteImport
       parentRoute: typeof WorkspaceRouteRoute
     }
-    '/workspace/reviews': {
-      id: '/workspace/reviews'
-      path: '/reviews'
-      fullPath: '/workspace/reviews'
-      preLoaderRoute: typeof WorkspaceReviewsRouteImport
-      parentRoute: typeof WorkspaceRouteRoute
-    }
-    '/workspace/services': {
-      id: '/workspace/services'
-      path: '/services'
-      fullPath: '/workspace/services'
-      preLoaderRoute: typeof WorkspaceServicesRouteImport
-      parentRoute: typeof WorkspaceRouteRoute
-    }
-    '/workspace/settings': {
-      id: '/workspace/settings'
-      path: '/settings'
-      fullPath: '/workspace/settings'
-      preLoaderRoute: typeof WorkspaceSettingsRouteImport
-      parentRoute: typeof WorkspaceRouteRoute
-    }
     '/workspace/veterinarians': {
       id: '/workspace/veterinarians'
       path: '/veterinarians'
       fullPath: '/workspace/veterinarians'
       preLoaderRoute: typeof WorkspaceVeterinariansRouteImport
-      parentRoute: typeof WorkspaceRouteRoute
-    }
-    '/workspace/intakes/': {
-      id: '/workspace/intakes/'
-      path: '/intakes'
-      fullPath: '/workspace/intakes/'
-      preLoaderRoute: typeof WorkspaceIntakesIndexRouteImport
       parentRoute: typeof WorkspaceRouteRoute
     }
   }
@@ -544,12 +468,8 @@ interface WorkspaceRouteRouteChildren {
   WorkspaceClinicSetupRoute: typeof WorkspaceClinicSetupRoute
   WorkspaceLocationsRoute: typeof WorkspaceLocationsRoute
   WorkspacePatientsRoute: typeof WorkspacePatientsRoute
-  WorkspaceReviewsRoute: typeof WorkspaceReviewsRoute
-  WorkspaceServicesRoute: typeof WorkspaceServicesRoute
-  WorkspaceSettingsRoute: typeof WorkspaceSettingsRoute
   WorkspaceVeterinariansRoute: typeof WorkspaceVeterinariansRoute
   WorkspaceIndexRoute: typeof WorkspaceIndexRoute
-  WorkspaceIntakesIndexRoute: typeof WorkspaceIntakesIndexRoute
 }
 
 const WorkspaceRouteRouteChildren: WorkspaceRouteRouteChildren = {
@@ -557,12 +477,8 @@ const WorkspaceRouteRouteChildren: WorkspaceRouteRouteChildren = {
   WorkspaceClinicSetupRoute: WorkspaceClinicSetupRoute,
   WorkspaceLocationsRoute: WorkspaceLocationsRoute,
   WorkspacePatientsRoute: WorkspacePatientsRoute,
-  WorkspaceReviewsRoute: WorkspaceReviewsRoute,
-  WorkspaceServicesRoute: WorkspaceServicesRoute,
-  WorkspaceSettingsRoute: WorkspaceSettingsRoute,
   WorkspaceVeterinariansRoute: WorkspaceVeterinariansRoute,
   WorkspaceIndexRoute: WorkspaceIndexRoute,
-  WorkspaceIntakesIndexRoute: WorkspaceIntakesIndexRoute,
 }
 
 const WorkspaceRouteRouteWithChildren = WorkspaceRouteRoute._addFileChildren(
