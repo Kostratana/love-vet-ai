@@ -66,7 +66,7 @@ function JourneyStep({ step, n }: { step: Step; n: number }) {
 function HeroPreview() {
   return (
     <div className="relative">
-      <div aria-hidden className="absolute -inset-10 -z-10 rounded-full bg-[radial-gradient(closest-side,rgb(128_104_255/0.34),rgb(240_160_215/0.18)_60%,transparent)] blur-2xl" />
+      <div aria-hidden className="absolute -inset-y-10 inset-x-0 -z-10 rounded-full sm:-inset-10 bg-[radial-gradient(closest-side,rgb(128_104_255/0.34),rgb(240_160_215/0.18)_60%,transparent)] blur-2xl" />
       <div className="glass chat-hero rounded-3xl p-4 sm:p-5">
         <div className="flex items-center gap-3 border-b border-silver/70 pb-3">
           <HeartsMark className="h-6 w-9" />
