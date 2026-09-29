@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { ArrowRight, CalendarDays, CheckCircle2, ClipboardCheck, ImageIcon, MessageCircle, Mic, PawPrint, Search, Sparkles, Video } from "lucide-react";
 import { SiteNav } from "@/components/layout/SiteNav";
 import { SiteFooter } from "@/components/layout/SiteFooter";
-import { GlowButton } from "@/components/kit/primitives";
 import { HeartsMark } from "@/components/kit/Wordmark";
 
 
