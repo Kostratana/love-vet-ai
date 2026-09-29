@@ -15,7 +15,7 @@ const links = [
 const item = "lv-pill shrink-0 px-2.5 py-[2px] text-[0.75rem]";
 const active = "lv-pill-active";
 const chat = "lv-cta shrink-0 px-3 py-[2px] text-[0.75rem]";
-const chatActive = "lv-pill-active !text-[#2E2078]";
+const chatActive = "lv-cta-active";
 
 export function SiteNav() {
   return (

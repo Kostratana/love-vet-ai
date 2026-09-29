@@ -1,6 +1,6 @@
 import { Link, createFileRoute, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { ArrowRight, CalendarDays, CheckCircle2, ClipboardCheck, ImageIcon, MessageCircle, Mic, PawPrint, Search, Sparkles, Video } from "lucide-react";
+import { ArrowRight, CheckCircle2, ImageIcon, MessageCircle, Mic, Video } from "lucide-react";
 import { SiteNav } from "@/components/layout/SiteNav";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { HeartsMark } from "@/components/kit/Wordmark";
@@ -28,40 +28,16 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-type Step = { icon: typeof MessageCircle; title: string; text: string; to?: "/chat" | "/information-desk" };
-const steps: Step[] = [
-  { icon: PawPrint, title: "Tell us about your pet", text: "Species, age, and anything we should know.", to: "/chat" },
-  { icon: MessageCircle, title: "Share what happened", text: "Type, speak, or add photos and a short video.", to: "/chat" },
-  { icon: Sparkles, title: "AI understands the request", text: "Language is detected and a safety check runs first." },
-  { icon: Search, title: "Find suitable veterinary care", text: "Matched by species, specialty, location and hours.", to: "/information-desk" },
-  { icon: CalendarDays, title: "Review available options", text: "Options will appear in chat once booking is connected." },
-  { icon: CheckCircle2, title: "Confirm appointment", text: "You confirm — nothing is booked without you." },
-  { icon: ClipboardCheck, title: "Information prepared for the team", text: "The veterinarian receives a summary before the visit. The AI never diagnoses." },
+const steps: { title: string; text: string[] }[] = [
+  { title: "Start the conversation", text: ["Open Chat with AI and tell the assistant what is happening with your pet. You can start chatting without creating an account first."] },
+  { title: "Tell us about yourself and your pet", text: ["During the conversation, the AI assistant will ask only for information that is still needed, such as your name, contact details, location and information about your pet."] },
+  { title: "Describe what happened", text: ["Explain the reason for the visit in your own words. You can type or leave a voice message in the language you're most comfortable with. Language detection is automatic."] },
+  { title: "Add photos, video or voice", text: ["If useful, attach photos or a short video showing the problem. You can also use a voice message. These materials can be included with the information prepared for the veterinary team."] },
+  { title: "Review suitable veterinary care", text: ["Love Vet AI can help identify suitable participating veterinary care based on relevant factors such as the animal species, required type of service, location, clinic capabilities, opening hours and availability."] },
+  { title: "Create your account when needed", text: ["You do not need to register before starting the conversation.", "When you want to securely save your conversation, pet information and appointment details, Love Vet AI will ask you to create or sign in to your account. The conversation continues without losing the information already provided."] },
+  { title: "Choose and confirm your appointment", text: ["When booking is connected, available suitable options can be presented to you. You choose the clinic or veterinary option and confirm the appointment. Nothing is booked without your confirmation."] },
+  { title: "Information is prepared for the veterinary team", text: ["The information collected during the conversation — including the reason for the visit and any submitted photos, video, voice messages or relevant files — can be associated with the appointment and made available to the veterinary professional before the visit."] },
 ];
-
-function JourneyStep({ step, n }: { step: Step; n: number }) {
-  const Icon = step.icon;
-  const inner = (
-    <>
-      <span className="relative z-10 grid size-11 shrink-0 place-items-center rounded-full border border-ice-lum bg-card text-deep shadow-[0_0_0_4px_rgb(183_168_255/0.18),0_8px_22px_-10px_rgb(109_74_255/0.7)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_0_0_6px_rgb(183_168_255/0.3),0_10px_26px_-8px_rgb(109_74_255/0.85)]">
-        <Icon className="size-[18px]" strokeWidth={1.6} aria-hidden />
-      </span>
-      <span className="lg:mt-4 lg:block">
-        <span className="block text-[0.7rem] font-bold tracking-[0.14em] text-primary/70">{String(n).padStart(2, "0")}</span>
-        <span className="mt-0.5 block text-sm font-bold text-navy group-hover:text-deep">
-          {step.title}{step.to && <ArrowRight className="ml-1 inline size-3 opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />}
-        </span>
-        <span className="mt-1 block text-xs leading-relaxed text-graphite">{step.text}</span>
-      </span>
-    </>
-  );
-  const cls = "group flex items-start gap-4 text-left lg:flex-col lg:items-center lg:gap-0 lg:text-center";
-  return (
-    <li className="relative">
-      {step.to ? <Link to={step.to} className={cls}>{inner}</Link> : <div className={cls}>{inner}</div>}
-    </li>
-  );
-}
 
 function HeroPreview() {
   return (
@@ -139,9 +115,9 @@ function Landing() {
             <Link to="/chat" className="lv-cta h-9 px-5 text-sm">
               <MessageCircle className="size-4" /> Chat with AI
             </Link>
-            <Link to="/" hash="how-it-works" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} className="lv-pill h-9 px-5 text-sm">
+            <button type="button" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth", block: "start" })} className="lv-pill h-9 border-[rgb(117_97_201/0.55)] bg-[linear-gradient(135deg,rgb(128_108_212/0.34),rgb(160_142_230/0.24))] px-5 text-sm text-[#3E2E86]">
               How It Works <ArrowRight className="size-3" />
-            </Link>
+            </button>
           </div>
         </div>
         <HeroPreview />
@@ -149,17 +125,22 @@ function Landing() {
 
       {/* How it works */}
       <section id="how-it-works" className="mx-auto max-w-6xl scroll-mt-28 px-6 py-16">
-        <h2 className="text-center text-3xl font-bold tracking-[-0.03em] sm:text-4xl"><span className="text-gradient-hero">How it works</span></h2>
-        <p className="mx-auto mt-3 max-w-xl text-center text-graphite">
-          One conversation. The assistant asks only for what it doesn't already know.
+        <h2 className="text-center text-3xl font-bold tracking-[-0.03em] sm:text-4xl"><span className="text-gradient-hero">How Love Vet AI Works</span></h2>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-graphite">
+          Start a conversation with the AI assistant and describe what is happening with your pet. Love Vet AI guides you through the information needed to help arrange appropriate veterinary care.
         </p>
-        <div className="relative mt-12">
-          <div aria-hidden className="absolute top-[22px] right-[7%] left-[7%] hidden h-px bg-[linear-gradient(90deg,transparent,rgb(128_104_255/0.55)_12%,rgb(216_150_220/0.55)_50%,rgb(128_104_255/0.55)_88%,transparent)] lg:block" />
-          <div aria-hidden className="absolute top-2 bottom-2 left-[21px] w-px bg-[linear-gradient(180deg,transparent,rgb(128_104_255/0.5),rgb(216_150_220/0.5),transparent)] lg:hidden" />
-          <ol className="relative grid gap-7 lg:grid-cols-7 lg:gap-4">
-            {steps.map((s, i) => <JourneyStep key={s.title} step={s} n={i + 1} />)}
-          </ol>
-        </div>
+        <ol className="mt-10 grid gap-x-8 gap-y-7 sm:grid-cols-2 lg:grid-cols-4">
+          {steps.map((s, i) => (
+            <li key={s.title} className="border-t border-[rgb(117_97_201/0.25)] pt-4">
+              <p className="text-xs font-bold tracking-[0.14em] text-primary/70">{String(i + 1).padStart(2, "0")}</p>
+              <h3 className="mt-1 text-sm font-bold text-navy">{s.title}</h3>
+              {s.text.map((t) => <p key={t} className="mt-1.5 text-xs leading-relaxed text-graphite">{t}</p>)}
+            </li>
+          ))}
+        </ol>
+        <p className="mx-auto mt-10 max-w-2xl text-center text-xs leading-relaxed text-graphite">
+          Love Vet AI helps coordinate veterinary care and prepare information for the veterinary team. It does not replace professional veterinary diagnosis or treatment.
+        </p>
       </section>
 
       {/* For clinics */}

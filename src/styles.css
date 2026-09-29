@@ -264,28 +264,32 @@
 }
 
 @utility lv-pill {
-  display: inline-flex; align-items: center; gap: .375rem; white-space: nowrap; border-radius: 9999px;
-  border: 1px solid rgb(122 98 224 / 32%);
-  background: linear-gradient(135deg, rgb(146 128 236 / 16%), rgb(183 168 255 / 10%));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 55%);
+  display: inline-flex; align-items: center; justify-content: center; gap: .375rem; white-space: nowrap; border-radius: 9999px;
+  border: 1px solid rgb(117 97 201 / 38%);
+  background: linear-gradient(135deg, rgb(128 108 212 / 22%), rgb(160 142 230 / 14%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 50%);
   backdrop-filter: blur(10px);
-  color: #3F2E9A; font-weight: 600;
+  color: #45348F; font-weight: 600;
   transition: all 220ms ease;
-  &:hover { border-color: rgb(122 98 224 / 55%); background: linear-gradient(135deg, rgb(146 128 236 / 24%), rgb(183 168 255 / 16%)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 60%), 0 0 14px -5px rgb(122 98 224 / 60%); transform: translateY(-1px); }
+  &:hover { border-color: rgb(117 97 201 / 60%); background: linear-gradient(135deg, rgb(128 108 212 / 32%), rgb(160 142 230 / 22%)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 55%), 0 0 14px -5px rgb(117 97 201 / 65%); transform: translateY(-1px); }
 }
 @utility lv-pill-active {
-  border-color: rgb(110 86 214 / 60%) !important;
-  background: linear-gradient(135deg, rgb(122 98 224 / 34%), rgb(160 140 245 / 24%)) !important;
-  color: #2E2078 !important; font-weight: 700;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 70%), 0 0 18px -5px rgb(122 98 224 / 75%) !important;
+  border-color: rgb(117 97 201 / 80%) !important;
+  background: linear-gradient(175deg, rgb(128 108 212 / 62%), rgb(117 97 201 / 55%)) !important;
+  color: #fff !important; font-weight: 700;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 40%), 0 0 16px -4px rgb(117 97 201 / 70%) !important;
 }
 @utility lv-cta {
-  display: inline-flex; align-items: center; gap: .375rem; white-space: nowrap; border-radius: 9999px;
-  border: 1px solid rgb(98 73 201 / 55%);
-  background: linear-gradient(175deg, rgb(146 128 236 / 88%), rgb(110 86 214 / 92%));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 35%), 0 6px 18px -10px rgb(98 73 201 / 80%);
+  display: inline-flex; align-items: center; justify-content: center; gap: .375rem; white-space: nowrap; border-radius: 9999px;
+  border: 1px solid rgb(98 80 180 / 55%);
+  background: linear-gradient(175deg, #806CD4, #7561C9);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 30%), 0 6px 18px -10px rgb(117 97 201 / 80%);
   color: #fff; font-weight: 600; transition: all 220ms ease;
-  &:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgb(255 255 255 / 40%), 0 0 18px -4px rgb(122 98 224 / 70%); }
+  &:hover { transform: translateY(-1px); background: linear-gradient(175deg, #7A64D0, #6A55BF); box-shadow: inset 0 1px 0 rgb(255 255 255 / 35%), 0 0 16px -4px rgb(117 97 201 / 70%); }
+}
+@utility lv-cta-active {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 35%), 0 0 0 2px rgb(255 255 255 / 85%), 0 0 0 4px rgb(117 97 201 / 55%), 0 0 18px -2px rgb(117 97 201 / 70%) !important;
+  font-weight: 700;
 }
 
 @utility page-enter {
