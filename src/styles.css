@@ -123,7 +123,7 @@
   --glow-silver-blue: 0 0 0 1px rgb(200 206 216 / 60%), 0 18px 50px -18px rgb(109 74 255 / 35%);
   --glow-primary: inset 0 1px 0 rgb(255 255 255 / 28%), 0 0 0 1px rgb(75 47 207 / 40%), 0 10px 28px -10px rgb(109 74 255 / 60%);
   --gradient-glass: linear-gradient(160deg, rgb(251 249 255 / 78%) 0%, rgb(243 238 255 / 64%) 55%, rgb(232 224 255 / 58%) 100%);
-  --gradient-primary: linear-gradient(175deg, #8068FF 0%, #6D4AFF 45%, #4B2FCF 100%);
+  --gradient-primary: linear-gradient(175deg, #9280EC 0%, #7A62E0 50%, #6249C9 100%);
   --gradient-ambient: radial-gradient(55% 55% at 50% 0%, rgb(128 104 255 / 26%) 0%, rgb(183 168 255 / 16%) 45%, transparent 100%);
 }
 
@@ -261,6 +261,31 @@
 
 @utility chat-hero {
   box-shadow: 0 0 0 1px rgb(128 104 255 / 45%), 0 0 0 6px rgb(183 168 255 / 18%), 0 40px 100px -30px rgb(109 74 255 / 55%), 0 10px 30px -14px rgb(41 32 68 / 18%);
+}
+
+@utility lv-pill {
+  display: inline-flex; align-items: center; gap: .375rem; white-space: nowrap; border-radius: 9999px;
+  border: 1px solid rgb(122 98 224 / 32%);
+  background: linear-gradient(135deg, rgb(146 128 236 / 16%), rgb(183 168 255 / 10%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 55%);
+  backdrop-filter: blur(10px);
+  color: #3F2E9A; font-weight: 600;
+  transition: all 220ms ease;
+  &:hover { border-color: rgb(122 98 224 / 55%); background: linear-gradient(135deg, rgb(146 128 236 / 24%), rgb(183 168 255 / 16%)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 60%), 0 0 14px -5px rgb(122 98 224 / 60%); transform: translateY(-1px); }
+}
+@utility lv-pill-active {
+  border-color: rgb(110 86 214 / 60%) !important;
+  background: linear-gradient(135deg, rgb(122 98 224 / 34%), rgb(160 140 245 / 24%)) !important;
+  color: #2E2078 !important; font-weight: 700;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 70%), 0 0 18px -5px rgb(122 98 224 / 75%) !important;
+}
+@utility lv-cta {
+  display: inline-flex; align-items: center; gap: .375rem; white-space: nowrap; border-radius: 9999px;
+  border: 1px solid rgb(98 73 201 / 55%);
+  background: linear-gradient(175deg, rgb(146 128 236 / 88%), rgb(110 86 214 / 92%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 35%), 0 6px 18px -10px rgb(98 73 201 / 80%);
+  color: #fff; font-weight: 600; transition: all 220ms ease;
+  &:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgb(255 255 255 / 40%), 0 0 18px -4px rgb(122 98 224 / 70%); }
 }
 
 @utility page-enter {

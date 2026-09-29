@@ -136,10 +136,10 @@ function Landing() {
             </p>
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/chat" className="inline-flex h-10 items-center gap-1.5 rounded-full border border-primary/60 bg-[image:var(--gradient-primary)] px-5 text-sm font-semibold text-primary-foreground shadow-[0_8px_22px_-12px_rgb(109_74_255/0.85)] transition-all duration-200 hover:-translate-y-px hover:shadow-[0_10px_26px_-10px_rgb(109_74_255/0.95)]">
+            <Link to="/chat" className="lv-cta h-9 px-5 text-sm">
               <MessageCircle className="size-4" /> Chat with AI
             </Link>
-            <Link to="/" hash="how-it-works" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} className="inline-flex h-10 items-center gap-1.5 rounded-full border border-primary/40 bg-[linear-gradient(135deg,rgb(109_74_255/0.14),rgb(160_120_255/0.08))] px-5 text-sm font-semibold text-deep backdrop-blur transition-all duration-200 hover:-translate-y-px hover:border-primary/60 hover:bg-primary/15 hover:shadow-[0_8px_20px_-10px_rgb(109_74_255/0.7)]">
+            <Link to="/" hash="how-it-works" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} className="lv-pill h-9 px-5 text-sm">
               How It Works <ArrowRight className="size-3" />
             </Link>
           </div>
