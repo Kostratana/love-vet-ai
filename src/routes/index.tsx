@@ -1,39 +1,21 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import {
-  ArrowRight,
-  Building2,
-  CalendarDays,
-  CheckCircle2,
-  ClipboardCheck,
-  ImageIcon,
-  MessageCircle,
-  Mic,
-  ShieldCheck,
-  User,
-  Video,
-  FileText,
-  Search,
-  Star,
-  UserPlus,
-} from "lucide-react";
+import { ArrowRight, CalendarDays, CheckCircle2, ClipboardCheck, ImageIcon, MessageCircle, Mic, PawPrint, Search, Sparkles, Video } from "lucide-react";
 import { SiteNav } from "@/components/layout/SiteNav";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { GlowButton } from "@/components/kit/primitives";
 import { HeartsMark } from "@/components/kit/Wordmark";
-import { JourneyActions } from "@/components/landing/JourneyActions";
 
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Love Vet AI — Find the right veterinary care for your pet" },
+      { title: "Love Vet AI — Find the right vet for your pet" },
       {
         name: "description",
         content:
           "Tell our AI assistant about you, your pet and what happened — by text or voice, in your language — and confirm a suitable veterinary appointment.",
       },
-      { property: "og:title", content: "Love Vet AI — Find the right veterinary care for your pet" },
+      { property: "og:title", content: "Love Vet AI — Find the right vet for your pet" },
       {
         property: "og:description",
         content:
@@ -46,61 +28,37 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-type StepAction = { to: "/chat" | "/owner" | "/information-desk" | "/join/veterinarian"; hash?: string; label: string } | { info: string };
-const steps: { icon: typeof MessageCircle; title: string; actions?: StepAction[] }[] = [
-  { icon: MessageCircle, title: "Chat with the AI assistant", actions: [{ to: "/chat", label: "Open Chat with AI" }] },
-  { icon: User, title: "Tell us about yourself and your pet", actions: [{ to: "/chat", label: "Start in chat" }, { to: "/owner", label: "Create an account" }] },
-  { icon: FileText, title: "Describe what happened", actions: [{ to: "/chat", label: "Describe in chat" }] },
-  { icon: Mic, title: "Speak, type, or add photos and video", actions: [{ to: "/chat", label: "Open chat" }] },
-  { icon: ShieldCheck, title: "Automatic safety analysis" },
-  { icon: Search, title: "AI identifies suitable veterinary care", actions: [{ to: "/information-desk", label: "Information Desk" }] },
-  { icon: Building2, title: "Suitable clinics and veterinary professionals are checked", actions: [{ to: "/join/veterinarian", label: "Clinic / Veterinarian Registration" }] },
-  { icon: CalendarDays, title: "Review available appointment options", actions: [{ info: "Appointment options will appear inside Chat with AI after matching. Booking is not connected yet in this preview." }] },
-  { icon: CheckCircle2, title: "Confirm your appointment", actions: [{ info: "You'll confirm the appointment yourself inside Chat with AI. Booking is a future step and is not connected yet." }] },
-  { icon: ClipboardCheck, title: "Information is prepared for the veterinary professional", actions: [{ info: "Pre-visit handoff: your description, pet details, voice message, photos and video are organized into a short summary for the veterinary professional. The AI never diagnoses — the veterinarian decides." }] },
-  { icon: UserPlus, title: "Create your account and save your pets, conversations, appointments and visit history", actions: [{ to: "/owner", label: "Pet Owner Account" }] },
-  { icon: Star, title: "After your completed visit, leave a verified review", actions: [{ to: "/owner", hash: "reviews", label: "Leave a review" }] },
+type Step = { icon: typeof MessageCircle; title: string; text: string; to?: "/chat" | "/information-desk" };
+const steps: Step[] = [
+  { icon: PawPrint, title: "Tell us about your pet", text: "Species, age, and anything we should know.", to: "/chat" },
+  { icon: MessageCircle, title: "Share what happened", text: "Type, speak, or add photos and a short video.", to: "/chat" },
+  { icon: Sparkles, title: "AI understands the request", text: "Language is detected and a safety check runs first." },
+  { icon: Search, title: "Find suitable veterinary care", text: "Matched by species, specialty, location and hours.", to: "/information-desk" },
+  { icon: CalendarDays, title: "Review available options", text: "Options will appear in chat once booking is connected." },
+  { icon: CheckCircle2, title: "Confirm appointment", text: "You confirm — nothing is booked without you." },
+  { icon: ClipboardCheck, title: "Information prepared for the team", text: "The veterinarian receives a summary before the visit. The AI never diagnoses." },
 ];
 
-
-function IconDot({ icon: Icon, size = "md" }: { icon: typeof MessageCircle; size?: "md" | "lg" }) {
-  return (
-    <span
-      className={`grid shrink-0 place-items-center rounded-full border border-silver-strong/60 bg-card/70 text-deep shadow-[var(--shadow-glass)] backdrop-blur ${size === "lg" ? "size-12" : "size-10"}`}
-    >
-      <Icon className={size === "lg" ? "size-5" : "size-[18px]"} strokeWidth={1.6} aria-hidden />
-    </span>
+function JourneyStep({ step, n }: { step: Step; n: number }) {
+  const Icon = step.icon;
+  const inner = (
+    <>
+      <span className="relative z-10 grid size-11 shrink-0 place-items-center rounded-full border border-ice-lum bg-card text-deep shadow-[0_0_0_4px_rgb(183_168_255/0.18),0_8px_22px_-10px_rgb(109_74_255/0.7)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_0_0_6px_rgb(183_168_255/0.3),0_10px_26px_-8px_rgb(109_74_255/0.85)]">
+        <Icon className="size-[18px]" strokeWidth={1.6} aria-hidden />
+      </span>
+      <span className="lg:mt-4 lg:block">
+        <span className="block text-[0.7rem] font-bold tracking-[0.14em] text-primary/70">{String(n).padStart(2, "0")}</span>
+        <span className="mt-0.5 block text-sm font-bold text-navy group-hover:text-deep">
+          {step.title}{step.to && <ArrowRight className="ml-1 inline size-3 opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />}
+        </span>
+        <span className="mt-1 block text-xs leading-relaxed text-graphite">{step.text}</span>
+      </span>
+    </>
   );
-}
-
-function JourneyStep({ step, n }: { step: (typeof steps)[number]; n: number }) {
-  const [open, setOpen] = useState(false);
-  const info = step.actions?.find((a): a is { info: string } => "info" in a);
-  const links = step.actions?.filter((a): a is Exclude<StepAction, { info: string }> => "to" in a) ?? [];
+  const cls = "group flex items-start gap-4 text-left lg:flex-col lg:items-center lg:gap-0 lg:text-center";
   return (
     <li className="relative">
-      <span className="absolute top-2 -left-[3.05rem]"><IconDot icon={step.icon} /></span>
-      <div className={`glass rounded-2xl px-4 py-3 ${step.actions ? "hover-lift" : ""}`}>
-        <p className="text-[0.95rem] font-semibold text-navy">
-          <span className="mr-2 text-xs font-bold text-deep">{String(n).padStart(2, "0")}</span>
-          {step.title}
-        </p>
-        {(links.length > 0 || info) && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {links.map((l) => (
-              <Link key={l.label} to={l.to} {...(l.hash ? { hash: l.hash } : {})} className="inline-flex items-center gap-1 rounded-full border border-ice-lum bg-ice/70 px-3 py-1 text-xs font-bold text-deep transition-all hover:bg-ice hover:shadow-[var(--glow-silver-blue)]">
-                {l.label} <ArrowRight className="size-3" />
-              </Link>
-            ))}
-            {info && (
-              <button type="button" aria-expanded={open} onClick={() => setOpen((v) => !v)} className="inline-flex items-center gap-1 rounded-full border border-ice-lum bg-ice/70 px-3 py-1 text-xs font-bold text-deep hover:bg-ice">
-                {open ? "Hide details" : "What happens here?"}
-              </button>
-            )}
-          </div>
-        )}
-        {info && open && <p className="page-enter mt-3 rounded-xl bg-card/70 p-3 text-sm text-graphite">{info.info}</p>}
-      </div>
+      {step.to ? <Link to={step.to} className={cls}>{inner}</Link> : <div className={cls}>{inner}</div>}
     </li>
   );
 }
@@ -108,12 +66,12 @@ function JourneyStep({ step, n }: { step: (typeof steps)[number]; n: number }) {
 function HeroPreview() {
   return (
     <div className="relative">
-      <div aria-hidden className="absolute -inset-10 -z-10 rounded-full bg-[radial-gradient(closest-side,rgb(128_104_255/0.28),transparent)] blur-2xl" />
+      <div aria-hidden className="absolute -inset-y-10 inset-x-0 -z-10 rounded-full sm:-inset-10 bg-[radial-gradient(closest-side,rgb(128_104_255/0.34),rgb(240_160_215/0.18)_60%,transparent)] blur-2xl" />
       <div className="glass chat-hero rounded-3xl p-4 sm:p-5">
         <div className="flex items-center gap-3 border-b border-silver/70 pb-3">
           <HeartsMark className="h-6 w-9" />
           <div>
-            <p className="text-[0.78rem] font-extrabold tracking-[0.16em] text-deep uppercase">Love Vet AI</p>
+            <p className="text-gradient-hero text-[0.8rem] font-extrabold tracking-[0.16em] uppercase">Love Vet AI</p>
             <p className="text-[0.74rem] font-medium text-primary/80">Veterinary Appointment Assistant</p>
           </div>
         </div>
@@ -144,23 +102,23 @@ function HeroPreview() {
 
 function Landing() {
   return (
-    <div className="ambient-bg min-h-screen">
+    <div className="ambient-bg min-h-screen overflow-x-clip">
       <SiteNav />
       <div className="page-enter">
 
       {/* Hero */}
-      <section className="mx-auto grid max-w-6xl items-center gap-14 px-6 pt-16 pb-10 lg:grid-cols-[1.1fr_1fr] lg:pt-24">
+      <section className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-14 px-6 pt-16 pb-10 [&>*]:min-w-0 lg:grid-cols-[1.1fr_1fr] lg:pt-24">
         <div>
           <p className="text-xs font-semibold tracking-[0.2em] text-deep uppercase">
             AI-powered veterinary appointment coordination
           </p>
-          <h1 className="mt-4 max-w-[15ch] text-4xl leading-[1.1] font-extrabold tracking-[-0.035em] [text-wrap:balance] sm:text-5xl lg:max-w-none lg:text-[3rem]">
-            <span className="text-gradient-hero">Find the right veterinary <br className="hidden lg:inline" />care for your pet</span>
+          <h1 className="mt-4 text-[2.4rem] leading-[1.08] font-extrabold tracking-[-0.035em] [text-wrap:balance] sm:text-5xl lg:text-[3.4rem]">
+            <span className="text-gradient-hero">Find the right vet for&nbsp;your&nbsp;pet</span>
           </h1>
-          <p className="mt-5 text-lg font-semibold text-navy">
+          <p className="mt-5 text-lg font-semibold text-deep">
             Tell us about yourself, your pet, and what happened.
           </p>
-          <div className="mt-4 max-w-xl space-y-3 text-[0.95rem] leading-relaxed text-navy/85">
+          <div className="mt-4 max-w-xl space-y-3 text-[0.95rem] leading-relaxed text-graphite">
             <p>
               Describe what is happening with your pet — type or speak naturally, and attach photos
               or a short video if you have them. Language detection is automatic.
@@ -175,8 +133,8 @@ function Landing() {
             <Link to="/chat">
               <GlowButton size="lg"><MessageCircle /> Chat with AI</GlowButton>
             </Link>
-            <Link to="/" hash="how-it-works">
-              <GlowButton size="lg" variant="secondary">How It Works</GlowButton>
+            <Link to="/" hash="how-it-works" className="inline-flex items-center gap-1 self-center px-2 text-sm font-semibold text-deep hover:underline">
+              How it works <ArrowRight className="size-3.5" />
             </Link>
           </div>
         </div>
@@ -184,26 +142,19 @@ function Landing() {
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="mx-auto max-w-3xl scroll-mt-28 px-6 py-20">
-        <h2 className="text-center text-3xl font-bold tracking-[-0.03em] sm:text-4xl">How it works</h2>
+      <section id="how-it-works" className="mx-auto max-w-6xl scroll-mt-28 px-6 py-16">
+        <h2 className="text-center text-3xl font-bold tracking-[-0.03em] sm:text-4xl"><span className="text-gradient-hero">How it works</span></h2>
         <p className="mx-auto mt-3 max-w-xl text-center text-graphite">
           One conversation. The assistant asks only for what it doesn't already know.
         </p>
-        <ol className="relative mt-12 space-y-4 border-l border-ice-lum/70 pl-8">
-          {steps.map((s, i) => <JourneyStep key={s.title} step={s} n={i + 1} />)}
-        </ol>
-        <p className="mt-10 text-center text-sm text-graphite">
-          After your visit, you can rate your experience with the veterinarian and clinic and leave a
-          verified review to help other pet owners make informed choices. Your feedback also helps
-          veterinary professionals and clinics improve the quality of their service.
-        </p>
-        <p className="mt-3 text-center text-sm text-graphite">
-          Your description, voice message, photos and videos can be included with your appointment
-          information and made available to the veterinary professional before your visit.
-        </p>
+        <div className="relative mt-12">
+          <div aria-hidden className="absolute top-[22px] right-[7%] left-[7%] hidden h-px bg-[linear-gradient(90deg,transparent,rgb(128_104_255/0.55)_12%,rgb(216_150_220/0.55)_50%,rgb(128_104_255/0.55)_88%,transparent)] lg:block" />
+          <div aria-hidden className="absolute top-2 bottom-2 left-[21px] w-px bg-[linear-gradient(180deg,transparent,rgb(128_104_255/0.5),rgb(216_150_220/0.5),transparent)] lg:hidden" />
+          <ol className="relative grid gap-7 lg:grid-cols-7 lg:gap-4">
+            {steps.map((s, i) => <JourneyStep key={s.title} step={s} n={i + 1} />)}
+          </ol>
+        </div>
       </section>
-
-      <JourneyActions />
 
       {/* For clinics */}
       <section id="for-clinics" className="mx-auto grid max-w-6xl scroll-mt-28 items-center gap-10 px-6 py-20 md:grid-cols-2">
@@ -217,12 +168,10 @@ function Landing() {
             veterinarians, capabilities and schedules — and receive appointments with the client's
             description and media already prepared.
           </p>
-          <Link to="/join/veterinarian" className="mt-7 mr-3 inline-block">
-            <GlowButton size="lg">Clinic / Veterinarian Registration <ArrowRight /></GlowButton>
-          </Link>
-          <Link to="/workspace" className="mt-7 inline-block">
-            <GlowButton size="lg" variant="secondary">Clinic Staff Workspace <ArrowRight /></GlowButton>
-          </Link>
+          <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold">
+            <Link to="/join/veterinarian" className="inline-flex items-center gap-1 text-deep hover:underline">Clinic / Veterinarian Registration <ArrowRight className="size-3.5" /></Link>
+            <Link to="/workspace" className="inline-flex items-center gap-1 text-primary hover:underline">See the Clinic Staff Workspace <ArrowRight className="size-3.5" /></Link>
+          </div>
         </div>
         <ul className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm text-navy">
           {["Locations & addresses", "Animal species treated", "Veterinarians & specialties", "Services & capabilities", "Opening & holiday hours", "Schedules & availability"].map((t) => (
