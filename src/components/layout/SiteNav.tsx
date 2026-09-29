@@ -9,13 +9,14 @@ const links = [
   { label: "Pet Owner Account", to: "/owner", exact: false },
   { label: "Clinic Staff", to: "/workspace", exact: false },
   { label: "Information Desk", to: "/information-desk", exact: false },
+  { label: "Ratings", to: "/ratings", exact: false },
   { label: "Write Review", to: "/review", exact: false },
 ] as const;
 
 const item =
-  "rounded-full border border-transparent px-2.5 py-1.5 text-[0.78rem] font-semibold tracking-[0.01em] text-graphite transition-all duration-200 hover:border-ice-lum/70 hover:bg-card/60 hover:text-deep";
+  "rounded-full border border-white/40 bg-white/25 backdrop-blur px-2.5 py-1 hover:-translate-y-px text-[0.78rem] font-semibold tracking-[0.01em] text-deep/85 transition-all duration-200 hover:border-ice-lum/70 hover:bg-white/45 hover:text-deep hover:shadow-[0_6px_16px_-10px_rgb(109_74_255/0.7)]";
 const active =
-  "!border-ice-lum/90 bg-card/70 !text-deep shadow-[0_0_0_1px_rgb(128_104_255/0.18),0_6px_18px_-10px_rgb(109_74_255/0.65)]";
+  "!border-ice-lum/90 !bg-[linear-gradient(135deg,rgb(255_255_255/0.6),rgb(240_200_235/0.45))] !text-deep shadow-[0_0_0_1px_rgb(128_104_255/0.18),0_6px_18px_-10px_rgb(109_74_255/0.65)]";
 const chat =
   "inline-flex items-center gap-1.5 rounded-full border border-ice-lum bg-[linear-gradient(135deg,rgb(255_255_255/0.75),rgb(221_210_255/0.75))] px-3.5 py-1.5 text-[0.8rem] font-bold text-deep shadow-[0_0_0_1px_rgb(128_104_255/0.25),0_8px_22px_-12px_rgb(109_74_255/0.8)] transition-all duration-200 hover:-translate-y-px hover:shadow-[0_0_0_1px_rgb(128_104_255/0.45),0_10px_26px_-10px_rgb(109_74_255/0.9)]";
 
@@ -34,7 +35,7 @@ export function SiteNav() {
     <header className="sticky top-0 z-50 px-3 pt-3 sm:px-4">
       <nav aria-label="Main" className="glass relative mx-auto flex max-w-6xl items-center gap-2 rounded-full px-3 py-1.5 sm:px-4">
         <Wordmark />
-        <div className="ml-auto hidden items-center gap-0.5 lg:flex">
+        <div className="ml-auto hidden items-center gap-1 xl:flex">
           {links.map((l) => (
             <Link key={l.to} to={l.to} activeOptions={{ exact: l.exact }} className={item} activeProps={{ className: active, "aria-current": "page" }}>
               {l.label}
@@ -44,7 +45,7 @@ export function SiteNav() {
             <MessageCircle className="size-3.5" strokeWidth={2} /> Chat with AI
           </Link>
         </div>
-        <Link to="/chat" className={cn(chat, "ml-auto px-3 lg:hidden")} aria-label="Chat with AI">
+        <Link to="/chat" className={cn(chat, "ml-auto px-3 xl:hidden")} aria-label="Chat with AI">
           <MessageCircle className="size-3.5" strokeWidth={2} /> <span className="hidden sm:inline">Chat with AI</span>
         </Link>
         <button
@@ -53,17 +54,18 @@ export function SiteNav() {
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           aria-controls="mobile-menu"
-          className="grid size-9 place-items-center rounded-full border border-ice-lum/70 bg-card/60 text-deep lg:hidden"
+          className="grid size-9 place-items-center rounded-full border border-ice-lum/70 bg-card/60 text-deep xl:hidden"
         >
           {open ? <X className="size-4" /> : <Menu className="size-4" />}
         </button>
         {open && (
-          <div id="mobile-menu" className="glass page-enter absolute top-full right-2 mt-2 w-56 rounded-2xl !bg-background/95 p-2 shadow-[var(--shadow-float)] lg:hidden">
+          <div id="mobile-menu" className="glass page-enter absolute top-full right-2 mt-2 w-56 rounded-2xl !bg-background/95 p-2 shadow-[var(--shadow-float)] xl:hidden">
             {links.map((l) => (
               <Link key={l.to} to={l.to} activeOptions={{ exact: l.exact }} onClick={() => setOpen(false)} className={cn(item, "block rounded-xl py-2.5")} activeProps={{ className: active, "aria-current": "page" }}>
                 {l.label}
               </Link>
             ))}
+            <Link to="/" hash="how-it-works" onClick={() => setOpen(false)} className={cn(item, "block rounded-xl py-2.5")}>How It Works</Link>
           </div>
         )}
       </nav>
