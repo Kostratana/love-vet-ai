@@ -102,7 +102,7 @@ function HeroPreview() {
 
 function Landing() {
   return (
-    <div className="ambient-bg min-h-screen">
+    <div className="ambient-bg min-h-screen overflow-x-clip">
       <SiteNav />
       <div className="page-enter">
 
