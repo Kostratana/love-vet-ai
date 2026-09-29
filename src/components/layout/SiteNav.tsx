@@ -9,10 +9,11 @@ const links = [
   { label: "Pet Owner Account", to: "/owner", exact: false },
   { label: "Clinic Staff", to: "/workspace", exact: false },
   { label: "Information Desk", to: "/information-desk", exact: false },
+  { label: "Write Review", to: "/review", exact: false },
 ] as const;
 
 const item =
-  "rounded-full border border-transparent px-3 py-1.5 text-[0.8rem] font-semibold tracking-[0.01em] text-graphite transition-all duration-200 hover:border-ice-lum/70 hover:bg-card/60 hover:text-deep";
+  "rounded-full border border-transparent px-2.5 py-1.5 text-[0.78rem] font-semibold tracking-[0.01em] text-graphite transition-all duration-200 hover:border-ice-lum/70 hover:bg-card/60 hover:text-deep";
 const active =
   "!border-ice-lum/90 bg-card/70 !text-deep shadow-[0_0_0_1px_rgb(128_104_255/0.18),0_6px_18px_-10px_rgb(109_74_255/0.65)]";
 const chat =
@@ -33,7 +34,7 @@ export function SiteNav() {
     <header className="sticky top-0 z-50 px-3 pt-3 sm:px-4">
       <nav aria-label="Main" className="glass relative mx-auto flex max-w-6xl items-center gap-2 rounded-full px-3 py-1.5 sm:px-4">
         <Wordmark />
-        <div className="ml-auto hidden items-center gap-1 lg:flex">
+        <div className="ml-auto hidden items-center gap-0.5 lg:flex">
           {links.map((l) => (
             <Link key={l.to} to={l.to} activeOptions={{ exact: l.exact }} className={item} activeProps={{ className: active, "aria-current": "page" }}>
               {l.label}
