@@ -13,13 +13,13 @@ const links = [
 ] as const;
 
 const item =
-  "shrink-0 whitespace-nowrap rounded-full border border-transparent px-2.5 py-1 text-[0.78rem] font-semibold tracking-[0.01em] text-deep/75 transition-all duration-200 hover:border-ice-lum/60 hover:bg-white/40 hover:text-deep";
+  "shrink-0 whitespace-nowrap rounded-full border border-transparent px-2.5 py-[3px] text-[0.76rem] font-medium tracking-[0.01em] text-deep/65 transition-all duration-200 hover:border-primary/25 hover:bg-primary/5 hover:text-deep hover:shadow-[0_0_14px_-6px_rgb(109_74_255/0.6)]";
 const active =
-  "!border-ice-lum/90 !bg-[linear-gradient(135deg,rgb(221_210_255/0.75),rgb(240_200_235/0.55))] !text-deep font-extrabold shadow-[0_0_0_1px_rgb(128_104_255/0.22),0_6px_18px_-8px_rgb(109_74_255/0.75)]";
+  "!border-primary/45 !bg-[linear-gradient(135deg,rgb(109_74_255/0.16),rgb(160_120_255/0.1))] !text-deep font-bold shadow-[0_0_16px_-6px_rgb(109_74_255/0.75)]";
 const chat =
-  "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-ice-lum bg-[linear-gradient(135deg,rgb(255_255_255/0.75),rgb(221_210_255/0.75))] px-3.5 py-1.5 text-[0.8rem] font-bold text-deep shadow-[0_0_0_1px_rgb(128_104_255/0.25),0_8px_22px_-12px_rgb(109_74_255/0.8)] transition-all duration-200 hover:-translate-y-px";
+  "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-primary/35 bg-primary/8 px-3 py-[3px] text-[0.76rem] font-semibold text-deep transition-all duration-200 hover:-translate-y-px hover:bg-primary/12 hover:shadow-[0_0_16px_-6px_rgb(109_74_255/0.75)]";
 const chatActive =
-  "!bg-[image:var(--gradient-primary)] !text-primary-foreground !border-primary shadow-[0_0_0_3px_rgb(128_104_255/0.25),0_10px_26px_-8px_rgb(109_74_255/0.9)]";
+  "!bg-[image:var(--gradient-primary)] !text-primary-foreground !border-primary/60 shadow-[0_0_18px_-6px_rgb(109_74_255/0.9)]";
 
 export function SiteNav() {
   return (

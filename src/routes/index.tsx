@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { ArrowRight, CalendarDays, CheckCircle2, ClipboardCheck, ImageIcon, MessageCircle, Mic, PawPrint, Search, Sparkles, Video } from "lucide-react";
 import { SiteNav } from "@/components/layout/SiteNav";
 import { SiteFooter } from "@/components/layout/SiteFooter";
-import { GlowButton } from "@/components/kit/primitives";
 import { HeartsMark } from "@/components/kit/Wordmark";
 
 
@@ -137,11 +136,11 @@ function Landing() {
             </p>
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/chat">
-              <GlowButton size="lg"><MessageCircle /> Chat with AI</GlowButton>
+            <Link to="/chat" className="inline-flex h-10 items-center gap-1.5 rounded-full border border-primary/60 bg-[image:var(--gradient-primary)] px-5 text-sm font-semibold text-primary-foreground shadow-[0_8px_22px_-12px_rgb(109_74_255/0.85)] transition-all duration-200 hover:-translate-y-px hover:shadow-[0_10px_26px_-10px_rgb(109_74_255/0.95)]">
+              <MessageCircle className="size-4" /> Chat with AI
             </Link>
-            <Link to="/" hash="how-it-works" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} className="inline-flex h-11 items-center gap-1.5 self-center rounded-full border border-primary/40 bg-white/40 px-5 text-sm font-semibold text-deep backdrop-blur transition-all duration-200 hover:-translate-y-px hover:bg-white/60 hover:shadow-[0_8px_20px_-10px_rgb(109_74_255/0.7)]">
-              How It Works <ArrowRight className="size-3.5" />
+            <Link to="/" hash="how-it-works" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} className="inline-flex h-10 items-center gap-1.5 rounded-full border border-primary/40 bg-[linear-gradient(135deg,rgb(109_74_255/0.14),rgb(160_120_255/0.08))] px-5 text-sm font-semibold text-deep backdrop-blur transition-all duration-200 hover:-translate-y-px hover:border-primary/60 hover:bg-primary/15 hover:shadow-[0_8px_20px_-10px_rgb(109_74_255/0.7)]">
+              How It Works <ArrowRight className="size-3" />
             </Link>
           </div>
         </div>
