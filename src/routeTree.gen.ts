@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ChatRouteImport } from './routes/chat'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as InformationDeskRouteImport } from './routes/information-desk'
 import { Route as OwnerRouteImport } from './routes/owner'
 import { Route as RatingsRouteImport } from './routes/ratings'
@@ -50,6 +51,11 @@ const AuthRoute = AuthRouteImport.update({
 const ChatRoute = ChatRouteImport.update({
   id: '/chat',
   path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InformationDeskRoute = InformationDeskRouteImport.update({
@@ -149,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRouteWithChildren
+  '/home': typeof HomeRoute
   '/information-desk': typeof InformationDeskRoute
   '/owner': typeof OwnerRoute
   '/ratings': typeof RatingsRoute
@@ -171,6 +178,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
+  '/home': typeof HomeRoute
   '/information-desk': typeof InformationDeskRoute
   '/owner': typeof OwnerRoute
   '/ratings': typeof RatingsRoute
@@ -196,6 +204,7 @@ export interface FileRoutesById {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRouteWithChildren
+  '/home': typeof HomeRoute
   '/information-desk': typeof InformationDeskRoute
   '/owner': typeof OwnerRoute
   '/ratings': typeof RatingsRoute
@@ -222,6 +231,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/auth'
     | '/chat'
+    | '/home'
     | '/information-desk'
     | '/owner'
     | '/ratings'
@@ -244,6 +254,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/auth'
+    | '/home'
     | '/information-desk'
     | '/owner'
     | '/ratings'
@@ -268,6 +279,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/auth'
     | '/chat'
+    | '/home'
     | '/information-desk'
     | '/owner'
     | '/ratings'
@@ -293,6 +305,7 @@ export interface RootRouteChildren {
   AccountRoute: typeof AccountRoute
   AuthRoute: typeof AuthRoute
   ChatRoute: typeof ChatRouteWithChildren
+  HomeRoute: typeof HomeRoute
   InformationDeskRoute: typeof InformationDeskRoute
   OwnerRoute: typeof OwnerRoute
   RatingsRoute: typeof RatingsRoute
@@ -332,6 +345,13 @@ declare module '@tanstack/react-router' {
       path: '/chat'
       fullPath: '/chat'
       preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/information-desk': {
@@ -503,6 +523,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountRoute: AccountRoute,
   AuthRoute: AuthRoute,
   ChatRoute: ChatRouteWithChildren,
+  HomeRoute: HomeRoute,
   InformationDeskRoute: InformationDeskRoute,
   OwnerRoute: OwnerRoute,
   RatingsRoute: RatingsRoute,
