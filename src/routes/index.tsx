@@ -1,4 +1,5 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useRouterState } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { ArrowRight, CalendarDays, CheckCircle2, ClipboardCheck, ImageIcon, MessageCircle, Mic, PawPrint, Search, Sparkles, Video } from "lucide-react";
 import { SiteNav } from "@/components/layout/SiteNav";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -101,6 +102,12 @@ function HeroPreview() {
 }
 
 function Landing() {
+  const hash = useRouterState({ select: (st) => st.location.hash });
+  useEffect(() => {
+    if (hash !== "how-it-works") return;
+    const t = window.setTimeout(() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+    return () => window.clearTimeout(t);
+  }, [hash]);
   return (
     <div className="ambient-bg min-h-screen overflow-x-clip">
       <SiteNav />
@@ -133,8 +140,8 @@ function Landing() {
             <Link to="/chat">
               <GlowButton size="lg"><MessageCircle /> Chat with AI</GlowButton>
             </Link>
-            <Link to="/" hash="how-it-works" className="inline-flex items-center gap-1 self-center px-2 text-sm font-semibold text-deep hover:underline">
-              How it works <ArrowRight className="size-3.5" />
+            <Link to="/" hash="how-it-works" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} className="inline-flex h-11 items-center gap-1.5 self-center rounded-full border border-primary/40 bg-white/40 px-5 text-sm font-semibold text-deep backdrop-blur transition-all duration-200 hover:-translate-y-px hover:bg-white/60 hover:shadow-[0_8px_20px_-10px_rgb(109_74_255/0.7)]">
+              How It Works <ArrowRight className="size-3.5" />
             </Link>
           </div>
         </div>

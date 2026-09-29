@@ -127,7 +127,7 @@ function AssistantBubble({ text }: { text: string }) {
       <AssistantAvatar className="mt-5 size-9 shrink-0" />
       <div className="min-w-0 max-w-[85%]">
         <p className="mb-1 text-[0.7rem] font-bold tracking-[0.08em] text-deep uppercase">Love Vet AI</p>
-        <div className="rounded-2xl rounded-tl-md border border-ice-lum/60 bg-card/80 px-4 py-3 text-[0.95rem] leading-relaxed whitespace-pre-line text-navy shadow-[0_8px_24px_-16px_rgb(109_74_255/0.5)] backdrop-blur">
+        <div className="rounded-2xl rounded-tl-md border border-[rgb(236_170_205/0.6)] bg-[linear-gradient(150deg,rgb(255_247_251/0.92),rgb(252_228_242/0.78)_55%,rgb(240_226_255/0.72))] px-4 py-3 text-[0.95rem] leading-relaxed whitespace-pre-line text-navy shadow-[inset_0_1px_0_rgb(255_255_255/0.9),0_8px_24px_-16px_rgb(214_110_170/0.55)] backdrop-blur">
           {text}
         </div>
       </div>
@@ -140,7 +140,7 @@ function UserBubble({ m }: { m: Msg }) {
     <div className="ml-auto w-fit max-w-[85%] space-y-1.5">
       <p className="text-right text-[0.7rem] font-bold tracking-[0.08em] text-graphite uppercase">Client</p>
       {m.content && (
-        <div className="rounded-2xl rounded-tr-md bg-[image:var(--gradient-primary)] px-4 py-2.5 text-[0.95rem] whitespace-pre-wrap text-primary-foreground shadow-[var(--glow-primary)]">
+        <div className="rounded-2xl rounded-tr-md border border-primary/35 bg-[linear-gradient(150deg,rgb(238_232_255/0.95),rgb(214_202_255/0.8))] px-4 py-2.5 text-[0.95rem] whitespace-pre-wrap text-navy shadow-[inset_0_1px_0_rgb(255_255_255/0.8),0_8px_24px_-14px_rgb(109_74_255/0.6)] backdrop-blur">
           {m.content}
         </div>
       )}

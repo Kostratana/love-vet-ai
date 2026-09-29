@@ -22,14 +22,14 @@ export function ChatDecor() {
           style={{ left: it.left, top: it.top, width: it.size, height: it.size, animationDelay: `-${it.delay}s`, animationDuration: `${it.dur}s` }}
         >
           {it.kind === "hearts" ? (
-            <svg viewBox="0 0 36 26" className="size-full opacity-[0.16]" fill="none">
+            <svg viewBox="0 0 36 26" className="size-full opacity-[0.26]" fill="none">
               <path d={HEART} transform="translate(0.5 0)" stroke="#8068FF" strokeWidth="1.6" />
               <path d={HEART} transform="translate(10.5 0)" stroke="#B7A8FF" strokeWidth="1.6" />
             </svg>
           ) : it.kind === "bubble" ? (
-            <span className="block size-full rounded-full border border-white/70 bg-[radial-gradient(circle_at_30%_30%,rgb(255_255_255/0.8),rgb(183_168_255/0.18))] opacity-40" />
+            <span className="block size-full rounded-full border border-white/70 bg-[radial-gradient(circle_at_30%_30%,rgb(255_255_255/0.8),rgb(236_180_220/0.28))] opacity-60" />
           ) : (
-            <span className="block size-full rounded-full bg-white opacity-70 shadow-[0_0_10px_3px_rgb(183_168_255/0.6)]" />
+            <span className="block size-full rounded-full bg-white opacity-85 shadow-[0_0_10px_3px_rgb(183_168_255/0.6)]" />
           )}
         </span>
       ))}

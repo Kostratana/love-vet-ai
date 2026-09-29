@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as InformationDeskRouteImport } from './routes/information-desk'
 import { Route as OwnerRouteImport } from './routes/owner'
+import { Route as RatingsRouteImport } from './routes/ratings'
 import { Route as ReviewRouteImport } from './routes/review'
 import { Route as VeterinarianProfileRouteImport } from './routes/veterinarian-profile'
 import { Route as WorkspaceRouteRouteImport } from './routes/workspace/route'
@@ -63,6 +64,11 @@ const InformationDeskRoute = InformationDeskRouteImport.update({
 const OwnerRoute = OwnerRouteImport.update({
   id: '/owner',
   path: '/owner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RatingsRoute = RatingsRouteImport.update({
+  id: '/ratings',
+  path: '/ratings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReviewRoute = ReviewRouteImport.update({
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof ChatRouteWithChildren
   '/information-desk': typeof InformationDeskRoute
   '/owner': typeof OwnerRoute
+  '/ratings': typeof RatingsRoute
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/information-desk': typeof InformationDeskRoute
   '/owner': typeof OwnerRoute
+  '/ratings': typeof RatingsRoute
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
@@ -222,6 +230,7 @@ export interface FileRoutesById {
   '/chat': typeof ChatRouteWithChildren
   '/information-desk': typeof InformationDeskRoute
   '/owner': typeof OwnerRoute
+  '/ratings': typeof RatingsRoute
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
@@ -251,6 +260,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/information-desk'
     | '/owner'
+    | '/ratings'
     | '/review'
     | '/veterinarian-profile'
     | '/chat/$threadId'
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/information-desk'
     | '/owner'
+    | '/ratings'
     | '/review'
     | '/veterinarian-profile'
     | '/chat/$threadId'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/information-desk'
     | '/owner'
+    | '/ratings'
     | '/review'
     | '/veterinarian-profile'
     | '/chat/$threadId'
@@ -331,6 +343,7 @@ export interface RootRouteChildren {
   ChatRoute: typeof ChatRouteWithChildren
   InformationDeskRoute: typeof InformationDeskRoute
   OwnerRoute: typeof OwnerRoute
+  RatingsRoute: typeof RatingsRoute
   ReviewRoute: typeof ReviewRoute
   VeterinarianProfileRoute: typeof VeterinarianProfileRoute
   JoinBusinessRoute: typeof JoinBusinessRoute
@@ -381,6 +394,13 @@ declare module '@tanstack/react-router' {
       path: '/owner'
       fullPath: '/owner'
       preLoaderRoute: typeof OwnerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ratings': {
+      id: '/ratings'
+      path: '/ratings'
+      fullPath: '/ratings'
+      preLoaderRoute: typeof RatingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/review': {
@@ -569,6 +589,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatRoute: ChatRouteWithChildren,
   InformationDeskRoute: InformationDeskRoute,
   OwnerRoute: OwnerRoute,
+  RatingsRoute: RatingsRoute,
   ReviewRoute: ReviewRoute,
   VeterinarianProfileRoute: VeterinarianProfileRoute,
   JoinBusinessRoute: JoinBusinessRoute,
