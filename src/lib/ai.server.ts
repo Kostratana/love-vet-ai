@@ -7,6 +7,7 @@ export const CHAT_MODEL = "openai/gpt-6-astra";
 export const TRIAGE_MODEL = "typesafe/jev-latest";
 export const EMBED_MODEL = "google/gemini-embedding-2";
 export const STT_MODEL = "google/gemini-3.5-transcribe";
+export const TTS_MODEL = "google/gemini-3.1-flash-tts-preview";
 
 export class GatewayError extends Error {
   constructor(public status: number, message: string) { super(message); }
