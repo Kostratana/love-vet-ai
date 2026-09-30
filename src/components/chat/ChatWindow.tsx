@@ -195,9 +195,15 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
         });
         return parts.length ? `\n\n[Case context]\n${parts.join("\n")}` : "";
       };
-      const payload = history.map((m) => ({
+      const o = acct.owner;
+      const pet = pets.find((p) => p.id === petId);
+      const known = [
+        o ? `[Owner account] Signed in. First name: ${o.firstName || "unknown"}; last name: ${o.lastName || "unknown"}; phone: ${o.phone ? "on file" : "missing"}; email: ${o.email ? "on file" : "missing"}; area: ${o.location || "unknown"}.` : "[Owner account] Guest (not signed in).",
+        pet ? `[Pet profile] Name: ${pet.name}; species: ${pet.species}; breed: ${pet.breed || "unknown"}; age: ${pet.age || "unknown"}; sex: ${pet.sex || "unknown"}.` : "",
+      ].filter(Boolean).join("\n");
+      const payload = history.map((m, idx) => ({
         role: m.role as "user" | "assistant",
-        content: (m.content || "(attachment only)") + (m.role === "user" ? attNote(m) : ""),
+        content: (idx === 0 && m.role === "user" ? `${known}\n\n` : "") + (m.content || "(attachment only)") + (m.role === "user" ? attNote(m) : ""),
         ...(m.id === userMsg.id && images.length ? { images } : {}),
       }));
       const aid = crypto.randomUUID();
