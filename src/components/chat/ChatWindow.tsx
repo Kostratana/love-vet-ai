@@ -39,18 +39,52 @@ export function ChatWindow(_props: { threadId: string | null }) {
     setPending((p) => [...p, ...next]);
   }
 
-  function send(extra?: Pending) {
+  const [busy, setBusy] = useState(false);
+
+  async function send(extra?: Pending) {
+    if (busy) return;
     const atts = extra ? [...pending, extra] : pending;
     const content = text.trim();
     if (!content && atts.length === 0) return;
     const meta: AttachmentMeta[] = atts.map(({ kind, name, size, durationSec }) => ({ kind, name, size, durationSec }));
-    setMessages((m) => [...m, { id: crypto.randomUUID(), role: "user", content, attachments: meta, created_at: new Date().toISOString() }]);
+    const userMsg: Msg = { id: crypto.randomUUID(), role: "user", content, attachments: meta, created_at: new Date().toISOString() };
+    const history = [...messages, userMsg];
+    setMessages(history);
     setText("");
     setPending([]);
     setError(null);
+
+    const attNote = (m: Msg) =>
+      m.attachments.length ? `\n[Owner attached: ${m.attachments.map((a) => (a.kind === "voice" ? "a voice message" : `${a.kind} ${a.name}`)).join(", ")}]` : "";
+    const payload = history.map((m) => ({ role: m.role as "user" | "assistant", content: (m.content || "(attachment only)") + (m.role === "user" ? attNote(m) : "") }));
+    const aid = crypto.randomUUID();
+    setMessages((m) => [...m, { id: aid, role: "assistant", content: "", attachments: [], created_at: new Date().toISOString() }]);
+    setBusy(true);
+    try {
+      const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: payload }) });
+      if (!res.ok || !res.body) {
+        const msg = res.status === 429 ? "The assistant is busy right now. Please try again in a moment." : res.status === 402 ? "The assistant is temporarily unavailable (AI credits exhausted)." : "The assistant could not reply. Please try again.";
+        throw new Error(msg);
+      }
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let acc = "";
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        acc += dec.decode(value, { stream: true });
+        setMessages((m) => m.map((x) => (x.id === aid ? { ...x, content: acc } : x)));
+      }
+      if (!acc.trim()) throw new Error("The assistant returned no reply. Please try again.");
+    } catch (e) {
+      setMessages((m) => m.filter((x) => x.id !== aid || x.content));
+      setError(e instanceof Error ? e.message : "The assistant could not reply.");
+    } finally {
+      setBusy(false);
+    }
   }
 
-  const hasUserMessages = messages.length > 0;
+  const lastIsEmptyAssistant = busy && messages[messages.length - 1]?.role === "assistant" && !messages[messages.length - 1]?.content;
 
   return (
     <div className="chat-frame relative flex h-[min(78vh,760px)] min-h-[520px] flex-col overflow-hidden rounded-3xl">
@@ -70,10 +104,10 @@ export function ChatWindow(_props: { threadId: string | null }) {
       <div ref={listRef} className="relative flex-1 overflow-y-auto overscroll-contain px-4 py-6 sm:px-8">
         <div className="mx-auto max-w-3xl space-y-6">
           <AssistantBubble text={OPENING_MESSAGE} />
-          {messages.map((m) => (m.role === "user" ? <UserBubble key={m.id} m={m} /> : <AssistantBubble key={m.id} text={m.content} />))}
-          {hasUserMessages && (
+          {messages.map((m) => (m.role === "user" ? <UserBubble key={m.id} m={m} /> : m.content ? <AssistantBubble key={m.id} text={m.content} /> : null))}
+          {lastIsEmptyAssistant && (
             <p role="status" className="mx-auto w-fit rounded-full border border-ice-lum/60 bg-card/70 px-4 py-1.5 text-center text-xs font-medium text-graphite">
-              The assistant service is not connected yet — replies will appear here once it is.
+              Love Vet AI is thinking…
             </p>
           )}
         </div>
@@ -108,7 +142,7 @@ export function ChatWindow(_props: { threadId: string | null }) {
             onVoice={(v) => send(v)}
             onPhoto={() => photoRef.current?.click()}
             onVideo={() => videoRef.current?.click()}
-            disabled={false}
+            disabled={busy}
           />
           <p className="mt-2 text-center text-[0.68rem] font-medium text-graphite">
             Photos: {UPLOAD_LIMITS.photo.extensions} · up to {UPLOAD_LIMITS.photo.maxCount}, {formatBytes(UPLOAD_LIMITS.photo.maxBytes)} each · Video: {UPLOAD_LIMITS.video.extensions} · {UPLOAD_LIMITS.video.maxCount}, up to {formatBytes(UPLOAD_LIMITS.video.maxBytes)} · The assistant does not diagnose.
