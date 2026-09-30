@@ -15,6 +15,13 @@
       "when": 1790731975338,
       "tag": "0001_core_vet_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790732734677,
+      "tag": "0002_complete_backend_links",
+      "breakpoints": true
     }
   ]
 }

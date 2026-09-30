@@ -6,6 +6,8 @@ import { buttonVariants } from "@/components/kit/primitives";
 import { OwnerForm } from "@/components/owner/OwnerForm";
 import { ReviewForm } from "@/components/owner/ReviewForm";
 import { useAccount } from "@/lib/account-store";
+import { OwnerConversations } from "@/components/owner/OwnerData";
+import { AppointmentList } from "@/components/workspace/StaffData";
 
 export const Route = createFileRoute("/owner")({
   head: () => ({
@@ -65,11 +67,12 @@ function OwnerPage() {
         </div>
         <div id="conversations" className="glass scroll-mt-28 rounded-3xl p-6">
           <h2 className="mb-3 text-lg font-bold">Conversations</h2>
-          <EmptyState icon={MessageCircle} title="No saved conversations yet" action={<Link to="/chat" className={buttonVariants()}>Chat with AI</Link>} />
+          <OwnerConversations empty={<EmptyState icon={MessageCircle} title="No saved conversations yet" action={<Link to="/chat" className={buttonVariants()}>Chat with AI</Link>} />} />
         </div>
         <div id="appointments" className="glass scroll-mt-28 rounded-3xl p-6">
           <h2 className="mb-3 text-lg font-bold">Appointments</h2>
-          <EmptyState icon={CalendarDays} title="No appointments yet">Appointments you confirm in Chat with AI will appear here.</EmptyState>
+          <AppointmentList scope="own" />
+          <p className="mt-2 text-xs text-graphite">Appointments you request in Chat with AI appear here.</p>
         </div>
         <div id="visits" className="glass scroll-mt-28 rounded-3xl p-6">
           <h2 className="mb-3 text-lg font-bold">Visit History</h2>

@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { PageHeader } from "@/components/workspace/PageHeader";
 import { VoiceNote } from "@/components/care/VoiceNote";
 import { sampleCase as c } from "@/lib/sample-case";
+import { StaffGate, StaffRequests } from "@/components/workspace/StaffData";
 
 export const Route = createFileRoute("/workspace/")({
   head: () => ({
@@ -57,6 +58,7 @@ function PreVisitCase() {
   return (
     <div>
       <PageHeader eyebrow="Clinic Staff Workspace · Cases" title="Pre-Visit Case" description="Everything the owner shared with Love Vet AI, organised so the veterinarian understands the reason for the visit before the owner arrives. Sample interface — no real patient data." />
+      <StaffGate><StaffRequests /></StaffGate>
 
       <article className="px-1">
         <header className="flex flex-wrap items-center gap-4 pb-6">

@@ -6,6 +6,8 @@ import { EmptyState, PageShell } from "@/components/kit/form";
 import { GlowButton, buttonVariants } from "@/components/kit/primitives";
 import { signOutLocal, useAccount } from "@/lib/account-store";
 import { cn } from "@/lib/utils";
+import { OwnerConversations, OwnerMedia } from "@/components/owner/OwnerData";
+import { AppointmentList } from "@/components/workspace/StaffData";
 
 export const Route = createFileRoute("/account")({
   head: () => ({
@@ -33,17 +35,17 @@ const tabs = [
 ] as const;
 
 function Account() {
-  const { owner } = useAccount();
+  const { owner, loading, user } = useAccount();
   const navigate = useNavigate();
   const [tab, setTab] = useState<(typeof tabs)[number]["id"]>("pets");
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
-  useEffect(() => { if (ready && !owner) navigate({ to: "/join/owner", search: { redirect: "/account" } }); }, [ready, owner, navigate]);
+  useEffect(() => { if (ready && !loading && !user) navigate({ to: "/join/owner", search: { redirect: "/account" } }); }, [ready, loading, user, navigate]);
   if (!owner) return <div className="ambient-bg min-h-screen" />;
 
   const empty = {
     conversations: <EmptyState icon={MessageCircle} title="No saved conversations yet" action={<Link to="/chat" className={buttonVariants()}>Chat with AI</Link>} />,
-    upcoming: <EmptyState icon={CalendarDays} title="No upcoming appointments">Appointments you confirm will appear here.</EmptyState>,
+    upcoming: <p className="text-xs text-graphite">Book an appointment from Chat with AI after describing your pet’s concern.</p>,
     history: <EmptyState icon={History} title="No appointment history yet" />,
     visits: <EmptyState icon={History} title="No completed visits yet">Completed visits appear here. This is your organized history — not a veterinary medical record.</EmptyState>,
     media: <EmptyState icon={ImageIcon} title="No uploaded media">Photos, videos and voice messages you share in conversations will appear here.</EmptyState>,
@@ -86,11 +88,14 @@ function Account() {
                 <p><span className="text-graphite">Location:</span> {owner.location || "—"}</p>
                 <div className="flex gap-2 pt-4">
                   <Link to="/join/owner" className={buttonVariants({ variant: "secondary", size: "sm" })}>Edit</Link>
-                  <GlowButton size="sm" variant="ghost" onClick={() => { signOutLocal(); navigate({ to: "/" }); }}>Sign out</GlowButton>
+                  <GlowButton size="sm" variant="ghost" onClick={async () => { await signOutLocal(); navigate({ to: "/" }); }}>Sign out</GlowButton>
                 </div>
               </div>
             )}
-            {tab !== "pets" && tab !== "profile" && empty[tab]}
+            {tab === "conversations" && <OwnerConversations empty={empty.conversations} />}
+            {tab === "upcoming" && <div className="space-y-4"><AppointmentList scope="own" />{empty.upcoming}</div>}
+            {tab === "media" && <OwnerMedia empty={empty.media} />}
+            {(tab === "history" || tab === "visits" || tab === "reviews") && empty[tab]}
           </section>
         </div>
       </PageShell>
