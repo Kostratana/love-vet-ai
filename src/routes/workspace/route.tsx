@@ -47,7 +47,7 @@ function WorkspaceLayout() {
           <main>
             <p role="note" className="glass mb-5 rounded-2xl px-4 py-2.5 text-xs leading-relaxed text-navy">
               <span className="mr-1.5 font-extrabold tracking-[0.12em] text-deep">SAMPLE WORKSPACE</span>
-              — Sample interface — no real patient data. No clinics, veterinarians, patients or appointments are connected.
+              — Demo clinic and fictional sample case. Real patient cases are shown only to verified clinic staff.
             </p>
             <Outlet />
           </main>
