@@ -31,7 +31,7 @@ TEXT:
 export async function analyzeVideo(url: string, signal?: AbortSignal) {
   const res = await fetch(`${GATEWAY}/chat/completions`, {
     method: "POST",
-    signal,
+    signal: signal ?? null,
     headers: { Authorization: `Bearer ${apiKey()}`, "Content-Type": "application/json", "X-Lovable-AIG-SDK": "fetch" },
     body: JSON.stringify({ model: VIDEO_MODEL, stream: true, messages: [{ role: "user", content: [{ type: "text", text: VIDEO_PROMPT }, { type: "video_url", video_url: { url } }] }] }),
   });

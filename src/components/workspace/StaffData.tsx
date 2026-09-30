@@ -47,10 +47,6 @@ export function StaffRequests({ onCount }: { onCount?: (n: number) => void }) {
       userIds.length ? supabase.from("profiles").select("id,first_name,last_name,email,phone").in("id", userIds) : Promise.resolve({ data: [] as never[] }),
       convIds.length ? supabase.from("uploaded_files").select("id,kind,storage_path,transcription,conversation_id,analysis,ocr_text,analysis_status").in("conversation_id", convIds) : Promise.resolve({ data: [] as never[] }),
     ]);
-    const query = [pkg.owner_reported?.summary, ...(pkg.owner_reported?.concerns ?? intake?.symptoms ?? []), a.notes].filter(Boolean).join(". ");
-  const hist = a.pet_id && query.length > 2
-    ? await relatedPetHistory({ data: { petId: a.pet_id, query: query.slice(0, 2000), excludeConversationId: a.conversation_id } }).catch(() => null)
-    : null;
   const signed = await Promise.all((files ?? []).map(async (f) => ({ ...f, url: (await supabase.storage.from("chat-media").createSignedUrl(f.storage_path, 3600)).data?.signedUrl })));
     const out: Req[] = data.map((r) => ({
       ...r,
@@ -206,6 +202,10 @@ async function loadCaseView(apptId: string): Promise<CaseView | null> {
     a.conversation_id ? supabase.from("uploaded_files").select("id,kind,storage_path,transcription,analysis,ocr_text").eq("conversation_id", a.conversation_id).order("created_at") : Promise.resolve({ data: [] as never[] }),
     a.intake_id ? supabase.from("veterinary_intakes").select("summary,symptoms").eq("id", a.intake_id).maybeSingle() : Promise.resolve({ data: null }),
   ]);
+  const query = [pkg.owner_reported?.summary, ...(pkg.owner_reported?.concerns ?? intake?.symptoms ?? []), a.notes].filter(Boolean).join(". ");
+  const hist = a.pet_id && query.length > 2
+    ? await relatedPetHistory({ data: { petId: a.pet_id, query: query.slice(0, 2000), excludeConversationId: a.conversation_id } }).catch(() => null)
+    : null;
   const signed = await Promise.all((files ?? []).map(async (f) => ({ ...f, url: (await supabase.storage.from("chat-media").createSignedUrl(f.storage_path, 3600)).data?.signedUrl })));
   const pet = (a as unknown as { pet: { name: string; species: string; breed: string | null; age: string | null; sex: string | null } | null }).pet;
   const vet = (a as unknown as { vet: { name: string; title: string } | null }).vet;

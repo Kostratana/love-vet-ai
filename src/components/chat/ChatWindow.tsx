@@ -419,7 +419,7 @@ function UserBubble({ m }: { m: Msg }) {
           {m.attachments.map((a, i) => (
             <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-ice-lum/60 bg-card/80 px-3 py-1 text-xs font-medium text-deep">
               {a.kind === "photo" ? <ImageIcon className="size-3.5" /> : a.kind === "video" ? <Video className="size-3.5" /> : <Mic className="size-3.5" />}
-              {a.kind === "voice" ? `Voice message · ${a.durationSec ?? 0}s · transcribed` : `${a.name}${a.analysisStatus === "done" ? " · analyzed" : a.analysisStatus === "failed" ? " · analysis unavailable, saved for staff" : !a.path && a.analysisStatus === "done" ? "" : ""}${!a.path && a.kind !== "voice" ? " · not saved" : ""}${a.ocrText ? " · text read" : ""}`}
+              {a.kind === "voice" ? `Voice message · ${a.durationSec ?? 0}s · transcribed` : `${a.name}${a.analysisStatus === "done" ? " · analyzed" : a.analysisStatus === "failed" ? " · analysis unavailable, saved for staff" : ""}${!a.path ? " · not saved" : ""}${a.ocrText ? " · text read" : ""}`}
             </span>
           ))}
         </div>
