@@ -57,10 +57,9 @@ export const Route = createFileRoute("/api/chat")({
           // Keep earlier-named stored providers in context so the assistant never "un-names" a real record.
           const named = [...new Set(parsed.data.messages.filter((m) => m.role === "assistant").flatMap((m) => m.content.match(/Dr\.\s+[A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)?/g) ?? []))].slice(0, 6);
           if (named.length) {
-            const { publicDb, vetFacts } = await import("@/lib/retrieval.server");
+            const { publicDb } = await import("@/lib/retrieval.server");
             const { data: rows } = await publicDb().from("veterinarians").select("id,name,title,specialty,species,conditions").in("name", named).eq("active", true);
             if (rows?.length) grounded += `\n\n[Previously mentioned stored providers — these records EXIST]\n${rows.map((r) => `${r.name} — ${r.title}; specialty ${r.specialty.replace(/_/g, " ")}; species ${r.species.join(", ")}; problems seen ${r.conditions.join(", ")}`).join("\n")}`;
-            void vetFacts;
           }
         } catch { /* no retrieval: assistant must say facts are unavailable */ }
         const result = streamText({
