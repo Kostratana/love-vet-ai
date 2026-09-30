@@ -265,6 +265,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          photo_path: string | null
           sex: string | null
           species: string
           user_id: string
@@ -275,6 +276,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          photo_path?: string | null
           sex?: string | null
           species: string
           user_id: string
@@ -285,6 +287,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          photo_path?: string | null
           sex?: string | null
           species?: string
           user_id?: string
@@ -383,12 +386,16 @@ export type Database = {
       }
       uploaded_files: {
         Row: {
+          analysis: string | null
+          analysis_model: string | null
+          analysis_status: string
           conversation_id: string | null
           created_at: string
           id: string
           intake_id: string | null
           kind: string
           mime_type: string
+          ocr_text: string | null
           pet_id: string | null
           size_bytes: number
           storage_path: string
@@ -396,12 +403,16 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          analysis?: string | null
+          analysis_model?: string | null
+          analysis_status?: string
           conversation_id?: string | null
           created_at?: string
           id?: string
           intake_id?: string | null
           kind: string
           mime_type: string
+          ocr_text?: string | null
           pet_id?: string | null
           size_bytes: number
           storage_path: string
@@ -409,12 +420,16 @@ export type Database = {
           user_id: string
         }
         Update: {
+          analysis?: string | null
+          analysis_model?: string | null
+          analysis_status?: string
           conversation_id?: string | null
           created_at?: string
           id?: string
           intake_id?: string | null
           kind?: string
           mime_type?: string
+          ocr_text?: string | null
           pet_id?: string | null
           size_bytes?: number
           storage_path?: string

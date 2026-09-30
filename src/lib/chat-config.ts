@@ -33,6 +33,10 @@ export type AttachmentMeta = {
   /** Storage path when saved to the signed-in user's private media. */
   path?: string | undefined;
   transcription?: string | undefined;
+  fileId?: string | undefined;
+  analysis?: string | undefined;
+  ocrText?: string | undefined;
+  analysisStatus?: "done" | "failed" | "not_available" | undefined;
 };
 
 /**

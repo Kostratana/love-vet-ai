@@ -72,6 +72,7 @@ function Account() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   {owner.pets.map((p) => (
                     <div key={p.id} className="glass rounded-2xl p-5">
+                      {p.photoUrl && <img src={p.photoUrl} alt={`${p.name} photo`} className="mb-3 size-20 rounded-xl border border-ice-lum/60 object-cover" />}
                       <p className="font-bold text-navy">{p.name || "Unnamed pet"}</p>
                       <p className="text-sm text-graphite">{[p.species, p.breed, p.age, p.sex].filter(Boolean).join(" · ") || "—"}</p>
                     </div>

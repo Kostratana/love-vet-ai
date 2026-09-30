@@ -102,8 +102,9 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
         const path = `${userId}/${cid}/${crypto.randomUUID()}-${a.name.replace(/[^\w.-]/g, "_")}`;
         const { error: ue } = await supabase.storage.from(BUCKET).upload(path, a.file, { contentType: a.mime ?? "application/octet-stream" });
         if (ue) throw new Error(`Upload failed for ${a.name}. Please try again.`);
-        await supabase.from("uploaded_files").insert({ user_id: userId, conversation_id: cid, pet_id: petId, intake_id: intakeId, kind: a.kind, mime_type: a.mime ?? "application/octet-stream", size_bytes: a.size, storage_path: path, transcription: a.transcription ?? null });
+        const { data: row } = await supabase.from("uploaded_files").insert({ user_id: userId, conversation_id: cid, pet_id: petId, intake_id: intakeId, kind: a.kind, mime_type: a.mime ?? "application/octet-stream", size_bytes: a.size, storage_path: path, transcription: a.transcription ?? null }).select("id").single();
         m.path = path;
+        m.fileId = row?.id;
         if (a.kind === "photo") {
           const { data: s } = await supabase.storage.from(BUCKET).createSignedUrl(path, 3600);
           if (s?.signedUrl) images.push(s.signedUrl);
@@ -111,7 +112,23 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
       } else if (a.kind === "photo") {
         images.push(await blobToDataUrl(a.file));
       }
+      else if (a.kind === "video") m.analysisStatus = "not_available";
       meta.push(m);
+    }
+    // Analyze stored photos (observations + OCR) and videos (observations) before the assistant replies.
+    const toAnalyze = meta.filter((m) => m.fileId && (m.kind === "photo" || m.kind === "video"));
+    if (toAnalyze.length) {
+      setStatus(toAnalyze.some((m) => m.kind === "video") ? "Analyzing your video and photos…" : "Reading your photos…");
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      await Promise.all(toAnalyze.map(async (m) => {
+        try {
+          const r = await fetch("/api/analyze-media", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ fileId: m.fileId }) });
+          const j = (await r.json().catch(() => ({}))) as { analysis?: string; ocr_text?: string | null };
+          if (!r.ok || !j.analysis) { m.analysisStatus = "failed"; return; }
+          m.analysis = j.analysis; m.ocrText = j.ocr_text ?? undefined; m.analysisStatus = "done";
+        } catch { m.analysisStatus = "failed"; }
+      }));
     }
     return { meta, images };
   }
@@ -134,29 +151,43 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
     setError(null);
     try {
       let voice = extra;
-      if (voice) voice = { ...voice, transcription: await transcribe(voice) };
+      let voiceFailed = false;
+      if (voice) {
+        try { voice = { ...voice, transcription: await transcribe(voice) }; }
+        catch (e) { voiceFailed = true; setError(`${e instanceof Error ? e.message : "Transcription failed."} ${userId ? "Your recording is saved for clinic staff." : "Please type your message instead."}`); }
+      }
       const atts = voice ? [...pending, voice] : pending;
       const typed = text.trim();
-      const content = [typed, voice?.transcription].filter(Boolean).join("\n\n");
+      if (voiceFailed && !userId && !typed) { setBusy(false); setStatus(null); return; }
+      const content = [typed, voice?.transcription ?? (voiceFailed ? "(Voice message — transcription unavailable)" : "")].filter(Boolean).join("\n\n");
       if (!content && atts.length === 0) { setBusy(false); setStatus(null); return; }
       setStatus(atts.length ? "Uploading…" : null);
       const cid = await ensureConversation(content);
       const { meta, images } = await uploadAll(atts, cid);
       setStatus(null);
+      if (meta.some((m) => m.analysisStatus === "failed") && !voiceFailed) setError("Automated analysis was unavailable for some media. The files are saved for clinic staff to review.");
       const userMsg: Msg = { id: crypto.randomUUID(), role: "user", content, attachments: meta, created_at: new Date().toISOString(), images };
       if (cid && userId) await supabase.from("conversation_messages").insert({ id: userMsg.id, conversation_id: cid, user_id: userId, role: "user", content, attachments: meta });
       const history = [...messages, userMsg];
       setMessages(history);
+      if (!meta.some((m) => m.analysisStatus === "failed") && !voiceFailed) setError(null);
       setText("");
       setPending([]);
       setHideCard(false);
 
       const attNote = (m: Msg) => {
-        const vids = m.attachments.filter((a) => a.kind === "video");
-        const parts = [];
-        if (m.attachments.some((a) => a.kind === "voice")) parts.push("the text above is a transcribed voice message");
-        if (vids.length) parts.push(`${vids.length} video(s) saved for clinic staff review (you cannot view videos)`);
-        return parts.length ? `\n[${parts.join("; ")}]` : "";
+        const parts: string[] = [];
+        if (m.attachments.some((a) => a.kind === "voice")) parts.push("The owner's text above is a transcribed voice message.");
+        m.attachments.forEach((a, i) => {
+          if (a.kind === "photo") {
+            if (a.analysis) parts.push(`Photo ${i + 1} observations (automated, not a diagnosis): ${a.analysis}`);
+            if (a.ocrText) parts.push(`Photo ${i + 1} text read from image: ${a.ocrText}`);
+          } else if (a.kind === "video") {
+            if (a.analysisStatus === "done" && a.analysis) parts.push(`Video observations (automated, not a diagnosis):\n${a.analysis}`);
+            else parts.push(a.path ? "A video was saved for clinic staff; automated video analysis was unavailable, so you have not seen it." : "A video was attached but not saved or analyzed (owner not signed in); you have not seen it.");
+          }
+        });
+        return parts.length ? `\n\n[Case context]\n${parts.join("\n")}` : "";
       };
       const payload = history.map((m) => ({
         role: m.role as "user" | "assistant",
@@ -335,7 +366,7 @@ function UserBubble({ m }: { m: Msg }) {
           {m.attachments.map((a, i) => (
             <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-ice-lum/60 bg-card/80 px-3 py-1 text-xs font-medium text-deep">
               {a.kind === "photo" ? <ImageIcon className="size-3.5" /> : a.kind === "video" ? <Video className="size-3.5" /> : <Mic className="size-3.5" />}
-              {a.kind === "voice" ? `Voice message · ${a.durationSec ?? 0}s · transcribed` : a.kind === "video" ? `${a.name}${a.path ? " · saved for clinic staff review" : ""}` : a.name}
+              {a.kind === "voice" ? `Voice message · ${a.durationSec ?? 0}s · transcribed` : `${a.name}${a.analysisStatus === "done" ? " · analyzed" : a.analysisStatus === "failed" ? " · analysis unavailable, saved for staff" : a.kind === "video" && !a.path ? " · sign in to save and analyze" : ""}${a.ocrText ? " · text read" : ""}`}
             </span>
           ))}
         </div>

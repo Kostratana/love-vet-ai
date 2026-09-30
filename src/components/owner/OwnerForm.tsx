@@ -21,6 +21,7 @@ export function OwnerForm({ redirect, onModeChange }: { redirect?: string | unde
   const [mode, setMode] = useState<"register" | "signin">("register");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [photos, setPhotos] = useState<Record<string, File>>({});
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const signedIn = !!acct.user;
@@ -41,15 +42,15 @@ export function OwnerForm({ redirect, onModeChange }: { redirect?: string | unde
   async function register(profile: OwnerProfile) {
     setBusy(true); setMsg(null);
     try {
-      if (signedIn && acct.user) { await saveOwner(acct.user.id, profile); return go(); }
+      if (signedIn && acct.user) { await saveOwner(acct.user.id, profile, photos); return go(); }
       const { data, error } = await supabase.auth.signUp({
         email: profile.email, password,
         options: { emailRedirectTo: `${window.location.origin}${redirect ?? "/account"}`, data: { first_name: profile.firstName, last_name: profile.lastName, phone: profile.phone, location: profile.location, account_type: "owner" } },
       });
       if (error) throw error;
-      if (data.session && data.user) { await saveOwner(data.user.id, profile); return go(); }
+      if (data.session && data.user) { await saveOwner(data.user.id, profile, photos); return go(); }
       stashPendingOwner(profile);
-      setMsg("Check your email to confirm your account, then sign in. Your pets will be saved when you do.");
+      setMsg(`Check your email to confirm your account, then sign in. Your pets will be saved when you do.${Object.keys(photos).length ? " Add pet photos again after signing in." : ""}`);
     } catch (e) { setMsg(e instanceof Error ? e.message : "Could not create your account."); }
     finally { setBusy(false); }
   }
@@ -87,7 +88,7 @@ export function OwnerForm({ redirect, onModeChange }: { redirect?: string | unde
             {msg && <p role="alert" className="text-sm font-medium text-destructive">{msg}</p>}
           </form>
         ) : (
-          <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); void register({ ...owner, pets: pets.filter((p) => p.name || p.species) }); }}>
+          <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); void register({ ...owner, pets: pets.filter((p) => p.name || p.species || photos[p.id]) }); }}>
             <div className="glass rounded-3xl p-6 sm:p-8">
               <SectionTitle>Personal information</SectionTitle>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -124,7 +125,8 @@ export function OwnerForm({ redirect, onModeChange }: { redirect?: string | unde
                     </Select>
                   </Field>
                   <Field label="Pet photo" hint="optional">
-                    <TextInput type="file" accept="image/*" onChange={(e) => updPet(p.id, "photoName", e.target.files?.[0]?.name ?? "")} className="file:mr-3 file:rounded-full file:border-0 file:bg-ice file:px-3 file:py-1 file:text-xs file:font-semibold file:text-deep" />
+                    {(photos[p.id] || p.photoUrl) && <img src={photos[p.id] ? URL.createObjectURL(photos[p.id]!) : p.photoUrl} alt={`${p.name || "Pet"} photo`} className="mb-2 size-20 rounded-xl border border-ice-lum/60 object-cover" />}
+                    <TextInput type="file" accept="image/jpeg,image/png,image/webp" aria-label={p.photoUrl ? "Replace pet photo" : "Pet photo"} onChange={(e) => { const f = e.target.files?.[0]; if (f) setPhotos((ph) => ({ ...ph, [p.id]: f })); }} className="file:mr-3 file:rounded-full file:border-0 file:bg-ice file:px-3 file:py-1 file:text-xs file:font-semibold file:text-deep" />
                   </Field>
                 </div>
               </div>

@@ -26,7 +26,7 @@ type Req = {
   id: string; created_at: string; status: string; summary: string; symptoms: string[]; urgency: string; conversation_id: string | null; intake_id: string | null; user_id: string;
   pet: { name: string; species: string; breed: string | null; age: string | null } | null;
   owner: { first_name: string; last_name: string; email: string; phone: string } | null;
-  files: { id: string; kind: string; storage_path: string; transcription: string | null; url?: string | undefined }[];
+  files: { id: string; kind: string; storage_path: string; transcription: string | null; analysis: string | null; ocr_text: string | null; analysis_status: string; url?: string | undefined }[];
 };
 
 const STATUSES = ["new", "in_review", "contacted", "closed"];
@@ -43,7 +43,7 @@ export function StaffRequests({ onCount }: { onCount?: (n: number) => void }) {
     const convIds = data.map((r) => r.conversation_id).filter((x): x is string => !!x);
     const [{ data: owners }, { data: files }] = await Promise.all([
       userIds.length ? supabase.from("profiles").select("id,first_name,last_name,email,phone").in("id", userIds) : Promise.resolve({ data: [] as never[] }),
-      convIds.length ? supabase.from("uploaded_files").select("id,kind,storage_path,transcription,conversation_id").in("conversation_id", convIds) : Promise.resolve({ data: [] as never[] }),
+      convIds.length ? supabase.from("uploaded_files").select("id,kind,storage_path,transcription,conversation_id,analysis,ocr_text,analysis_status").in("conversation_id", convIds) : Promise.resolve({ data: [] as never[] }),
     ]);
     const signed = await Promise.all((files ?? []).map(async (f) => ({ ...f, url: (await supabase.storage.from("chat-media").createSignedUrl(f.storage_path, 3600)).data?.signedUrl })));
     const out: Req[] = data.map((r) => ({
@@ -103,6 +103,18 @@ export function StaffRequests({ onCount }: { onCount?: (n: number) => void }) {
               ))}
             </div>
           )}
+          {r.files.some((f) => f.analysis || f.ocr_text || f.analysis_status === "failed") && (
+            <div className="mt-3 space-y-2 text-xs">
+              {r.files.map((f, i) => (f.analysis || f.ocr_text || f.analysis_status === "failed") && (
+                <div key={f.id} className="rounded-xl bg-card/70 p-3">
+                  <p className="font-semibold text-deep">{f.kind === "video" ? "Video" : "Photo"} {i + 1} · automated observations (not a diagnosis)</p>
+                  {f.analysis_status === "failed" && <p className="text-graphite">Automated analysis was unavailable — please review the file.</p>}
+                  {f.analysis && <p className="mt-1 whitespace-pre-line text-navy">{f.analysis}</p>}
+                  {f.ocr_text && <p className="mt-1 whitespace-pre-line text-graphite"><b>Text in image:</b> {f.ocr_text}</p>}
+                </div>
+              ))}
+            </div>
+          )}
         </article>
       ))}
     </section>
@@ -111,7 +123,7 @@ export function StaffRequests({ onCount }: { onCount?: (n: number) => void }) {
 
 type Appt = { id: string; requested_at: string; appointment_type: string; status: string; notes: string; pet: { name: string; species: string } | null };
 
-export function AppointmentList({ scope }: { scope: "own" | "staff" }) {
+export function AppointmentList({ scope, empty, header }: { scope: "own" | "staff"; empty?: React.ReactNode; header?: React.ReactNode }) {
   const { user, isStaff } = useAccount();
   const [rows, setRows] = useState<Appt[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -133,9 +145,9 @@ export function AppointmentList({ scope }: { scope: "own" | "staff" }) {
   if (!enabled) return null;
   if (!rows) return <p role="status" className="text-sm text-graphite">Loading appointments…</p>;
   if (err) return <p role="alert" className="text-sm text-destructive">{err}</p>;
-  if (!rows.length) return null;
+  if (!rows.length) return <>{empty ?? null}</>;
   return (
-    <ul className="space-y-2">
+    <>{header}<ul className="space-y-2">
       {rows.map((a) => (
         <li key={a.id} className="glass flex flex-wrap items-center gap-3 rounded-2xl px-4 py-3 text-sm text-navy">
           <CalendarDays className="size-4 text-deep" />
@@ -153,6 +165,6 @@ export function AppointmentList({ scope }: { scope: "own" | "staff" }) {
           )}
         </li>
       ))}
-    </ul>
+    </ul></>
   );
 }
