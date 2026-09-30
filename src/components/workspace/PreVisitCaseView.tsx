@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CalendarDays, FileVideo, ImageIcon, Mic, PawPrint, ShieldCheck, Sparkles, User } from "lucide-react";
+import { CalendarDays, FileVideo, History, ImageIcon, Mic, PawPrint, ShieldCheck, Sparkles, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /** One normalized pre-visit case. Filled from the fictional sample OR from a real booked appointment. */
@@ -11,6 +11,7 @@ export type CaseView = {
   intake: [string, string][];
   triage: { urgency: string; summary: string; destination: string; confidence: number | null } | null;
   media: { id: string; kind: "photo" | "video" | "voice"; label: string; url?: string | undefined; transcript?: string | null; observation?: string | null; ocr?: string | null; duration?: string }[];
+  history?: { id: string; date: string; vet: string | null; snippets: string[]; media: string; similarity?: number }[];
   appointment: { vet: string; specialty: string; clinic: string; address: string; when: string; type: string; status: string; homeVisit?: string | undefined };
 };
 
@@ -109,6 +110,19 @@ export function PreVisitCaseView({ c }: { c: CaseView }) {
       </Block>
       <Block n={7} title="Appointment" tag={<Tag>Retrieved clinic / provider data</Tag>}>
         <div className="flex gap-2"><CalendarDays className="mt-0.5 size-4 shrink-0 text-deep" /><div className="flex-1"><Rows rows={[["Veterinarian", c.appointment.vet], ["Specialty", c.appointment.specialty], ["Clinic", c.appointment.clinic], ["Address", c.appointment.address], ["Home visit at", c.appointment.homeVisit ?? ""], ["Date & time", c.appointment.when], ["Type", c.appointment.type], ["Status", c.appointment.status]]} /></div></div>
+      </Block>
+      <Block n={8} title="Relevant patient history" tag={<Tag>Retrieved patient history</Tag>}>
+        {c.history?.length ? (
+          <ul className="space-y-2">
+            {c.history.map((h) => (
+              <li key={h.id} className="rounded-2xl border border-ice-lum/50 bg-card/60 p-3">
+                <p className="flex flex-wrap items-center gap-2 text-xs font-bold text-deep"><History className="size-3.5" /> {h.date}{h.vet && <span className="font-medium text-graphite">· {h.vet}</span>}{h.media && <span className="font-medium text-graphite">· {h.media}</span>}{sample && <Tag>Fictional</Tag>}</p>
+                {h.snippets.map((t, i) => <p key={i} className="mt-1 text-xs whitespace-pre-line text-navy/85">{t}</p>)}
+              </li>
+            ))}
+            <li className="text-xs text-graphite">Semantically related previous cases for this pet only — continuity, not a diagnosis.</li>
+          </ul>
+        ) : <p className="text-graphite">No related previous cases stored for this pet.</p>}
       </Block>
     </article>
   );

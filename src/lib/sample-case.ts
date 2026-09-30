@@ -37,6 +37,9 @@ export const sampleCaseView: CaseView = {
     ["Energy", "Resting more, still moves around"],
     ["Other animals at home", "None"],
   ],
+  history: [
+    { id: "h1", date: "Mar 12 (fictional)", vet: "Dr. Noor Castellan", media: "1 photo", snippets: ["OWNER REPORTED: ate less hay for a day after a diet change; droppings smaller.", "TRIAGE (routing support): soon · routine exotic consultation booked."] },
+  ],
   triage: { urgency: "soon", summary: "Owner reports reduced appetite, lower activity and fewer droppings for about two days. Recommended to see a rabbit-experienced veterinarian soon.", destination: "Book a veterinary appointment", confidence: 0.82 },
   media: [
     { id: "v", kind: "voice", label: "Voice message", duration: "0:14", transcript: "Mi conejita come menos desde hace dos días y está más quieta." },
