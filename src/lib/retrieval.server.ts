@@ -29,11 +29,11 @@ export type VetRecord = {
   id: string; name: string; title: string; specialty: string; secondary_specialties: string[]; interests: string[]; conditions: string[];
   species: string[]; languages: string[]; years_experience: number; bio: string; initials: string; appointment_types: string[];
   appointment_durations: Record<string, number>; urgent_care: boolean;
-  provider_type: string; home_visit: boolean; home_visit_types: string[]; service_area: string[];
+  provider_type: string; clinic_id: string | null; home_visit: boolean; home_visit_types: string[]; service_area: string[];
   clinic: { name: string; address: string } | null;
 };
 
-const VET_COLS = "id,name,title,specialty,secondary_specialties,interests,conditions,species,languages,years_experience,bio,initials,appointment_types,appointment_durations,urgent_care,provider_type,home_visit,home_visit_types,service_area,clinics(name,street,city,region,postal_code,country)";
+const VET_COLS = "id,name,title,specialty,secondary_specialties,interests,conditions,species,languages,years_experience,bio,initials,appointment_types,appointment_durations,urgent_care,provider_type,home_visit,home_visit_types,service_area,clinic_id,clinics(name,street,city,region,postal_code,country)";
 
 type Row = Omit<VetRecord, "clinic" | "appointment_durations"> & { appointment_durations: unknown; clinics: { name: string; street: string; city: string; region: string; postal_code: string; country: string } | null };
 const toRecord = (r: Row): VetRecord => ({

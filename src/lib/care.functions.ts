@@ -205,7 +205,7 @@ export const matchVeterinarians = createServerFn({ method: "POST" })
         id: v.id, name: v.name, title: v.title, specialty: SPECIALTY_LABEL[v.specialty] ?? v.specialty, expertise: [...v.secondary_specialties, ...v.interests].slice(0, 5),
         species: v.species, languages: v.languages, years_experience: v.years_experience, bio: v.bio, initials: v.initials, urgent_care: v.urgent_care,
         appointment_types: v.appointment_types, clinic_name: v.clinic?.name ?? "", clinic_address: v.clinic?.address ?? "", reason, slots,
-        clinic_id: null, provider_type: v.provider_type, home_visit: v.home_visit, service_area: v.service_area,
+        clinic_id: v.clinic_id, provider_type: v.provider_type, home_visit: v.home_visit, service_area: v.service_area,
       });
     }
     if (!out.length && !note && data.window) note = "No stored open times match that time preference. Try a wider time range.";
