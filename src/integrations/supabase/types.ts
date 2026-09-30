@@ -175,6 +175,60 @@ export type Database = {
           },
         ]
       }
+      clinics: {
+        Row: {
+          city: string
+          country: string
+          created_at: string
+          description: string
+          email: string
+          hours: Json
+          id: string
+          is_demo: boolean
+          name: string
+          phone: string
+          postal_code: string
+          region: string
+          slug: string
+          street: string
+          urgent_care: string
+        }
+        Insert: {
+          city?: string
+          country?: string
+          created_at?: string
+          description?: string
+          email?: string
+          hours?: Json
+          id?: string
+          is_demo?: boolean
+          name: string
+          phone?: string
+          postal_code?: string
+          region?: string
+          slug: string
+          street?: string
+          urgent_care?: string
+        }
+        Update: {
+          city?: string
+          country?: string
+          created_at?: string
+          description?: string
+          email?: string
+          hours?: Json
+          id?: string
+          is_demo?: boolean
+          name?: string
+          phone?: string
+          postal_code?: string
+          region?: string
+          slug?: string
+          street?: string
+          urgent_care?: string
+        }
+        Relationships: []
+      }
       conversation_messages: {
         Row: {
           attachments: Json
@@ -536,59 +590,88 @@ export type Database = {
       veterinarians: {
         Row: {
           active: boolean
+          appointment_durations: Json
           appointment_types: string[]
           availability: string
           bio: string
+          clinic_id: string | null
+          conditions: string[]
           created_at: string
+          embedding: string | null
           id: string
           initials: string
           interests: string[]
           is_demo: boolean
           languages: string[]
           name: string
+          search_text: string
+          secondary_specialties: string[]
           slug: string
           specialty: string
           species: string[]
           title: string
+          urgent_care: boolean
           years_experience: number
         }
         Insert: {
           active?: boolean
+          appointment_durations?: Json
           appointment_types?: string[]
           availability?: string
           bio?: string
+          clinic_id?: string | null
+          conditions?: string[]
           created_at?: string
+          embedding?: string | null
           id?: string
           initials?: string
           interests?: string[]
           is_demo?: boolean
           languages?: string[]
           name: string
+          search_text?: string
+          secondary_specialties?: string[]
           slug: string
           specialty: string
           species?: string[]
           title: string
+          urgent_care?: boolean
           years_experience?: number
         }
         Update: {
           active?: boolean
+          appointment_durations?: Json
           appointment_types?: string[]
           availability?: string
           bio?: string
+          clinic_id?: string | null
+          conditions?: string[]
           created_at?: string
+          embedding?: string | null
           id?: string
           initials?: string
           interests?: string[]
           is_demo?: boolean
           languages?: string[]
           name?: string
+          search_text?: string
+          secondary_specialties?: string[]
           slug?: string
           specialty?: string
           species?: string[]
           title?: string
+          urgent_care?: boolean
           years_experience?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "veterinarians_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       veterinary_intakes: {
         Row: {
@@ -677,6 +760,13 @@ export type Database = {
           id: string
           similarity: number
           title: string
+        }[]
+      }
+      match_veterinarians: {
+        Args: { match_count?: number; query_embedding: string }
+        Returns: {
+          id: string
+          similarity: number
         }[]
       }
     }

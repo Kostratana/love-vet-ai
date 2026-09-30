@@ -43,6 +43,13 @@
       "when": 1790734946258,
       "tag": "0005_demo_clinic_vets_slots",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790736220683,
+      "tag": "0006_clinics_and_vet_retrieval",
+      "breakpoints": true
     }
   ]
 }
