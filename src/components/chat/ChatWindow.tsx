@@ -10,6 +10,7 @@ import { useAccount } from "@/lib/account-store";
 import { runTriage, type Triage } from "@/lib/care.functions";
 import { OPENING_MESSAGE, UPLOAD_LIMITS, formatBytes, type AttachmentMeta } from "@/lib/chat-config";
 import { cn } from "@/lib/utils";
+import { recordWav } from "@/lib/record-wav";
 
 type Pending = AttachmentMeta & { id: string; url: string; file: Blob };
 type Msg = { id: string; role: string; content: string; attachments: AttachmentMeta[]; created_at: string; images?: string[] };
@@ -161,22 +162,20 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
           setBusy(false); setStatus(null); return;
         }
       }
-      const voiceFailed = false;
       const atts = voice ? [...pending, voice] : pending;
       const typed = text.trim();
-      if (voiceFailed && !userId && !typed) { setBusy(false); setStatus(null); return; }
-      const content = [typed, voice?.transcription ?? (voiceFailed ? "(Voice message — transcription unavailable)" : "")].filter(Boolean).join("\n\n");
+      const content = [typed, voice?.transcription ?? ""].filter(Boolean).join("\n\n");
       if (!content && atts.length === 0) { setBusy(false); setStatus(null); return; }
       setStatus(atts.length ? "Uploading…" : null);
       const cid = await ensureConversation(content);
       const { meta, images } = await uploadAll(atts, cid);
       setStatus(null);
-      if (meta.some((m) => m.analysisStatus === "failed") && !voiceFailed) setError("Automated analysis was unavailable for some media. The files are saved for clinic staff to review.");
+      if (meta.some((m) => m.analysisStatus === "failed")) setError("Automated analysis was unavailable for some media. The files are saved for clinic staff to review.");
       const userMsg: Msg = { id: crypto.randomUUID(), role: "user", content, attachments: meta, created_at: new Date().toISOString(), images };
       if (cid && userId) await supabase.from("conversation_messages").insert({ id: userMsg.id, conversation_id: cid, user_id: userId, role: "user", content, attachments: meta });
       const history = [...messages, userMsg];
       setMessages(history);
-      if (!meta.some((m) => m.analysisStatus === "failed") && !voiceFailed) setError(null);
+      if (!meta.some((m) => m.analysisStatus === "failed")) setError(null);
       setText("");
       setPending([]);
       setHideCard(false);
@@ -323,6 +322,13 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
           )}
           {status && <p role="status" className="mb-2 text-xs font-medium text-deep">{status}</p>}
           {error && <p role="alert" className="mb-2 text-xs font-medium text-destructive">{error}</p>}
+          {failedVoice && !busy && (
+            <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
+              <audio controls src={failedVoice.url} className="h-8" aria-label="Your recording" />
+              <button type="button" onClick={() => void send(failedVoice)} className="rounded-full bg-primary px-3 py-1.5 font-semibold text-primary-foreground">Retry transcription</button>
+              <button type="button" onClick={() => { setFailedVoice(null); setError(null); }} className="rounded-full px-3 py-1.5 font-semibold text-deep hover:bg-ice">Discard</button>
+            </div>
+          )}
           <Composer
             text={text}
             setText={setText}
