@@ -1,4 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { ClinicQuestion } from "@/components/care/ClinicQuestion";
 import { ArrowUpRight } from "lucide-react";
 import horse from "@/assets/horse-health-ai.jpg";
 import { PublicPage } from "@/components/layout/PublicPage";
@@ -48,6 +49,7 @@ function InformationDesk() {
             <a key={c.id} href={`#${c.id}`} className="lv-pill px-3 py-1 text-xs">{c.title}</a>
           ))}
         </nav>
+        <ClinicQuestion />
       </section>
 
       <div className="mx-auto mt-12 max-w-5xl divide-y divide-ice-lum/50 px-6">
