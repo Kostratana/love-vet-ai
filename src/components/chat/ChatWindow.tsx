@@ -198,6 +198,7 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
       const userMsg: Msg = { id: crypto.randomUUID(), role: "user", content, attachments: meta, created_at: new Date().toISOString(), images };
       if (cid && userId) await supabase.from("conversation_messages").insert({ id: userMsg.id, conversation_id: cid, user_id: userId, role: "user", content, attachments: meta });
       const history = [...messages, userMsg];
+      nearBottom.current = true;
       setMessages(history);
       if (!meta.some((m) => m.analysisStatus === "failed")) setError(null);
       setText("");
