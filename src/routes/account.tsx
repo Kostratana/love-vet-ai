@@ -33,12 +33,12 @@ const tabs = [
 ] as const;
 
 function Account() {
-  const { owner } = useAccount();
+  const { owner, loading, user } = useAccount();
   const navigate = useNavigate();
   const [tab, setTab] = useState<(typeof tabs)[number]["id"]>("pets");
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
-  useEffect(() => { if (ready && !owner) navigate({ to: "/join/owner", search: { redirect: "/account" } }); }, [ready, owner, navigate]);
+  useEffect(() => { if (ready && !loading && !user) navigate({ to: "/join/owner", search: { redirect: "/account" } }); }, [ready, loading, user, navigate]);
   if (!owner) return <div className="ambient-bg min-h-screen" />;
 
   const empty = {
@@ -86,7 +86,7 @@ function Account() {
                 <p><span className="text-graphite">Location:</span> {owner.location || "—"}</p>
                 <div className="flex gap-2 pt-4">
                   <Link to="/join/owner" className={buttonVariants({ variant: "secondary", size: "sm" })}>Edit</Link>
-                  <GlowButton size="sm" variant="ghost" onClick={() => { signOutLocal(); navigate({ to: "/" }); }}>Sign out</GlowButton>
+                  <GlowButton size="sm" variant="ghost" onClick={async () => { await signOutLocal(); navigate({ to: "/" }); }}>Sign out</GlowButton>
                 </div>
               </div>
             )}

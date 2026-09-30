@@ -3,7 +3,10 @@ import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Field, SectionTitle, Select, TextInput } from "@/components/kit/form";
 import { GlowButton } from "@/components/kit/primitives";
-import { SPECIES, setAccount, useAccount, type OwnerProfile, type Pet } from "@/lib/account-store";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
+import { SPECIES, saveOwner, stashPendingOwner, useAccount, type OwnerProfile, type Pet } from "@/lib/account-store";
 
 void Link;
 const newPet = (): Pet => ({ id: crypto.randomUUID(), name: "", species: "", breed: "", age: "", sex: "" });
@@ -17,13 +20,51 @@ export function OwnerForm({ redirect, onModeChange }: { redirect?: string | unde
   const [pets, setPets] = useState<Pet[]>(acct.owner?.pets.length ? acct.owner.pets : [newPet()]);
   const [mode, setMode] = useState<"register" | "signin">("register");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const signedIn = !!acct.user;
+
+  // Fill the form with saved details once they load.
+  useEffect(() => {
+    if (!acct.owner) return;
+    const { pets: savedPets, ...rest } = acct.owner;
+    setOwner(rest);
+    if (savedPets.length) setPets(savedPets);
+  }, [acct.owner]);
 
   const upd = (k: keyof typeof owner) => (e: React.ChangeEvent<HTMLInputElement>) => setOwner({ ...owner, [k]: e.target.value });
   const updPet = (id: string, k: keyof Pet, v: string) => setPets(pets.map((p) => (p.id === id ? { ...p, [k]: v } : p)));
 
-  function finish(profile: OwnerProfile) {
-    setAccount({ role: "owner", owner: profile });
-    router.history.push(redirect ?? "/account");
+  const go = () => router.history.push(redirect ?? "/account");
+
+  async function register(profile: OwnerProfile) {
+    setBusy(true); setMsg(null);
+    try {
+      if (signedIn && acct.user) { await saveOwner(acct.user.id, profile); return go(); }
+      const { data, error } = await supabase.auth.signUp({
+        email: profile.email, password,
+        options: { emailRedirectTo: `${window.location.origin}${redirect ?? "/account"}`, data: { first_name: profile.firstName, last_name: profile.lastName, phone: profile.phone, location: profile.location, account_type: "owner" } },
+      });
+      if (error) throw error;
+      if (data.session && data.user) { await saveOwner(data.user.id, profile); return go(); }
+      stashPendingOwner(profile);
+      setMsg("Check your email to confirm your account, then sign in. Your pets will be saved when you do.");
+    } catch (e) { setMsg(e instanceof Error ? e.message : "Could not create your account."); }
+    finally { setBusy(false); }
+  }
+
+  async function signIn() {
+    setBusy(true); setMsg(null);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setBusy(false);
+    if (error) return setMsg(error.message === "Invalid login credentials" ? "Email or password is incorrect." : error.message);
+    go();
+  }
+
+  async function google() {
+    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + (redirect ?? "/account") });
+    if (r.error) setMsg(r.error.message ?? "Google sign-in failed.");
   }
 
   return (
@@ -38,13 +79,15 @@ export function OwnerForm({ redirect, onModeChange }: { redirect?: string | unde
         </div>
 
         {mode === "signin" ? (
-          <form className="glass space-y-4 rounded-3xl p-6 sm:p-8" onSubmit={(e) => { e.preventDefault(); finish(acct.owner ?? { firstName: "", lastName: "", email, phone: "", location: "", pets: [] }); }}>
+          <form className="glass space-y-4 rounded-3xl p-6 sm:p-8" onSubmit={(e) => { e.preventDefault(); void signIn(); }}>
             <Field label="Email"><TextInput type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" /></Field>
-            <Field label="Password"><TextInput type="password" required autoComplete="current-password" /></Field>
-            <GlowButton type="submit" className="w-full">Sign in</GlowButton>
+            <Field label="Password"><TextInput type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
+            <GlowButton type="submit" className="w-full" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</GlowButton>
+            <GlowButton type="button" variant="secondary" className="w-full" onClick={google}>Continue with Google</GlowButton>
+            {msg && <p role="alert" className="text-sm font-medium text-destructive">{msg}</p>}
           </form>
         ) : (
-          <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); finish({ ...owner, pets: pets.filter((p) => p.name || p.species) }); }}>
+          <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); void register({ ...owner, pets: pets.filter((p) => p.name || p.species) }); }}>
             <div className="glass rounded-3xl p-6 sm:p-8">
               <SectionTitle>Personal information</SectionTitle>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -52,6 +95,7 @@ export function OwnerForm({ redirect, onModeChange }: { redirect?: string | unde
                 <Field label="Last name"><TextInput required value={owner.lastName} onChange={upd("lastName")} autoComplete="family-name" /></Field>
                 <Field label="Email"><TextInput type="email" required value={owner.email} onChange={upd("email")} autoComplete="email" /></Field>
                 <Field label="Phone"><TextInput type="tel" value={owner.phone} onChange={upd("phone")} autoComplete="tel" /></Field>
+                {!signedIn && <Field label="Password" hint="at least 8 characters" className="sm:col-span-2"><TextInput type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" /></Field>}
                 <Field label="Location / address" className="sm:col-span-2"><TextInput value={owner.location} onChange={upd("location")} autoComplete="street-address" /></Field>
               </div>
             </div>
@@ -88,11 +132,11 @@ export function OwnerForm({ redirect, onModeChange }: { redirect?: string | unde
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <GlowButton type="button" variant="secondary" onClick={() => setPets([...pets, newPet()])}><Plus /> Add another pet</GlowButton>
-              <GlowButton type="submit" size="lg">Create account</GlowButton>
+              <GlowButton type="submit" size="lg" disabled={busy}>{busy ? "Saving…" : signedIn ? "Save changes" : "Create account"}</GlowButton>
             </div>
+            {msg && <p role="alert" className="text-sm font-medium text-deep">{msg}</p>}
             <p className="text-xs text-graphite">
-              Preview: your details stay in this browser until secure sign-in is connected. Love Vet AI is
-              not a veterinary medical record system.
+              Your details are saved securely to your account. Love Vet AI is not a veterinary medical record system.
             </p>
           </form>
         )}
