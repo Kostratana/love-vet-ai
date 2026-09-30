@@ -10,3 +10,6 @@
 <!-- LOVABLE:END -->
 - Pet owner / vet accounts and reviews are frontend-only via `src/lib/account-store.ts` (browser storage) — brief forbids backend for these until integration is planned.
 - Keep `/` as the canonical Home route and redirect legacy `/home` visits to it — stale preview links must not reach the 404 page.
+
+- Accounts, pets, chats, media, triage, requests, appointments live in Lovable Cloud (`account-store.ts` wraps auth + tables); browser-only storage is only a pre-confirmation stash. Why: replaces the old frontend-only rule.
+- Clinic staff role is granted manually (never self-assigned at registration). Why: prevents anyone reading owners' cases.

@@ -1,13 +1,14 @@
 # Roadmap — Backend + AI integration
 
-- [x] Database schema: profiles, roles, pets, conversations, files, intakes, triage, staff requests, appointments, knowledge (with access rules)
-- [x] Private media storage
-- [x] Live AI chat replies (gpt-6-astra, safety prompt, streaming)
-- [ ] Sign up / sign in on existing owner & clinic registration pages; move pets/profile to database
-- [ ] Save signed-in chats; reload after refresh
-- [ ] Upload photos/video/voice to storage; voice transcription
-- [ ] Structured triage (jev-latest) + routing card in chat
-- [ ] Send to clinic staff; workspace shows real requests
-- [ ] Information Desk knowledge search (needs real clinic info)
-- [ ] Booking form + appointments in account/workspace
-- [ ] Confirmation email (needs email domain)
+- [x] Database schema, access rules, private media storage
+- [x] Live AI chat (gpt-6-astra), photos viewed by AI, videos stored for staff
+- [x] Sign up / sign in / sign out on owner & clinic pages; profile + pets in database
+- [x] Signed-in chats saved and reloaded (/chat/:id), pet selection
+- [x] Uploads to private storage; voice transcription (gemini-3.5-transcribe)
+- [x] Structured triage (jev-latest + astra extraction), saved, routing card
+- [x] Send to clinic staff; workspace shows real requests (verified staff only)
+- [x] Information Desk RAG (gemini-embedding-2); Clinic Setup feeds it
+- [x] Booking in chat; appointments in account + workspace
+- [ ] Signed-in end-to-end browser test — blocked: needs a confirmed test account (email confirmation is on)
+- [ ] Staff verification — blocked: owner must say which clinic accounts get staff access
+- [ ] Confirmation email — blocked: needs verified sending domain (stub in email.server.ts)
