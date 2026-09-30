@@ -127,3 +127,62 @@ export const addKnowledge = createServerFn({ method: "POST" })
     if (error) return { ok: false, error: error.code === "42501" ? "Only verified clinic staff can add clinic information." : error.message };
     return { ok: true };
   });
+
+export type VetMatch = {
+  id: string; name: string; title: string; specialty: string; species: string[]; languages: string[]; bio: string; initials: string;
+  reason: string; slots: { id: string; starts_at: string; duration_min: number }[];
+};
+
+const SPECIALTY_LABEL: Record<string, string> = {
+  general: "general veterinary medicine", emergency: "urgent care", dermatology: "dermatology",
+  internal_medicine: "internal medicine", surgery: "surgery", exotics: "exotic & small mammal medicine",
+};
+
+/** Matches ONLY stored veterinarian records to the case. Routing help, not a diagnosis. */
+export const matchVeterinarians = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({
+    species: z.string().max(60).optional().default(""),
+    symptoms: z.array(z.string().max(200)).max(12).default([]),
+    summary: z.string().max(2000).default(""),
+    urgency: z.enum(URGENCIES),
+  }).parse(d))
+  .handler(async ({ data }): Promise<{ specialty: string; vets: VetMatch[]; error?: string }> => {
+    const { jev } = await import("./ai.server");
+    const { createClient } = await import("@supabase/supabase-js");
+    const sb = createClient(process.env["SUPABASE_URL"]!, process.env["SUPABASE_PUBLISHABLE_KEY"]!, { auth: { persistSession: false } });
+    await sb.rpc("ensure_demo_slots");
+    let specialty = "general";
+    try {
+      const a = await jev({ species: data.species || "unknown", symptoms: data.symptoms, summary: data.summary, urgency: data.urgency }, {
+        specialty: {
+          type: "choice",
+          instructions: "Which clinic service best fits a first visit for this animal, based only on `species`, `symptoms`, `summary` and `urgency`? This is scheduling, not a diagnosis.",
+          criteria: {
+            exotics: "The animal is a rabbit, guinea pig, hamster, chinchilla, ferret, bird or reptile.",
+            emergency: "Dog or cat with urgency 'urgent' needing a same-day visit.",
+            dermatology: "Dog or cat with mainly skin, coat, itching, hair loss or ear concerns.",
+            internal_medicine: "Dog or cat with vomiting, diarrhoea, appetite, drinking, urination or weight changes.",
+            surgery: "Dog or cat with lumps, wounds, lameness or post-operative checks.",
+            general: "Routine care, vaccination, checkups, or anything else.",
+          },
+        },
+      });
+      if (a["specialty"]?.choice) specialty = a["specialty"].choice;
+    } catch { /* fall back to general */ }
+    const sp = data.species.toLowerCase().trim();
+    const { data: vets, error } = await sb.from("veterinarians").select("id,name,title,specialty,species,languages,bio,initials").eq("active", true);
+    if (error || !vets) return { specialty, vets: [], error: "Could not load veterinarians." };
+    const treats = (v: { species: string[] }) => !sp || v.species.some((s) => sp.includes(s) || s.includes(sp));
+    const ranked = vets.filter(treats).map((v) => ({ v, score: (v.specialty === specialty ? 3 : 0) + (v.specialty === "general" ? 1 : 0) + (data.urgency === "urgent" && v.specialty === "emergency" ? 2 : 0) }))
+      .sort((a, b) => b.score - a.score).slice(0, 3);
+    const out: VetMatch[] = [];
+    for (const { v } of ranked) {
+      const { data: slots } = await sb.from("vet_slots").select("id,starts_at,duration_min").eq("veterinarian_id", v.id).eq("booked", false)
+        .gte("starts_at", new Date(Date.now() + 3600_000).toISOString()).order("starts_at").limit(data.urgency === "urgent" ? 4 : 8);
+      const reason = v.specialty === specialty
+        ? `Offers ${SPECIALTY_LABEL[v.specialty] ?? v.specialty}, which fits the reported concern${sp ? ` for a ${sp}` : ""}.`
+        : `${SPECIALTY_LABEL[v.specialty] ?? v.specialty} — ${sp ? `treats ${sp}s` : "sees many species"} and can do a first assessment.`;
+      out.push({ ...v, reason, slots: slots ?? [] });
+    }
+    return { specialty, vets: out };
+  });
