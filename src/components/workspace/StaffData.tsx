@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAccount } from "@/lib/account-store";
 import { cn } from "@/lib/utils";
 import { PreVisitCaseView, type CaseView } from "@/components/workspace/PreVisitCaseView";
+import { relatedPetHistory } from "@/lib/history.functions";
 
 /** Explains access state when the viewer is not verified clinic staff. Returns null for staff. */
 export function StaffGate({ children }: { children: React.ReactNode }) {
@@ -46,7 +47,7 @@ export function StaffRequests({ onCount }: { onCount?: (n: number) => void }) {
       userIds.length ? supabase.from("profiles").select("id,first_name,last_name,email,phone").in("id", userIds) : Promise.resolve({ data: [] as never[] }),
       convIds.length ? supabase.from("uploaded_files").select("id,kind,storage_path,transcription,conversation_id,analysis,ocr_text,analysis_status").in("conversation_id", convIds) : Promise.resolve({ data: [] as never[] }),
     ]);
-    const signed = await Promise.all((files ?? []).map(async (f) => ({ ...f, url: (await supabase.storage.from("chat-media").createSignedUrl(f.storage_path, 3600)).data?.signedUrl })));
+  const signed = await Promise.all((files ?? []).map(async (f) => ({ ...f, url: (await supabase.storage.from("chat-media").createSignedUrl(f.storage_path, 3600)).data?.signedUrl })));
     const out: Req[] = data.map((r) => ({
       ...r,
       pet: (r as unknown as { pet: Req["pet"] }).pet,
@@ -192,7 +193,7 @@ type Pkg = {
 /** Builds the same CaseView used by the fictional sample from a real booked appointment (RLS: staff or owner). */
 async function loadCaseView(apptId: string): Promise<CaseView | null> {
   const { data: a, error } = await supabase.from("appointments")
-    .select("user_id,conversation_id,intake_id,case_package,notes,visit_location,requested_at,appointment_type,status,pet:pets(name,species,breed,age,sex),vet:veterinarians(name,title)")
+    .select("user_id,pet_id,conversation_id,intake_id,case_package,notes,visit_location,requested_at,appointment_type,status,pet:pets(name,species,breed,age,sex),vet:veterinarians(name,title)")
     .eq("id", apptId).single();
   if (error || !a) return null;
   const pkg = (a.case_package ?? {}) as Pkg;
@@ -201,6 +202,10 @@ async function loadCaseView(apptId: string): Promise<CaseView | null> {
     a.conversation_id ? supabase.from("uploaded_files").select("id,kind,storage_path,transcription,analysis,ocr_text").eq("conversation_id", a.conversation_id).order("created_at") : Promise.resolve({ data: [] as never[] }),
     a.intake_id ? supabase.from("veterinary_intakes").select("summary,symptoms").eq("id", a.intake_id).maybeSingle() : Promise.resolve({ data: null }),
   ]);
+  const query = [pkg.owner_reported?.summary, ...(pkg.owner_reported?.concerns ?? intake?.symptoms ?? []), a.notes].filter(Boolean).join(". ");
+  const hist = a.pet_id && query.length > 2
+    ? await relatedPetHistory({ data: { petId: a.pet_id, query: query.slice(0, 2000), excludeConversationId: a.conversation_id } }).catch(() => null)
+    : null;
   const signed = await Promise.all((files ?? []).map(async (f) => ({ ...f, url: (await supabase.storage.from("chat-media").createSignedUrl(f.storage_path, 3600)).data?.signedUrl })));
   const pet = (a as unknown as { pet: { name: string; species: string; breed: string | null; age: string | null; sex: string | null } | null }).pet;
   const vet = (a as unknown as { vet: { name: string; title: string } | null }).vet;
@@ -221,6 +226,11 @@ async function loadCaseView(apptId: string): Promise<CaseView | null> {
       counts[k]++;
       return { id: f.id, kind: k, label: k === "photo" ? `Photo ${counts.photo}` : k === "video" ? `Video ${counts.video}` : `Voice message ${counts.voice}`, url: f.url, transcript: f.transcription, observation: f.analysis, ocr: f.ocr_text };
     }),
+    history: (hist?.cases ?? []).map((h, i) => ({
+      id: `${h.conversationId ?? i}`, date: new Date(h.date).toLocaleDateString([], { dateStyle: "medium" }), vet: h.vet,
+      snippets: h.snippets.map((x) => x.text),
+      media: [h.media.photo && `${h.media.photo} photo`, h.media.video && `${h.media.video} video`, h.media.voice && `${h.media.voice} voice`].filter(Boolean).join(", "),
+    })),
     appointment: {
       vet: vet?.name ?? pkg.provider?.name ?? "Not assigned", specialty: pkg.provider?.specialty ?? vet?.title ?? "", clinic: pkg.provider?.clinic || "Independent / home visit",
       address: pkg.provider?.clinic_address ?? "", homeVisit: a.visit_location || undefined,

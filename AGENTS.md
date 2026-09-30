@@ -19,3 +19,5 @@
 - Appointment pre-visit case = `appointments.case_package` snapshot + live links (conversation_id → uploaded_files, pet_id, user_id → profiles); media stay private in chat-media. Why: one case, no private data in public RAG.
 - Reviews live in `public.reviews`; RLS insert only for the owner's own `completed` appointment. Why: no fake or pre-visit reviews.
 - Read-aloud uses `/api/tts` (google/gemini-3.1-flash-tts-preview, WAV, user-initiated). Why: supported zero-retention speech model.
+- Three separate RAG domains: clinic (knowledge_documents/match_knowledge, public), provider (veterinarians/match_veterinarians, public), patient history (patient_history_chunks/match_patient_history, authenticated only, SECURITY INVOKER + pet filter). Why: patient data must never be reachable from public retrieval.
+- Guests analyze photos/videos via /api/analyze-guest-media in memory only (20 MB video cap, nothing stored). Why: demo multimodal without an account, no public media.

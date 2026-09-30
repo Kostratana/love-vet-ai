@@ -25,6 +25,32 @@ export function OwnerForm({ redirect, onModeChange }: { redirect?: string | unde
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const signedIn = !!acct.user;
+  const [errs, setErrs] = useState<Record<string, string>>({});
+  const err = (k: string) => errs[k] ? <p id={`err-${k}`} className="mt-1 text-xs font-medium text-destructive">{errs[k]}</p> : null;
+  const inv = (k: string) => errs[k] ? { "aria-invalid": true, "aria-describedby": `err-${k}`, className: "border-destructive" } : {};
+
+  /** App-level validation (no browser bubbles). Keeps every entered value; focuses the first invalid field. */
+  function validate() {
+    const e: Record<string, string> = {};
+    if (!owner.firstName.trim()) e["firstName"] = "Please enter your first name.";
+    if (!owner.lastName.trim()) e["lastName"] = "Please enter your last name.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(owner.email.trim())) e["email"] = "Please enter a valid email address, e.g. name@example.com.";
+    if (owner.phone.trim() && !/^[+\d][\d\s().-]{5,}$/.test(owner.phone.trim())) e["phone"] = "Please enter a valid phone number (digits, spaces, + or -).";
+    if (!signedIn && password.length < 8) e["password"] = `Password must be at least 8 characters (currently ${password.length}).`;
+    pets.forEach((p) => {
+      const used = p.name || p.species || p.breed || p.age || photos[p.id];
+      if (used && !p.name.trim()) e[`pet-${p.id}-name`] = "Please enter your pet's name.";
+      if (used && !p.species) e[`pet-${p.id}-species`] = "Please choose the animal species.";
+    });
+    setErrs(e);
+    const first = Object.keys(e)[0];
+    if (first) {
+      const el = document.getElementById(`f-${first}`);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      el?.focus({ preventScroll: true });
+    }
+    return !first;
+  }
 
   // Fill the form with saved details once they load.
   useEffect(() => {
@@ -88,16 +114,16 @@ export function OwnerForm({ redirect, onModeChange }: { redirect?: string | unde
             {msg && <p role="alert" className="text-sm font-medium text-destructive">{msg}</p>}
           </form>
         ) : (
-          <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); void register({ ...owner, pets: pets.filter((p) => p.name || p.species || photos[p.id]) }); }}>
+          <form noValidate className="space-y-6" onSubmit={(e) => { e.preventDefault(); if (!validate()) return; void register({ ...owner, pets: pets.filter((p) => p.name || p.species || photos[p.id]) }); }}>
             <div className="glass rounded-3xl p-6 sm:p-8">
               <SectionTitle>Personal information</SectionTitle>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="First name"><TextInput required value={owner.firstName} onChange={upd("firstName")} autoComplete="given-name" /></Field>
-                <Field label="Last name"><TextInput required value={owner.lastName} onChange={upd("lastName")} autoComplete="family-name" /></Field>
-                <Field label="Email"><TextInput type="email" required value={owner.email} onChange={upd("email")} autoComplete="email" /></Field>
-                <Field label="Phone"><TextInput type="tel" value={owner.phone} onChange={upd("phone")} autoComplete="tel" /></Field>
-                {!signedIn && <Field label="Password" hint="at least 8 characters" className="sm:col-span-2"><TextInput type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" /></Field>}
-                <Field label="Location / address" className="sm:col-span-2"><TextInput value={owner.location} onChange={upd("location")} autoComplete="street-address" /></Field>
+                <Field label="First name"><TextInput id="f-firstName" {...inv("firstName")} value={owner.firstName} onChange={upd("firstName")} autoComplete="given-name" />{err("firstName")}</Field>
+                <Field label="Last name"><TextInput id="f-lastName" {...inv("lastName")} value={owner.lastName} onChange={upd("lastName")} autoComplete="family-name" />{err("lastName")}</Field>
+                <Field label="Email"><TextInput id="f-email" type="email" {...inv("email")} value={owner.email} onChange={upd("email")} autoComplete="email" />{err("email")}</Field>
+                <Field label="Phone" hint="optional"><TextInput id="f-phone" type="tel" {...inv("phone")} value={owner.phone} onChange={upd("phone")} autoComplete="tel" />{err("phone")}</Field>
+                {!signedIn && <Field label="Password" hint="at least 8 characters" className="sm:col-span-2"><TextInput id="f-password" type="password" {...inv("password")} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />{errs["password"] ? err("password") : <p className={`mt-1 text-xs ${password.length >= 8 ? "text-deep" : "text-graphite"}`}>{password.length >= 8 ? "✓ At least 8 characters" : `At least 8 characters · ${password.length}/8`}</p>}</Field>}
+                <Field label="Location / address" hint="optional" className="sm:col-span-2"><TextInput value={owner.location} onChange={upd("location")} autoComplete="street-address" /></Field>
               </div>
             </div>
 
@@ -110,12 +136,13 @@ export function OwnerForm({ redirect, onModeChange }: { redirect?: string | unde
                   )}
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Pet name"><TextInput value={p.name} onChange={(e) => updPet(p.id, "name", e.target.value)} /></Field>
+                  <Field label="Pet name"><TextInput id={`f-pet-${p.id}-name`} {...inv(`pet-${p.id}-name`)} value={p.name} onChange={(e) => updPet(p.id, "name", e.target.value)} />{err(`pet-${p.id}-name`)}</Field>
                   <Field label="Animal species">
-                    <Select value={p.species} onChange={(e) => updPet(p.id, "species", e.target.value)}>
+                    <Select id={`f-pet-${p.id}-species`} {...inv(`pet-${p.id}-species`)} value={p.species} onChange={(e) => updPet(p.id, "species", e.target.value)}>
                       <option value="">Select…</option>
                       {SPECIES.map((s) => <option key={s}>{s}</option>)}
                     </Select>
+                    {err(`pet-${p.id}-species`)}
                   </Field>
                   <Field label="Breed" hint="if relevant"><TextInput value={p.breed} onChange={(e) => updPet(p.id, "breed", e.target.value)} /></Field>
                   <Field label="Age or date of birth"><TextInput value={p.age} onChange={(e) => updPet(p.id, "age", e.target.value)} /></Field>
@@ -136,6 +163,7 @@ export function OwnerForm({ redirect, onModeChange }: { redirect?: string | unde
               <GlowButton type="button" variant="secondary" onClick={() => setPets([...pets, newPet()])}><Plus /> Add another pet</GlowButton>
               <GlowButton type="submit" size="lg" disabled={busy}>{busy ? "Saving…" : signedIn ? "Save changes" : "Create account"}</GlowButton>
             </div>
+            {Object.keys(errs).length > 0 && <p role="alert" className="text-sm font-medium text-destructive">Please fix the {Object.keys(errs).length === 1 ? "highlighted field" : `${Object.keys(errs).length} highlighted fields`} above. Nothing you entered was lost.</p>}
             {msg && <p role="alert" className="text-sm font-medium text-deep">{msg}</p>}
             <p className="text-xs text-graphite">
               Your details are saved securely to your account. Love Vet AI is not a veterinary medical record system.
