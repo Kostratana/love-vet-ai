@@ -71,7 +71,7 @@ export const relatedPetHistory = createServerFn({ method: "POST" })
     const { embed } = await import("./ai.server");
     const [vec] = await embed([data.query]);
     const { data: hits, error } = await context.supabase.rpc("match_patient_history", {
-      query_embedding: JSON.stringify(vec), _pet_id: data.petId, _exclude_conversation: (data.excludeConversationId ?? null) as string, match_count: 10, min_similarity: 0.55,
+      query_embedding: JSON.stringify(vec), _pet_id: data.petId, _exclude_conversation: (data.excludeConversationId ?? null) as string, match_count: 10, min_similarity: 0.6,
     });
     if (error) { console.error("history match failed", error.message); return { cases: [] }; }
     const rows = (hits ?? []) as { conversation_id: string | null; veterinarian_id: string | null; source_type: string; content: string; case_date: string; similarity: number }[];
