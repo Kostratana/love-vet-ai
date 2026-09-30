@@ -120,7 +120,7 @@ function DoctorBooking({ ctx, triage, onDone, onCancel }: { ctx: Ctx; triage: Tr
       return;
     }
     const petName = ctx.pets.find((p) => p.id === pet)?.name;
-    onDone(`You’re booked: ${type}${petName ? ` for ${petName}` : ""} with ${vet.name} on ${new Date(slot.starts_at).toLocaleString([], { dateStyle: "full", timeStyle: "short" })}. It’s saved in your account with this case.`);
+    onDone(`You’re booked: ${type}${petName ? ` for ${petName}` : ""} with ${vet.name} on ${new Date(slot.starts_at).toLocaleString([], { dateStyle: "full", timeStyle: "short" })} at ${vet.clinic_name}, ${vet.clinic_address}. It’s saved in your account with this case.`);
   }
 
   const input = "h-9 rounded-xl border border-silver-strong/70 bg-card px-3 text-xs text-navy outline-none focus:border-ice-lum";
@@ -133,19 +133,22 @@ function DoctorBooking({ ctx, triage, onDone, onCancel }: { ctx: Ctx; triage: Tr
       <p className="text-[0.68rem] text-graphite">Matching veterinarians from the demo clinic (fictional profiles and demo availability). Matching is scheduling help, not a diagnosis.</p>
       {!vets && <p role="status" className="text-xs text-graphite">Finding matching veterinarians…</p>}
       {loadErr && <p role="alert" className="text-xs text-destructive">{loadErr}</p>}
-      {vets && !vets.length && !loadErr && <p className="text-xs text-graphite">No veterinarian at this clinic treats this species. Please contact another clinic.</p>}
+      {vets && !vets.length && !loadErr && <p className="text-xs text-graphite">No matching demo veterinarian is currently available.</p>}
       <ul className="space-y-2">
         {vets?.map((v) => (
           <li key={v.id} className={cn("rounded-2xl border bg-card/90 p-3", vetId === v.id ? "border-primary" : "border-ice-lum/60")}>
             <div className="flex items-start gap-3">
               <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-full bg-ice text-xs font-bold text-deep">{v.initials}</span>
               <div className="min-w-0 flex-1">
-                <p className="font-bold text-navy">{v.name} <span className="ml-1 rounded-full bg-ice px-2 py-0.5 text-[0.6rem] font-bold text-deep uppercase">Demo</span></p>
+                <p className="font-bold text-navy">{v.name} <span className="ml-1 rounded-full bg-ice px-2 py-0.5 text-[0.6rem] font-bold text-deep uppercase">Demo veterinarian</span></p>
                 <p className="text-xs text-deep">{v.title}</p>
+                <p className="mt-1 text-[0.7rem] text-navy"><b>Specialty:</b> {v.specialty}{v.expertise.length ? ` · ${v.expertise.join(", ")}` : ""}</p>
                 <p className="mt-1 text-xs text-graphite">{v.bio}</p>
-                <p className="mt-1 text-[0.7rem] text-graphite">Species: {v.species.join(", ")} · Languages: {v.languages.join(", ")}</p>
-                <p className="mt-1 text-[0.7rem] font-semibold text-deep">Why: {v.reason}</p>
+                <p className="mt-1 text-[0.7rem] text-graphite">Species: {v.species.join(", ")} · Languages: {v.languages.join(", ")} · {v.years_experience} years' experience{v.urgent_care ? " · same-day urgent visits" : ""}</p>
+                {v.clinic_name && <p className="mt-1 text-[0.7rem] text-graphite">{v.clinic_name} · {v.clinic_address}</p>}
+                <p className="mt-1 text-[0.7rem] font-semibold text-deep">Why this match: {v.reason}</p>
                 <p className="mt-1 text-[0.7rem] text-graphite">Next available: {v.slots[0] ? new Date(v.slots[0].starts_at).toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "no open times"}</p>
+                <p className="mt-1 text-[0.62rem] text-graphite">Scheduling guidance — not a veterinary diagnosis.</p>
               </div>
               {vetId !== v.id && v.slots.length > 0 && (
                 <button type="button" onClick={() => { setVetId(v.id); setSlotId(null); }} className="shrink-0 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">Book</button>

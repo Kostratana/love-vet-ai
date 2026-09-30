@@ -88,38 +88,23 @@ export const runTriage = createServerFn({ method: "POST" })
     }
   });
 
-/** Information Desk: answers only from stored clinic knowledge. */
+/** Information Desk: answers only from stored clinic knowledge + stored veterinarian records + stored slots. */
 export const askInformationDesk = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ question: z.string().min(2).max(1000) }).parse(d))
   .handler(async ({ data }): Promise<{ answer: string; sources: { title: string; category: string }[]; available: boolean; error?: string }> => {
-    const { embed, generate, GatewayError } = await import("./ai.server");
-    const { createClient } = await import("@supabase/supabase-js");
-    const sb = createClient(process.env["SUPABASE_URL"]!, process.env["SUPABASE_PUBLISHABLE_KEY"]!, { auth: { persistSession: false } });
+    const { generate, GatewayError } = await import("./ai.server");
+    const { groundedContext, publicDb } = await import("./retrieval.server");
     const NA = "This information is not available yet. The clinic has not added it to Love Vet AI. Please contact the clinic directly.";
     try {
-      // Embed any clinic entries that were added without an embedding (e.g. the demo clinic seed).
-      try {
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: pending } = await supabaseAdmin.from("knowledge_documents").select("id,title,content").is("embedding", null).limit(20);
-        if (pending?.length) {
-          const vecs = await embed(pending.map((p) => `${p.title}\n${p.content}`));
-          await Promise.all(pending.map((p, i) => supabaseAdmin.from("knowledge_documents").update({ embedding: JSON.stringify(vecs[i]) }).eq("id", p.id)));
-        }
-      } catch { /* answer with what is already indexed */ }
-      const { count } = await sb.from("knowledge_documents").select("id", { count: "exact", head: true });
-      if (!count) return { answer: NA, sources: [], available: false };
-      const [vec] = await embed([data.question]);
-      const { data: hits, error } = await sb.rpc("match_knowledge", { query_embedding: JSON.stringify(vec), match_count: 5, min_similarity: 0.5 });
-      if (error) throw error;
-      const list = (hits ?? []) as { title: string; category: string; content: string }[];
-      if (!list.length) return { answer: NA, sources: [], available: false };
-      const ctx = list.map((h, i) => `[${i + 1}] (${h.category}) ${h.title}\n${h.content}`).join("\n\n");
+      await publicDb().rpc("ensure_demo_slots");
+      const { context, sources } = await groundedContext(data.question, { withSlots: true });
+      if (!context) return { answer: NA, sources: [], available: false };
       const answer = await generate(
-        `You answer questions about a veterinary clinic using ONLY the numbered entries provided. If the entries do not contain the answer, reply exactly: "${NA}" Never invent facts, prices, hours or names. Reply in the language of the question. No medical diagnosis.`,
-        `Entries:\n${ctx}\n\nQuestion: ${data.question}`,
+        `You are the Information Desk of a DEMO veterinary clinic. Answer using ONLY the numbered entries ([K] clinic entries, [V] veterinarian records with stored next slots). Copy names, addresses, times and numbers exactly as written. If the entries do not contain the answer, reply with this sentence translated into the question's language: "${NA}" Never invent facts, prices, hours, doctors, addresses or times, and never use general knowledge. Only list veterinarians whose record actually matches the question. Reply in the language of the question, concisely. No medical diagnosis.`,
+        `Entries:\n${context}\n\nQuestion: ${data.question}`,
       );
-      const available = !answer.includes("not available yet");
-      return { answer, available, sources: available ? list.map((h) => ({ title: h.title, category: h.category })) : [] };
+      const available = !/not available yet|no está disponible|n'est pas encore disponible|nicht verfügbar|недоступн/i.test(answer);
+      return { answer, available, sources: available ? sources : [] };
     } catch (e) {
       return { answer: "", sources: [], available: false, error: e instanceof GatewayError ? e.message : "The Information Desk could not answer right now." };
     }
@@ -138,16 +123,19 @@ export const addKnowledge = createServerFn({ method: "POST" })
   });
 
 export type VetMatch = {
-  id: string; name: string; title: string; specialty: string; species: string[]; languages: string[]; bio: string; initials: string;
+  id: string; name: string; title: string; specialty: string; expertise: string[]; species: string[]; languages: string[];
+  years_experience: number; bio: string; initials: string; urgent_care: boolean; appointment_types: string[];
+  clinic_name: string; clinic_address: string;
   reason: string; slots: { id: string; starts_at: string; duration_min: number }[];
 };
 
 const SPECIALTY_LABEL: Record<string, string> = {
-  general: "general veterinary medicine", emergency: "urgent care", dermatology: "dermatology",
-  internal_medicine: "internal medicine", surgery: "surgery", exotics: "exotic & small mammal medicine",
+  general: "general veterinary medicine", emergency: "urgent care", dermatology: "dermatology", internal_medicine: "internal medicine",
+  surgery: "surgery", exotics: "rabbit & small-mammal medicine", feline_medicine: "feline medicine", canine_medicine: "canine medicine",
+  senior_care: "senior & chronic care",
 };
 
-/** Matches ONLY stored veterinarian records to the case. Routing help, not a diagnosis. */
+/** Retrieves stored veterinarians for the case, validates against structured records, attaches real slots. Never generates a doctor. */
 export const matchVeterinarians = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({
     species: z.string().max(60).optional().default(""),
@@ -156,42 +144,56 @@ export const matchVeterinarians = createServerFn({ method: "POST" })
     urgency: z.enum(URGENCIES),
   }).parse(d))
   .handler(async ({ data }): Promise<{ specialty: string; vets: VetMatch[]; error?: string }> => {
-    const { jev } = await import("./ai.server");
-    const { createClient } = await import("@supabase/supabase-js");
-    const sb = createClient(process.env["SUPABASE_URL"]!, process.env["SUPABASE_PUBLISHABLE_KEY"]!, { auth: { persistSession: false } });
-    await sb.rpc("ensure_demo_slots");
+    const { jev, embed } = await import("./ai.server");
+    const { ensureIndexed, retrieveVets, nextSlots, publicDb } = await import("./retrieval.server");
+    await Promise.all([publicDb().rpc("ensure_demo_slots"), ensureIndexed()]);
     let specialty = "general";
-    try {
-      const a = await jev({ species: data.species || "unknown", symptoms: data.symptoms, summary: data.summary, urgency: data.urgency }, {
+    const [spec, vec] = await Promise.all([
+      jev({ species: data.species || "unknown", symptoms: data.symptoms, summary: data.summary, urgency: data.urgency }, {
         specialty: {
           type: "choice",
           instructions: "Which clinic service best fits a first visit for this animal, based only on `species`, `symptoms`, `summary` and `urgency`? This is scheduling, not a diagnosis.",
           criteria: {
             exotics: "The animal is a rabbit, guinea pig, hamster, chinchilla, ferret, bird or reptile.",
             emergency: "Dog or cat with urgency 'urgent' needing a same-day visit.",
-            dermatology: "Dog or cat with mainly skin, coat, itching, hair loss or ear concerns.",
+            dermatology: "Dog or cat with mainly skin, coat, itching, scratching, hair loss or ear concerns.",
             internal_medicine: "Dog or cat with vomiting, diarrhoea, appetite, drinking, urination or weight changes.",
             surgery: "Dog or cat with lumps, wounds, lameness or post-operative checks.",
+            senior_care: "An older dog or cat with slowing down, stiffness or a long-term condition.",
             general: "Routine care, vaccination, checkups, or anything else.",
           },
         },
-      });
-      if (a["specialty"]?.choice) specialty = a["specialty"].choice;
-    } catch { /* fall back to general */ }
+      }).then((a) => a["specialty"]?.choice).catch(() => undefined),
+      embed([`Species: ${data.species || "unknown"}. Concern: ${data.symptoms.join(", ")}. ${data.summary} Urgency: ${data.urgency}.`]).then((v) => v[0]).catch(() => undefined),
+    ]);
+    if (spec) specialty = spec;
+    if (!vec) return { specialty, vets: [], error: "Could not search the veterinarian directory right now." };
     const sp = data.species.toLowerCase().trim();
-    const { data: vets, error } = await sb.from("veterinarians").select("id,name,title,specialty,species,languages,bio,initials").eq("active", true);
-    if (error || !vets) return { specialty, vets: [], error: "Could not load veterinarians." };
+    const cands = await retrieveVets(vec, 10);
+    // Structured validation: the stored record must list this species.
     const treats = (v: { species: string[] }) => !sp || v.species.some((s) => sp.includes(s) || s.includes(sp));
-    const ranked = vets.filter(treats).map((v) => ({ v, score: (v.specialty === specialty ? 3 : 0) + (v.specialty === "general" ? 1 : 0) + (data.urgency === "urgent" && v.specialty === "emergency" ? 2 : 0) }))
-      .sort((a, b) => b.score - a.score).slice(0, 3);
+    const urgentCase = data.urgency === "urgent";
+    const ranked = cands.filter(treats).filter((v) => !urgentCase || v.urgent_care || v.specialty === specialty)
+      .map((v) => ({ v, score: v.similarity * 4 + (v.specialty === specialty ? 2 : 0) + (urgentCase && v.urgent_care ? 2 : 0) }))
+      .sort((a, b) => b.score - a.score);
     const out: VetMatch[] = [];
     for (const { v } of ranked) {
-      const { data: slots } = await sb.from("vet_slots").select("id,starts_at,duration_min").eq("veterinarian_id", v.id).eq("booked", false)
-        .gte("starts_at", new Date(Date.now() + 3600_000).toISOString()).order("starts_at").limit(data.urgency === "urgent" ? 4 : 8);
-      const reason = v.specialty === specialty
-        ? `Offers ${SPECIALTY_LABEL[v.specialty] ?? v.specialty}, which fits the reported concern${sp ? ` for a ${sp}` : ""}.`
-        : `${SPECIALTY_LABEL[v.specialty] ?? v.specialty} — ${sp ? `treats ${sp}s` : "sees many species"} and can do a first assessment.`;
-      out.push({ ...v, reason, slots: slots ?? [] });
+      if (out.length >= 3) break;
+      const slots = await nextSlots(v.id, urgentCase ? 4 : 8);
+      if (!slots.length) continue;
+      const text = `${data.symptoms.join(" ")} ${data.summary}`.toLowerCase();
+      const hit = v.conditions.filter((c) => c.split(" ").some((w) => w.length > 3 && text.includes(w.slice(0, -1)))).slice(0, 2);
+      const reason = [
+        `${SPECIALTY_LABEL[v.specialty] ?? v.specialty.replace(/_/g, " ")}${v.specialty === specialty ? ", the service that fits this concern" : ""}`,
+        hit.length ? `sees ${hit.join(" and ")}` : "",
+        sp ? `treats ${sp}s` : "",
+        urgentCase && v.urgent_care ? "offers same-day urgent visits" : "",
+      ].filter(Boolean).join(" · ");
+      out.push({
+        id: v.id, name: v.name, title: v.title, specialty: SPECIALTY_LABEL[v.specialty] ?? v.specialty, expertise: [...v.secondary_specialties, ...v.interests].slice(0, 5),
+        species: v.species, languages: v.languages, years_experience: v.years_experience, bio: v.bio, initials: v.initials, urgent_care: v.urgent_care,
+        appointment_types: v.appointment_types, clinic_name: v.clinic?.name ?? "", clinic_address: v.clinic?.address ?? "", reason, slots,
+      });
     }
     return { specialty, vets: out };
   });

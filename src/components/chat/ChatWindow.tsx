@@ -10,6 +10,7 @@ import { useAccount } from "@/lib/account-store";
 import { runTriage, type Triage } from "@/lib/care.functions";
 import { OPENING_MESSAGE, UPLOAD_LIMITS, formatBytes, type AttachmentMeta } from "@/lib/chat-config";
 import { cn } from "@/lib/utils";
+import { recordWav } from "@/lib/record-wav";
 
 type Pending = AttachmentMeta & { id: string; url: string; file: Blob };
 type Msg = { id: string; role: string; content: string; attachments: AttachmentMeta[]; created_at: string; images?: string[] };
@@ -134,11 +135,12 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
   }
 
   const [busy, setBusy] = useState(false);
+  const [failedVoice, setFailedVoice] = useState<Pending | null>(null);
 
   async function transcribe(v: Pending): Promise<string> {
     setStatus("Transcribing your voice message…");
     const fd = new FormData();
-    fd.append("file", new File([v.file], "voice.webm", { type: "audio/webm" }));
+    fd.append("file", new File([v.file], v.name || "voice-message.wav", { type: v.mime || "audio/wav" }));
     const res = await fetch("/api/transcribe", { method: "POST", body: fd });
     const j = (await res.json().catch(() => ({}))) as { text?: string; error?: string };
     if (!res.ok || !j.text) throw new Error(j.error ?? "The voice message could not be transcribed.");
@@ -151,26 +153,29 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
     setError(null);
     try {
       let voice = extra;
-      let voiceFailed = false;
       if (voice) {
-        try { voice = { ...voice, transcription: await transcribe(voice) }; }
-        catch (e) { voiceFailed = true; setError(`${e instanceof Error ? e.message : "Transcription failed."} ${userId ? "Your recording is saved for clinic staff." : "Please type your message instead."}`); }
+        try { voice = { ...voice, transcription: await transcribe(voice) }; setFailedVoice(null); }
+        catch (e) {
+          // Never send an empty/failed voice event to the assistant; keep the recording for retry.
+          setFailedVoice(voice);
+          setError(`Voice transcription failed. ${e instanceof Error ? e.message : ""} You can retry or type your message instead.`);
+          setBusy(false); setStatus(null); return;
+        }
       }
       const atts = voice ? [...pending, voice] : pending;
       const typed = text.trim();
-      if (voiceFailed && !userId && !typed) { setBusy(false); setStatus(null); return; }
-      const content = [typed, voice?.transcription ?? (voiceFailed ? "(Voice message — transcription unavailable)" : "")].filter(Boolean).join("\n\n");
+      const content = [typed, voice?.transcription ?? ""].filter(Boolean).join("\n\n");
       if (!content && atts.length === 0) { setBusy(false); setStatus(null); return; }
       setStatus(atts.length ? "Uploading…" : null);
       const cid = await ensureConversation(content);
       const { meta, images } = await uploadAll(atts, cid);
       setStatus(null);
-      if (meta.some((m) => m.analysisStatus === "failed") && !voiceFailed) setError("Automated analysis was unavailable for some media. The files are saved for clinic staff to review.");
+      if (meta.some((m) => m.analysisStatus === "failed")) setError("Automated analysis was unavailable for some media. The files are saved for clinic staff to review.");
       const userMsg: Msg = { id: crypto.randomUUID(), role: "user", content, attachments: meta, created_at: new Date().toISOString(), images };
       if (cid && userId) await supabase.from("conversation_messages").insert({ id: userMsg.id, conversation_id: cid, user_id: userId, role: "user", content, attachments: meta });
       const history = [...messages, userMsg];
       setMessages(history);
-      if (!meta.some((m) => m.analysisStatus === "failed") && !voiceFailed) setError(null);
+      if (!meta.some((m) => m.analysisStatus === "failed")) setError(null);
       setText("");
       setPending([]);
       setHideCard(false);
@@ -317,6 +322,13 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
           )}
           {status && <p role="status" className="mb-2 text-xs font-medium text-deep">{status}</p>}
           {error && <p role="alert" className="mb-2 text-xs font-medium text-destructive">{error}</p>}
+          {failedVoice && !busy && (
+            <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
+              <audio controls src={failedVoice.url} className="h-8" aria-label="Your recording" />
+              <button type="button" onClick={() => void send(failedVoice)} className="rounded-full bg-primary px-3 py-1.5 font-semibold text-primary-foreground">Retry transcription</button>
+              <button type="button" onClick={() => { setFailedVoice(null); setError(null); }} className="rounded-full px-3 py-1.5 font-semibold text-deep hover:bg-ice">Discard</button>
+            </div>
+          )}
           <Composer
             text={text}
             setText={setText}
@@ -399,10 +411,9 @@ function Composer(props: {
   onVideo: () => void;
   disabled: boolean;
 }) {
-  const [rec, setRec] = useState<MediaRecorder | null>(null);
+  const [rec, setRec] = useState<{ stop: () => void } | null>(null);
   const [secs, setSecs] = useState(0);
   const [micError, setMicError] = useState<string | null>(null);
-  const chunks = useRef<Blob[]>([]);
   const cancelled = useRef(false);
   const secsRef = useRef(0);
 
@@ -415,23 +426,18 @@ function Composer(props: {
   async function start() {
     setMicError(null);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const r = new MediaRecorder(stream);
-      chunks.current = [];
+      const r = await recordWav();
       cancelled.current = false;
-      r.ondataavailable = (e) => chunks.current.push(e.data);
-      r.onstop = () => {
-        stream.getTracks().forEach((t) => t.stop());
-        if (!cancelled.current) {
-          const blob = new Blob(chunks.current, { type: r.mimeType });
-          props.onVoice({ id: crypto.randomUUID(), kind: "voice", name: "voice-message.webm", mime: "audio/webm", size: blob.size, durationSec: secsRef.current, url: URL.createObjectURL(blob), file: new Blob([blob], { type: "audio/webm" }) });
-        }
-        setRec(null);
-        setSecs(0);
-        secsRef.current = 0;
-      };
-      r.start();
-      setRec(r);
+      setRec({
+        stop: () => {
+          const dur = secsRef.current;
+          setRec(null); setSecs(0); secsRef.current = 0;
+          void r.stop().then((file) => {
+            if (cancelled.current) return;
+            props.onVoice({ id: crypto.randomUUID(), kind: "voice", name: "voice-message.wav", mime: "audio/wav", size: file.size, durationSec: dur, url: URL.createObjectURL(file), file });
+          }).catch((e) => setMicError(e instanceof Error ? e.message : "The recording could not be read. Please record again."));
+        },
+      });
     } catch {
       setMicError("Microphone access is needed to record a voice message.");
     }
