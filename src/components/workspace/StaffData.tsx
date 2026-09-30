@@ -4,6 +4,7 @@ import { CalendarDays, FileVideo, ImageIcon, Inbox, Mic, ShieldAlert } from "luc
 import { supabase } from "@/integrations/supabase/client";
 import { useAccount } from "@/lib/account-store";
 import { cn } from "@/lib/utils";
+import { PreVisitCaseView, type CaseView } from "@/components/workspace/PreVisitCaseView";
 
 /** Explains access state when the viewer is not verified clinic staff. Returns null for staff. */
 export function StaffGate({ children }: { children: React.ReactNode }) {
@@ -184,69 +185,84 @@ export function AppointmentList({ scope, empty, header }: { scope: "own" | "staf
 type Pkg = {
   owner_reported?: { concerns?: string[]; summary?: string };
   triage?: { request_type?: string; urgency?: string; destination?: string; confidence?: number };
-  stored_pet_profile?: { name?: string; species?: string; breed?: string; age?: string; sex?: string } | null;
   provider?: { name?: string; specialty?: string; provider_type?: string; clinic?: string; clinic_address?: string };
   preference?: { time_window?: string; home_visit?: boolean; location?: string };
 };
 
-/** Pre-visit case package for staff: owner, pet, owner-reported concern, triage, provider, original private media + AI observations. */
+/** Builds the same CaseView used by the fictional sample from a real booked appointment (RLS: staff or owner). */
+async function loadCaseView(apptId: string): Promise<CaseView | null> {
+  const { data: a, error } = await supabase.from("appointments")
+    .select("user_id,conversation_id,intake_id,case_package,notes,visit_location,requested_at,appointment_type,status,pet:pets(name,species,breed,age,sex),vet:veterinarians(name,title)")
+    .eq("id", apptId).single();
+  if (error || !a) return null;
+  const pkg = (a.case_package ?? {}) as Pkg;
+  const [{ data: owner }, { data: files }, { data: intake }] = await Promise.all([
+    supabase.from("profiles").select("first_name,last_name,email,phone,location").eq("id", a.user_id).maybeSingle(),
+    a.conversation_id ? supabase.from("uploaded_files").select("id,kind,storage_path,transcription,analysis,ocr_text").eq("conversation_id", a.conversation_id).order("created_at") : Promise.resolve({ data: [] as never[] }),
+    a.intake_id ? supabase.from("veterinary_intakes").select("summary,symptoms").eq("id", a.intake_id).maybeSingle() : Promise.resolve({ data: null }),
+  ]);
+  const signed = await Promise.all((files ?? []).map(async (f) => ({ ...f, url: (await supabase.storage.from("chat-media").createSignedUrl(f.storage_path, 3600)).data?.signedUrl })));
+  const pet = (a as unknown as { pet: { name: string; species: string; breed: string | null; age: string | null; sex: string | null } | null }).pet;
+  const vet = (a as unknown as { vet: { name: string; title: string } | null }).vet;
+  const counts = { photo: 0, video: 0, voice: 0 };
+  const concerns = pkg.owner_reported?.concerns ?? intake?.symptoms ?? [];
+  return {
+    kind: "real",
+    owner: { name: owner ? `${owner.first_name} ${owner.last_name}`.trim() || "Name not provided" : "Not available", phone: owner?.phone ?? "", email: owner?.email ?? "", location: owner?.location ?? "" },
+    pet: { name: pet?.name ?? "Pet not specified", species: pet?.species ?? "", breed: pet?.breed ?? "", age: pet?.age ?? "", sex: pet?.sex ?? "" },
+    reported: { reason: concerns[0] ?? (a.notes || "Not specified"), started: "", concerns },
+    intake: [
+      ...(intake?.summary ? [["Intake summary", intake.summary] as [string, string]] : []),
+      ...(pkg.preference?.time_window ? [["Preferred time", pkg.preference.time_window] as [string, string]] : []),
+    ],
+    triage: pkg.triage ? { urgency: pkg.triage.urgency ?? "", summary: pkg.owner_reported?.summary ?? a.notes, destination: pkg.triage.destination ?? "", confidence: pkg.triage.confidence ?? null } : null,
+    media: signed.map((f) => {
+      const k = (f.kind === "photo" || f.kind === "video" ? f.kind : "voice") as "photo" | "video" | "voice";
+      counts[k]++;
+      return { id: f.id, kind: k, label: k === "photo" ? `Photo ${counts.photo}` : k === "video" ? `Video ${counts.video}` : `Voice message ${counts.voice}`, url: f.url, transcript: f.transcription, observation: f.analysis, ocr: f.ocr_text };
+    }),
+    appointment: {
+      vet: vet?.name ?? pkg.provider?.name ?? "Not assigned", specialty: pkg.provider?.specialty ?? vet?.title ?? "", clinic: pkg.provider?.clinic || "Independent / home visit",
+      address: pkg.provider?.clinic_address ?? "", homeVisit: a.visit_location || undefined,
+      when: new Date(a.requested_at).toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }), type: a.appointment_type, status: a.status,
+    },
+  };
+}
+
 function CasePackage({ apptId }: { apptId: string }) {
   const [open, setOpen] = useState(false);
-  const [d, setD] = useState<null | {
-    pkg: Pkg; notes: string; visit_location: string;
-    owner: { first_name: string; last_name: string; email: string; phone: string } | null;
-    pet: { name: string; species: string; breed: string | null; age: string | null; sex: string | null } | null;
-    files: { id: string; kind: string; transcription: string | null; analysis: string | null; ocr_text: string | null; url?: string | undefined }[];
-  }>(null);
+  const [c, setC] = useState<CaseView | null>(null);
   const [err, setErr] = useState(false);
-  useEffect(() => {
-    if (!open || d) return;
-    (async () => {
-      const { data: a, error } = await supabase.from("appointments").select("user_id,conversation_id,case_package,notes,visit_location,pet:pets(name,species,breed,age,sex)").eq("id", apptId).single();
-      if (error || !a) return setErr(true);
-      const [{ data: owner }, { data: files }] = await Promise.all([
-        supabase.from("profiles").select("first_name,last_name,email,phone").eq("id", a.user_id).maybeSingle(),
-        a.conversation_id ? supabase.from("uploaded_files").select("id,kind,storage_path,transcription,analysis,ocr_text").eq("conversation_id", a.conversation_id).order("created_at") : Promise.resolve({ data: [] as never[] }),
-      ]);
-      const signed = await Promise.all((files ?? []).map(async (f) => ({ ...f, url: (await supabase.storage.from("chat-media").createSignedUrl(f.storage_path, 3600)).data?.signedUrl })));
-      setD({ pkg: (a.case_package ?? {}) as Pkg, notes: a.notes, visit_location: a.visit_location, owner: owner ?? null, pet: (a as unknown as { pet: NonNullable<typeof d>["pet"] }).pet, files: signed });
-    })();
-  }, [open, d, apptId]);
-  const H = ({ children }: { children: React.ReactNode }) => <p className="mt-3 text-[0.68rem] font-bold tracking-[0.08em] text-deep uppercase">{children}</p>;
+  useEffect(() => { if (open && !c) void loadCaseView(apptId).then((v) => (v ? setC(v) : setErr(true))); }, [open, c, apptId]);
   return (
     <div className="mt-2">
-      <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className="text-xs font-semibold text-deep hover:underline">{open ? "Hide case package" : "Open pre-visit case package"}</button>
-      {open && !d && !err && <p role="status" className="mt-2 text-xs text-graphite">Loading case…</p>}
+      <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className="text-xs font-semibold text-deep hover:underline">{open ? "Hide pre-visit case" : "Open pre-visit case"}</button>
+      {open && !c && !err && <p role="status" className="mt-2 text-xs text-graphite">Loading case…</p>}
       {err && <p role="alert" className="mt-2 text-xs text-destructive">Could not load this case.</p>}
-      {d && (
-        <div className="mt-2 rounded-xl bg-card/70 p-3 text-xs">
-          <H>Owner</H>
-          <p>{d.owner ? `${d.owner.first_name} ${d.owner.last_name}`.trim() || "Name not provided" : "Not available"}{d.owner?.phone && ` · ${d.owner.phone}`}{d.owner?.email && ` · ${d.owner.email}`}</p>
-          <H>Stored pet profile</H>
-          <p>{d.pet ? [d.pet.name, d.pet.species, d.pet.breed, d.pet.age, d.pet.sex].filter(Boolean).join(" · ") : "No pet selected"}</p>
-          <H>Owner reported</H>
-          <p>{d.pkg.owner_reported?.summary || d.notes || "—"}</p>
-          {!!d.pkg.owner_reported?.concerns?.length && <p className="text-graphite">Concerns: {d.pkg.owner_reported.concerns.join(", ")}</p>}
-          {d.pkg.triage && <><H>Triage result (routing, not a diagnosis)</H><p>{d.pkg.triage.request_type} · urgency {d.pkg.triage.urgency} · {d.pkg.triage.destination}</p></>}
-          {d.pkg.provider && <><H>Retrieved clinic / provider data</H><p>{d.pkg.provider.name} ({d.pkg.provider.specialty}) · {d.pkg.provider.clinic || "Independent"}{d.pkg.provider.clinic_address && `, ${d.pkg.provider.clinic_address}`}</p></>}
-          {d.visit_location && <p>Home visit location: {d.visit_location}</p>}
-          {d.pkg.preference?.time_window && <p className="text-graphite">Owner time preference: {d.pkg.preference.time_window}</p>}
-          <H>Case materials (original private files)</H>
-          {!d.files.length && <p className="text-graphite">No photos, videos or voice messages were attached.</p>}
-          <div className="space-y-2">
-            {d.files.map((f) => (
-              <div key={f.id} className="rounded-lg border border-ice-lum/50 p-2">
-                {f.kind === "photo" && f.url && <img src={f.url} alt="Owner-submitted photo" className="max-h-48 rounded-lg" />}
-                {f.kind === "video" && f.url && <video src={f.url} controls className="max-h-56 rounded-lg" />}
-                {f.kind === "voice" && f.url && <audio src={f.url} controls className="w-full" />}
-                {f.transcription && <p className="mt-1"><b>Voice transcript (owner's words):</b> {f.transcription}</p>}
-                {f.analysis && <p className="mt-1 whitespace-pre-line text-graphite"><b>AI observed (not a diagnosis):</b> {f.analysis}</p>}
-                {f.ocr_text && <p className="mt-1 text-graphite"><b>Text in image:</b> {f.ocr_text}</p>}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {c && <div className="mt-3"><PreVisitCaseView c={c} /></div>}
     </div>
+  );
+}
+
+/** Real booked cases for verified staff, shown in the same layout as the sample. */
+export function BookedCases() {
+  const { isStaff } = useAccount();
+  const [ids, setIds] = useState<string[] | null>(null);
+  const [cases, setCases] = useState<CaseView[]>([]);
+  useEffect(() => {
+    if (!isStaff) return;
+    supabase.from("appointments").select("id").neq("status", "cancelled").gte("requested_at", new Date(Date.now() - 86400_000).toISOString()).order("requested_at").limit(5)
+      .then(async ({ data }) => {
+        const list = (data ?? []).map((d) => d.id);
+        setIds(list);
+        setCases((await Promise.all(list.map(loadCaseView))).filter((x): x is CaseView => !!x));
+      });
+  }, [isStaff]);
+  if (!isStaff || !ids?.length) return null;
+  return (
+    <section className="mb-10 space-y-4">
+      <h2 className="text-lg font-bold text-navy">Upcoming booked cases</h2>
+      {cases.map((c, i) => <PreVisitCaseView key={i} c={c} />)}
+    </section>
   );
 }
