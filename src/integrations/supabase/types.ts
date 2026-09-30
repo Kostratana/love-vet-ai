@@ -14,6 +14,118 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          appointment_type: string
+          created_at: string
+          id: string
+          intake_id: string | null
+          notes: string
+          pet_id: string | null
+          requested_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          appointment_type?: string
+          created_at?: string
+          id?: string
+          intake_id?: string | null
+          notes?: string
+          pet_id?: string | null
+          requested_at: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          appointment_type?: string
+          created_at?: string
+          id?: string
+          intake_id?: string | null
+          notes?: string
+          pet_id?: string | null
+          requested_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_intake_id_fkey"
+            columns: ["intake_id"]
+            isOneToOne: false
+            referencedRelation: "veterinary_intakes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinic_staff_requests: {
+        Row: {
+          created_at: string
+          id: string
+          intake_id: string | null
+          pet_id: string | null
+          status: string
+          summary: string
+          triage_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          intake_id?: string | null
+          pet_id?: string | null
+          status?: string
+          summary?: string
+          triage_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          intake_id?: string | null
+          pet_id?: string | null
+          status?: string
+          summary?: string
+          triage_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_staff_requests_intake_id_fkey"
+            columns: ["intake_id"]
+            isOneToOne: false
+            referencedRelation: "veterinary_intakes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_staff_requests_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_staff_requests_triage_id_fkey"
+            columns: ["triage_id"]
+            isOneToOne: false
+            referencedRelation: "triage_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversation_messages: {
         Row: {
           attachments: Json
@@ -56,6 +168,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          pet_id: string | null
           title: string
           updated_at: string
           user_id: string
@@ -63,6 +176,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          pet_id?: string | null
           title?: string
           updated_at?: string
           user_id: string
@@ -70,21 +184,302 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          pet_id?: string | null
           title?: string
           updated_at?: string
           user_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_documents: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          created_by: string | null
+          embedding: string | null
+          id: string
+          title: string
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+          embedding?: string | null
+          id?: string
+          title: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          embedding?: string | null
+          id?: string
+          title?: string
+        }
         Relationships: []
+      }
+      pets: {
+        Row: {
+          age: string | null
+          breed: string | null
+          created_at: string
+          id: string
+          name: string
+          sex: string | null
+          species: string
+          user_id: string
+        }
+        Insert: {
+          age?: string | null
+          breed?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          sex?: string | null
+          species: string
+          user_id: string
+        }
+        Update: {
+          age?: string | null
+          breed?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          sex?: string | null
+          species?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          location: string
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string
+          first_name?: string
+          id: string
+          last_name?: string
+          location?: string
+          phone?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          location?: string
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      triage_results: {
+        Row: {
+          confidence: number
+          conversation_id: string | null
+          created_at: string
+          id: string
+          request_type: string
+          short_summary: string
+          suggested_destination: string
+          symptoms: string[]
+          urgency: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          request_type: string
+          short_summary?: string
+          suggested_destination: string
+          symptoms?: string[]
+          urgency: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          request_type?: string
+          short_summary?: string
+          suggested_destination?: string
+          symptoms?: string[]
+          urgency?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "triage_results_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uploaded_files: {
+        Row: {
+          conversation_id: string | null
+          created_at: string
+          id: string
+          kind: string
+          mime_type: string
+          pet_id: string | null
+          size_bytes: number
+          storage_path: string
+          transcription: string | null
+          user_id: string
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          mime_type: string
+          pet_id?: string | null
+          size_bytes: number
+          storage_path: string
+          transcription?: string | null
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          mime_type?: string
+          pet_id?: string | null
+          size_bytes?: number
+          storage_path?: string
+          transcription?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uploaded_files_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uploaded_files_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      veterinary_intakes: {
+        Row: {
+          conversation_id: string | null
+          created_at: string
+          id: string
+          pet_id: string | null
+          status: string
+          summary: string
+          symptoms: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          pet_id?: string | null
+          status?: string
+          summary?: string
+          symptoms?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          pet_id?: string | null
+          status?: string
+          summary?: string
+          symptoms?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "veterinary_intakes_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "veterinary_intakes_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "owner" | "staff" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -211,6 +606,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["owner", "staff", "admin"],
+    },
   },
 } as const
