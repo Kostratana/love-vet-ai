@@ -17,6 +17,8 @@ export type Database = {
       appointments: {
         Row: {
           appointment_type: string
+          case_package: Json
+          clinic_id: string | null
           conversation_id: string | null
           created_at: string
           id: string
@@ -30,9 +32,12 @@ export type Database = {
           updated_at: string
           user_id: string
           veterinarian_id: string | null
+          visit_location: string
         }
         Insert: {
           appointment_type?: string
+          case_package?: Json
+          clinic_id?: string | null
           conversation_id?: string | null
           created_at?: string
           id?: string
@@ -46,9 +51,12 @@ export type Database = {
           updated_at?: string
           user_id: string
           veterinarian_id?: string | null
+          visit_location?: string
         }
         Update: {
           appointment_type?: string
+          case_package?: Json
+          clinic_id?: string | null
           conversation_id?: string | null
           created_at?: string
           id?: string
@@ -62,8 +70,16 @@ export type Database = {
           updated_at?: string
           user_id?: string
           veterinarian_id?: string | null
+          visit_location?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "appointments_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "appointments_conversation_id_fkey"
             columns: ["conversation_id"]
@@ -401,6 +417,67 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          appointment_id: string
+          clinic_id: string | null
+          comment: string
+          created_at: string
+          id: string
+          matched_expectations: boolean | null
+          overall_rating: number
+          user_id: string
+          vet_rating: number
+          veterinarian_id: string | null
+        }
+        Insert: {
+          appointment_id: string
+          clinic_id?: string | null
+          comment?: string
+          created_at?: string
+          id?: string
+          matched_expectations?: boolean | null
+          overall_rating: number
+          user_id: string
+          vet_rating: number
+          veterinarian_id?: string | null
+        }
+        Update: {
+          appointment_id?: string
+          clinic_id?: string | null
+          comment?: string
+          created_at?: string
+          id?: string
+          matched_expectations?: boolean | null
+          overall_rating?: number
+          user_id?: string
+          vet_rating?: number
+          veterinarian_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: true
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_veterinarian_id_fkey"
+            columns: ["veterinarian_id"]
+            isOneToOne: false
+            referencedRelation: "veterinarians"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       triage_results: {
         Row: {
           confidence: number
@@ -598,14 +675,18 @@ export type Database = {
           conditions: string[]
           created_at: string
           embedding: string | null
+          home_visit: boolean
+          home_visit_types: string[]
           id: string
           initials: string
           interests: string[]
           is_demo: boolean
           languages: string[]
           name: string
+          provider_type: string
           search_text: string
           secondary_specialties: string[]
+          service_area: string[]
           slug: string
           specialty: string
           species: string[]
@@ -623,14 +704,18 @@ export type Database = {
           conditions?: string[]
           created_at?: string
           embedding?: string | null
+          home_visit?: boolean
+          home_visit_types?: string[]
           id?: string
           initials?: string
           interests?: string[]
           is_demo?: boolean
           languages?: string[]
           name: string
+          provider_type?: string
           search_text?: string
           secondary_specialties?: string[]
+          service_area?: string[]
           slug: string
           specialty: string
           species?: string[]
@@ -648,14 +733,18 @@ export type Database = {
           conditions?: string[]
           created_at?: string
           embedding?: string | null
+          home_visit?: boolean
+          home_visit_types?: string[]
           id?: string
           initials?: string
           interests?: string[]
           is_demo?: boolean
           languages?: string[]
           name?: string
+          provider_type?: string
           search_text?: string
           secondary_specialties?: string[]
+          service_area?: string[]
           slug?: string
           specialty?: string
           species?: string[]
