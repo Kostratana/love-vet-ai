@@ -25,9 +25,11 @@ export type Database = {
           owner_email_sent: boolean
           pet_id: string | null
           requested_at: string
+          slot_id: string | null
           status: string
           updated_at: string
           user_id: string
+          veterinarian_id: string | null
         }
         Insert: {
           appointment_type?: string
@@ -39,9 +41,11 @@ export type Database = {
           owner_email_sent?: boolean
           pet_id?: string | null
           requested_at: string
+          slot_id?: string | null
           status?: string
           updated_at?: string
           user_id: string
+          veterinarian_id?: string | null
         }
         Update: {
           appointment_type?: string
@@ -53,9 +57,11 @@ export type Database = {
           owner_email_sent?: boolean
           pet_id?: string | null
           requested_at?: string
+          slot_id?: string | null
           status?: string
           updated_at?: string
           user_id?: string
+          veterinarian_id?: string | null
         }
         Relationships: [
           {
@@ -77,6 +83,20 @@ export type Database = {
             columns: ["pet_id"]
             isOneToOne: false
             referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "vet_slots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_veterinarian_id_fkey"
+            columns: ["veterinarian_id"]
+            isOneToOne: false
+            referencedRelation: "veterinarians"
             referencedColumns: ["id"]
           },
         ]
@@ -478,6 +498,98 @@ export type Database = {
         }
         Relationships: []
       }
+      vet_slots: {
+        Row: {
+          booked: boolean
+          duration_min: number
+          id: string
+          is_demo: boolean
+          starts_at: string
+          veterinarian_id: string
+        }
+        Insert: {
+          booked?: boolean
+          duration_min?: number
+          id?: string
+          is_demo?: boolean
+          starts_at: string
+          veterinarian_id: string
+        }
+        Update: {
+          booked?: boolean
+          duration_min?: number
+          id?: string
+          is_demo?: boolean
+          starts_at?: string
+          veterinarian_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vet_slots_veterinarian_id_fkey"
+            columns: ["veterinarian_id"]
+            isOneToOne: false
+            referencedRelation: "veterinarians"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      veterinarians: {
+        Row: {
+          active: boolean
+          appointment_types: string[]
+          availability: string
+          bio: string
+          created_at: string
+          id: string
+          initials: string
+          interests: string[]
+          is_demo: boolean
+          languages: string[]
+          name: string
+          slug: string
+          specialty: string
+          species: string[]
+          title: string
+          years_experience: number
+        }
+        Insert: {
+          active?: boolean
+          appointment_types?: string[]
+          availability?: string
+          bio?: string
+          created_at?: string
+          id?: string
+          initials?: string
+          interests?: string[]
+          is_demo?: boolean
+          languages?: string[]
+          name: string
+          slug: string
+          specialty: string
+          species?: string[]
+          title: string
+          years_experience?: number
+        }
+        Update: {
+          active?: boolean
+          appointment_types?: string[]
+          availability?: string
+          bio?: string
+          created_at?: string
+          id?: string
+          initials?: string
+          interests?: string[]
+          is_demo?: boolean
+          languages?: string[]
+          name?: string
+          slug?: string
+          specialty?: string
+          species?: string[]
+          title?: string
+          years_experience?: number
+        }
+        Relationships: []
+      }
       veterinary_intakes: {
         Row: {
           conversation_id: string | null
@@ -534,6 +646,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      book_slot: {
+        Args: {
+          _appointment_type: string
+          _conversation_id: string
+          _intake_id: string
+          _notes: string
+          _pet_id: string
+          _slot_id: string
+        }
+        Returns: string
+      }
+      ensure_demo_slots: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

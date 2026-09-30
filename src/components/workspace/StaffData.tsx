@@ -121,7 +121,7 @@ export function StaffRequests({ onCount }: { onCount?: (n: number) => void }) {
   );
 }
 
-type Appt = { id: string; requested_at: string; appointment_type: string; status: string; notes: string; pet: { name: string; species: string } | null };
+type Appt = { id: string; requested_at: string; appointment_type: string; status: string; notes: string; pet: { name: string; species: string } | null; vet: { name: string } | null };
 
 export function AppointmentList({ scope, empty, header }: { scope: "own" | "staff"; empty?: React.ReactNode; header?: React.ReactNode }) {
   const { user, isStaff } = useAccount();
@@ -131,7 +131,7 @@ export function AppointmentList({ scope, empty, header }: { scope: "own" | "staf
 
   useEffect(() => {
     if (!enabled) return;
-    let q = supabase.from("appointments").select("id,requested_at,appointment_type,status,notes,pet:pets(name,species)").order("requested_at");
+    let q = supabase.from("appointments").select("id,requested_at,appointment_type,status,notes,pet:pets(name,species),vet:veterinarians(name)").order("requested_at");
     if (scope === "own" && user) q = q.eq("user_id", user.id);
     q.then(({ data, error }) => { if (error) setErr("Could not load appointments."); setRows((data as unknown as Appt[]) ?? []); });
   }, [enabled, scope, user]);
@@ -152,7 +152,7 @@ export function AppointmentList({ scope, empty, header }: { scope: "own" | "staf
         <li key={a.id} className="glass flex flex-wrap items-center gap-3 rounded-2xl px-4 py-3 text-sm text-navy">
           <CalendarDays className="size-4 text-deep" />
           <span className="font-semibold">{new Date(a.requested_at).toLocaleString()}</span>
-          <span className="text-graphite">{a.appointment_type}{a.pet && ` · ${a.pet.name} (${a.pet.species})`}</span>
+          <span className="text-graphite">{a.appointment_type}{a.pet && ` · ${a.pet.name} (${a.pet.species})`}{a.vet && ` · ${a.vet.name}`}</span>
           {scope === "staff" ? (
             <select aria-label="Appointment status" value={a.status} onChange={(e) => void setStatus(a.id, e.target.value)} className="ml-auto h-8 rounded-full border border-silver-strong/70 bg-card px-3 text-xs font-semibold">
               {["requested", "confirmed", "completed", "cancelled"].map((s) => <option key={s}>{s}</option>)}
@@ -160,7 +160,7 @@ export function AppointmentList({ scope, empty, header }: { scope: "own" | "staf
           ) : (
             <span className="ml-auto flex items-center gap-2">
               <span className="rounded-full bg-ice px-2.5 py-0.5 text-xs font-bold text-deep">{a.status}</span>
-              {a.status === "requested" && <button type="button" onClick={() => void setStatus(a.id, "cancelled")} className="text-xs font-semibold text-graphite hover:text-destructive">Cancel</button>}
+              {(a.status === "requested" || a.status === "confirmed") && new Date(a.requested_at) > new Date() && <button type="button" onClick={() => void setStatus(a.id, "cancelled")} className="text-xs font-semibold text-graphite hover:text-destructive">Cancel</button>}
             </span>
           )}
         </li>

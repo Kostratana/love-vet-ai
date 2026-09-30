@@ -36,6 +36,13 @@
       "when": 1790733599177,
       "tag": "0004_own_media_update_delete",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790734946258,
+      "tag": "0005_demo_clinic_vets_slots",
+      "breakpoints": true
     }
   ]
 }
