@@ -162,7 +162,7 @@ export function AppointmentList({ scope, empty, header }: { scope: "own" | "staf
       {rows.map((a) => (
         <li key={a.id} className="glass rounded-2xl px-4 py-3 text-sm text-navy"><div className="flex flex-wrap items-center gap-3">
           <CalendarDays className="size-4 text-deep" />
-          <span className="font-semibold">{new Date(a.requested_at).toLocaleString()}</span>
+          <span className="font-semibold">{new Date(a.requested_at).toLocaleString("en-US", { timeZone: "America/New_York", dateStyle: "medium", timeStyle: "short" })} ET{""}</span>
           <span className="text-graphite">{a.appointment_type}{a.pet && ` · ${a.pet.name} (${a.pet.species})`}{a.vet && ` · ${a.vet.name}`}</span>
           {scope === "staff" ? (
             <select aria-label="Appointment status" value={a.status} onChange={(e) => void setStatus(a.id, e.target.value)} className="ml-auto h-8 rounded-full border border-silver-strong/70 bg-card px-3 text-xs font-semibold">
@@ -234,7 +234,7 @@ async function loadCaseView(apptId: string): Promise<CaseView | null> {
     appointment: {
       vet: vet?.name ?? pkg.provider?.name ?? "Not assigned", specialty: pkg.provider?.specialty ?? vet?.title ?? "", clinic: pkg.provider?.clinic || "Independent / home visit",
       address: pkg.provider?.clinic_address ?? "", homeVisit: a.visit_location || undefined,
-      when: new Date(a.requested_at).toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }), type: a.appointment_type, status: a.status,
+      when: new Date(a.requested_at).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " ET", type: a.appointment_type, status: a.status,
     },
   };
 }
