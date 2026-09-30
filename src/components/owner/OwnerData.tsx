@@ -32,7 +32,7 @@ export function OwnerConversations({ empty }: { empty: ReactNode }) {
 
 export function OwnerMedia({ empty }: { empty: ReactNode }) {
   const { user } = useAccount();
-  const [rows, setRows] = useState<{ id: string; kind: string; url?: string; transcription: string | null }[] | null>(null);
+  const [rows, setRows] = useState<{ id: string; kind: string; url?: string | undefined; transcription: string | null }[] | null>(null);
   useEffect(() => {
     if (!user) return;
     (async () => {
