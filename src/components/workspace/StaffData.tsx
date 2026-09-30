@@ -123,7 +123,7 @@ export function StaffRequests({ onCount }: { onCount?: (n: number) => void }) {
 
 type Appt = { id: string; requested_at: string; appointment_type: string; status: string; notes: string; pet: { name: string; species: string } | null };
 
-export function AppointmentList({ scope, empty }: { scope: "own" | "staff"; empty?: React.ReactNode }) {
+export function AppointmentList({ scope, empty, header }: { scope: "own" | "staff"; empty?: React.ReactNode; header?: React.ReactNode }) {
   const { user, isStaff } = useAccount();
   const [rows, setRows] = useState<Appt[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -147,7 +147,7 @@ export function AppointmentList({ scope, empty }: { scope: "own" | "staff"; empt
   if (err) return <p role="alert" className="text-sm text-destructive">{err}</p>;
   if (!rows.length) return <>{empty ?? null}</>;
   return (
-    <ul className="space-y-2">
+    <>{header}<ul className="space-y-2">
       {rows.map((a) => (
         <li key={a.id} className="glass flex flex-wrap items-center gap-3 rounded-2xl px-4 py-3 text-sm text-navy">
           <CalendarDays className="size-4 text-deep" />
@@ -165,6 +165,6 @@ export function AppointmentList({ scope, empty }: { scope: "own" | "staff"; empt
           )}
         </li>
       ))}
-    </ul>
+    </ul></>
   );
 }

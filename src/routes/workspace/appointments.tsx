@@ -26,9 +26,7 @@ function AppointmentsPage() {
   const placeholder = <SectionPlaceholder eyebrow="Clinic Staff Workspace" title="Appointments" description="Appointments requested through Love Vet AI. Staff confirm, complete or cancel them here." icon={CalendarDays} />;
   if (loading || !isStaff) return <div><StaffGate><span /></StaffGate>{placeholder}</div>;
   return (
-    <div>
-      <PageHeader eyebrow="Clinic Staff Workspace" title="Appointments" description="Appointments requested through Love Vet AI. Staff confirm, complete or cancel them here." />
-      <AppointmentList scope="staff" empty={<div className="-mt-24">{placeholder}</div>} />
-    </div>
+    <AppointmentList scope="staff" empty={placeholder}
+      header={<PageHeader eyebrow="Clinic Staff Workspace" title="Appointments" description="Appointments requested through Love Vet AI. Staff confirm, complete or cancel them here." />} />
   );
 }
