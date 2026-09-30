@@ -17,7 +17,9 @@ export function OwnerForm({ redirect, onModeChange }: { redirect?: string | unde
   const [owner, setOwner] = useState<Omit<OwnerProfile, "pets">>(
     acct.owner ?? { firstName: "", lastName: "", email: "", phone: "", location: "" },
   );
-  const [pets, setPets] = useState<Pet[]>(acct.owner?.pets.length ? acct.owner.pets : [newPet()]);
+  // Stable first id for server render; swapped for a real random id after hydration (avoids SSR id mismatch).
+  const [pets, setPets] = useState<Pet[]>(acct.owner?.pets.length ? acct.owner.pets : [{ ...newPet(), id: "pending-pet" }]);
+  useEffect(() => { setPets((ps) => ps.map((p) => (p.id === "pending-pet" ? { ...p, id: crypto.randomUUID() } : p))); }, []);
   const [mode, setMode] = useState<"register" | "signin">("register");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

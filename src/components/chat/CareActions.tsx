@@ -92,7 +92,9 @@ const WINDOWS: { label: string; w: { from: number; to: number } | null }[] = [
   { label: "After 3 PM", w: { from: 15, to: 24 } },
   { label: "After 6 PM", w: { from: 18, to: 24 } },
 ];
-const fmtSlot = (iso: string) => new Date(iso).toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+// Slots are clinic-local (US Eastern) and the UI says so; always render in that zone, not the viewer's.
+const CLINIC_TZ = "America/New_York";
+const fmtSlot = (iso: string) => new Date(iso).toLocaleString("en-US", { timeZone: CLINIC_TZ, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
 function DoctorBooking({ ctx, triage, onDone, onCancel }: { ctx: Ctx; triage: Triage; onDone: (m: string) => void; onCancel: () => void }) {
   const match = useServerFn(matchVeterinarians);
@@ -163,8 +165,8 @@ function DoctorBooking({ ctx, triage, onDone, onCancel }: { ctx: Ctx; triage: Tr
       "You’re booked",
       `Veterinarian: ${vet.name} (${vet.specialty})`,
       petRec ? `Pet: ${petRec.name} (${petRec.species})` : "",
-      `Date: ${new Date(slot.starts_at).toLocaleDateString([], { dateStyle: "full" })}`,
-      `Time: ${new Date(slot.starts_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`,
+      `Date: ${new Date(slot.starts_at).toLocaleDateString("en-US", { timeZone: CLINIC_TZ, dateStyle: "full" })}`,
+      `Time: ${new Date(slot.starts_at).toLocaleTimeString("en-US", { timeZone: CLINIC_TZ, hour: "numeric", minute: "2-digit" })} (US Eastern)`,
       `Appointment type: ${type}`,
       homeVisit ? `Home visit at: ${locQuery} (stored demo service area)` : `Clinic: ${vet.clinic_name}, ${vet.clinic_address}`,
       attached ? `Case attached: summary, triage${n ? ` and ${n} private file${n > 1 ? "s" : ""} (photos/videos/voice)` : ""} shared with the veterinary team.` : "The appointment is saved; the case summary could not be attached.",

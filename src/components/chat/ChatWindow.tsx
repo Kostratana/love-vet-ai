@@ -37,6 +37,9 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [convId, setConvId] = useState<string | null>(threadId);
   const [petId, setPetId] = useState<string | null>(null);
+  // A new chat for an owner with exactly one pet is about that pet (keeps the case and history linked).
+  const onlyPetId = pets.length === 1 ? pets[0]!.id : null;
+  useEffect(() => { if (!threadId && onlyPetId) setPetId((p) => p ?? onlyPetId); }, [threadId, onlyPetId]);
   const [intakeId, setIntakeId] = useState<string | null>(null);
   const [triage, setTriage] = useState<{ t: Triage; id: string | null } | null>(null);
   const [hideCard, setHideCard] = useState(false);
