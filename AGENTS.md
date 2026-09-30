@@ -13,3 +13,4 @@
 
 - Accounts, pets, chats, media, triage, requests, appointments live in Lovable Cloud (`account-store.ts` wraps auth + tables); browser-only storage is only a pre-confirmation stash. Why: replaces the old frontend-only rule.
 - Clinic staff role is granted manually (never self-assigned at registration). Why: prevents anyone reading owners' cases.
+- Demo clinic/vets/slots are DB rows flagged is_demo; booking goes through the security-definer book_slot() RPC. Why: atomic, prevents double-booking, keeps RLS on appointments.

@@ -13,3 +13,5 @@
 - [ ] Staff verification — blocked: owner must say which clinic accounts get staff access
 - [ ] Confirmation email — blocked: needs verified sending domain (stub in email.server.ts)
 - [x] Pet photo persistence; workspace appointments empty-state fix
+- [x] Fictional demo clinic (Willowbrook Demo) in Information Desk; 6 demo veterinarians; rolling demo slots
+- [x] Doctor matching (jev-latest specialty + stored vets only) → doctor cards → slot booking (confirmed, no double-booking)
