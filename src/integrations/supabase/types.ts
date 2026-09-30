@@ -348,6 +348,65 @@ export type Database = {
         }
         Relationships: []
       }
+      patient_history_chunks: {
+        Row: {
+          appointment_id: string | null
+          case_date: string
+          clinic_id: string | null
+          content: string
+          conversation_id: string | null
+          created_at: string
+          embedding: string | null
+          id: string
+          pet_id: string
+          source_id: string
+          source_type: string
+          updated_at: string
+          user_id: string
+          veterinarian_id: string | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          case_date?: string
+          clinic_id?: string | null
+          content: string
+          conversation_id?: string | null
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          pet_id: string
+          source_id: string
+          source_type: string
+          updated_at?: string
+          user_id: string
+          veterinarian_id?: string | null
+        }
+        Update: {
+          appointment_id?: string | null
+          case_date?: string
+          clinic_id?: string | null
+          content?: string
+          conversation_id?: string | null
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          pet_id?: string
+          source_id?: string
+          source_type?: string
+          updated_at?: string
+          user_id?: string
+          veterinarian_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_history_chunks_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pets: {
         Row: {
           age: string | null
@@ -849,6 +908,26 @@ export type Database = {
           id: string
           similarity: number
           title: string
+        }[]
+      }
+      match_patient_history: {
+        Args: {
+          _exclude_conversation?: string
+          _pet_id: string
+          match_count?: number
+          min_similarity?: number
+          query_embedding: string
+        }
+        Returns: {
+          appointment_id: string
+          case_date: string
+          content: string
+          conversation_id: string
+          id: string
+          similarity: number
+          source_id: string
+          source_type: string
+          veterinarian_id: string
         }[]
       }
       match_veterinarians: {
