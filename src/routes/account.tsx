@@ -49,7 +49,7 @@ function Account() {
     history: <EmptyState icon={History} title="No appointment history yet" />,
     visits: <EmptyState icon={History} title="No completed visits yet">Completed visits appear here. This is your organized history — not a veterinary medical record.</EmptyState>,
     media: <EmptyState icon={ImageIcon} title="No uploaded media">Photos, videos and voice messages you share in conversations will appear here.</EmptyState>,
-    reviews: <EmptyState icon={Star} title="No reviews yet" action={<Link to="/review" className={buttonVariants({ variant: "secondary" })}>Leave a Review</Link>}>You can review a veterinarian and clinic after a completed visit.</EmptyState>,
+    reviews: <EmptyState icon={Star} title="No reviews yet" action={<Link to="/review" search={{}} className={buttonVariants({ variant: "secondary" })}>Leave a Review</Link>}>You can review a veterinarian and clinic after a completed visit.</EmptyState>,
   };
 
   return (
