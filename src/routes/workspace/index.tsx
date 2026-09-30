@@ -22,8 +22,7 @@ function PreVisitCase() {
   return (
     <div>
       <PageHeader eyebrow="Clinic Staff Workspace · Cases" title="Pre-Visit Case" description="After a pet owner books, the veterinary team receives a prepared case: everything the owner shared with Love Vet AI, organised before the visit." />
-      <StaffGate><StaffRequests /></StaffGate>
-      <StaffGate><BookedCases /></StaffGate>
+      <StaffGate><BookedCases /><StaffRequests /></StaffGate>
       <PreVisitCaseView c={sampleCaseView} />
     </div>
   );
