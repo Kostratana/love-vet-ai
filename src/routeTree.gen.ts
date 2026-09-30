@@ -20,6 +20,7 @@ import { Route as RatingsRouteImport } from './routes/ratings'
 import { Route as ReviewRouteImport } from './routes/review'
 import { Route as VeterinarianProfileRouteImport } from './routes/veterinarian-profile'
 import { Route as WorkspaceRouteRouteImport } from './routes/workspace/route'
+import { Route as ApiAnalyzeMediaRouteImport } from './routes/api/analyze-media'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
 import { Route as ChatIndexRouteImport } from './routes/chat/index'
@@ -88,6 +89,11 @@ const VeterinarianProfileRoute = VeterinarianProfileRouteImport.update({
 const WorkspaceRouteRoute = WorkspaceRouteRouteImport.update({
   id: '/workspace',
   path: '/workspace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAnalyzeMediaRoute = ApiAnalyzeMediaRouteImport.update({
+  id: '/api/analyze-media',
+  path: '/api/analyze-media',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/ratings': typeof RatingsRoute
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
+  '/api/analyze-media': typeof ApiAnalyzeMediaRoute
   '/api/chat': typeof ApiChatRoute
   '/api/transcribe': typeof ApiTranscribeRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/ratings': typeof RatingsRoute
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
+  '/api/analyze-media': typeof ApiAnalyzeMediaRoute
   '/api/chat': typeof ApiChatRoute
   '/api/transcribe': typeof ApiTranscribeRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
@@ -226,6 +234,7 @@ export interface FileRoutesById {
   '/ratings': typeof RatingsRoute
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
+  '/api/analyze-media': typeof ApiAnalyzeMediaRoute
   '/api/chat': typeof ApiChatRoute
   '/api/transcribe': typeof ApiTranscribeRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
@@ -255,6 +264,7 @@ export interface FileRouteTypes {
     | '/ratings'
     | '/review'
     | '/veterinarian-profile'
+    | '/api/analyze-media'
     | '/api/chat'
     | '/api/transcribe'
     | '/chat/$threadId'
@@ -280,6 +290,7 @@ export interface FileRouteTypes {
     | '/ratings'
     | '/review'
     | '/veterinarian-profile'
+    | '/api/analyze-media'
     | '/api/chat'
     | '/api/transcribe'
     | '/chat/$threadId'
@@ -307,6 +318,7 @@ export interface FileRouteTypes {
     | '/ratings'
     | '/review'
     | '/veterinarian-profile'
+    | '/api/analyze-media'
     | '/api/chat'
     | '/api/transcribe'
     | '/chat/$threadId'
@@ -335,6 +347,7 @@ export interface RootRouteChildren {
   RatingsRoute: typeof RatingsRoute
   ReviewRoute: typeof ReviewRoute
   VeterinarianProfileRoute: typeof VeterinarianProfileRoute
+  ApiAnalyzeMediaRoute: typeof ApiAnalyzeMediaRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiTranscribeRoute: typeof ApiTranscribeRoute
   JoinBusinessRoute: typeof JoinBusinessRoute
@@ -420,6 +433,13 @@ declare module '@tanstack/react-router' {
       path: '/workspace'
       fullPath: '/workspace'
       preLoaderRoute: typeof WorkspaceRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/analyze-media': {
+      id: '/api/analyze-media'
+      path: '/api/analyze-media'
+      fullPath: '/api/analyze-media'
+      preLoaderRoute: typeof ApiAnalyzeMediaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -569,6 +589,7 @@ const rootRouteChildren: RootRouteChildren = {
   RatingsRoute: RatingsRoute,
   ReviewRoute: ReviewRoute,
   VeterinarianProfileRoute: VeterinarianProfileRoute,
+  ApiAnalyzeMediaRoute: ApiAnalyzeMediaRoute,
   ApiChatRoute: ApiChatRoute,
   ApiTranscribeRoute: ApiTranscribeRoute,
   JoinBusinessRoute: JoinBusinessRoute,
