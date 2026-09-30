@@ -100,7 +100,7 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
       const m: AttachmentMeta = { kind: a.kind, name: a.name, size: a.size, durationSec: a.durationSec, mime: a.mime, transcription: a.transcription };
       if (userId && cid) {
         const path = `${userId}/${cid}/${crypto.randomUUID()}-${a.name.replace(/[^\w.-]/g, "_")}`;
-        const { error: ue } = await supabase.storage.from(BUCKET).upload(path, a.file, { contentType: a.mime });
+        const { error: ue } = await supabase.storage.from(BUCKET).upload(path, a.file, { contentType: a.mime ?? "application/octet-stream" });
         if (ue) throw new Error(`Upload failed for ${a.name}. Please try again.`);
         await supabase.from("uploaded_files").insert({ user_id: userId, conversation_id: cid, pet_id: petId, intake_id: intakeId, kind: a.kind, mime_type: a.mime ?? "application/octet-stream", size_bytes: a.size, storage_path: path, transcription: a.transcription ?? null });
         m.path = path;

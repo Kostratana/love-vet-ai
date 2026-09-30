@@ -102,14 +102,15 @@ export const askInformationDesk = createServerFn({ method: "POST" })
       const [vec] = await embed([data.question]);
       const { data: hits, error } = await sb.rpc("match_knowledge", { query_embedding: JSON.stringify(vec), match_count: 5, min_similarity: 0.5 });
       if (error) throw error;
-      if (!hits?.length) return { answer: NA, sources: [], available: false };
-      const ctx = hits.map((h, i) => `[${i + 1}] (${h.category}) ${h.title}\n${h.content}`).join("\n\n");
+      const list = (hits ?? []) as { title: string; category: string; content: string }[];
+      if (!list.length) return { answer: NA, sources: [], available: false };
+      const ctx = list.map((h, i) => `[${i + 1}] (${h.category}) ${h.title}\n${h.content}`).join("\n\n");
       const answer = await generate(
         `You answer questions about a veterinary clinic using ONLY the numbered entries provided. If the entries do not contain the answer, reply exactly: "${NA}" Never invent facts, prices, hours or names. Reply in the language of the question. No medical diagnosis.`,
         `Entries:\n${ctx}\n\nQuestion: ${data.question}`,
       );
       const available = !answer.includes("not available yet");
-      return { answer, available, sources: available ? hits.map((h) => ({ title: h.title, category: h.category })) : [] };
+      return { answer, available, sources: available ? list.map((h) => ({ title: h.title, category: h.category })) : [] };
     } catch (e) {
       return { answer: "", sources: [], available: false, error: e instanceof GatewayError ? e.message : "The Information Desk could not answer right now." };
     }

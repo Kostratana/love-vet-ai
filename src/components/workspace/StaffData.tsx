@@ -26,7 +26,7 @@ type Req = {
   id: string; created_at: string; status: string; summary: string; symptoms: string[]; urgency: string; conversation_id: string | null; intake_id: string | null; user_id: string;
   pet: { name: string; species: string; breed: string | null; age: string | null } | null;
   owner: { first_name: string; last_name: string; email: string; phone: string } | null;
-  files: { id: string; kind: string; storage_path: string; transcription: string | null; url?: string }[];
+  files: { id: string; kind: string; storage_path: string; transcription: string | null; url?: string | undefined }[];
 };
 
 const STATUSES = ["new", "in_review", "contacted", "closed"];
