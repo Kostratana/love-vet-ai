@@ -1,15 +1,15 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowRight, Building2, Stethoscope } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 import { PublicPage } from "@/components/layout/PublicPage";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/ratings")({
   head: () => ({
     meta: [
-      { title: "Ratings · Top Veterinary Clinics & Professionals · Love Vet AI" },
-      { name: "description", content: "Discover highly rated veterinary clinics and professionals, ranked by verified Love Vet AI reviews from completed visits." },
-      { property: "og:title", content: "Ratings · Love Vet AI" },
-      { property: "og:description", content: "Verified ratings of veterinary clinics and professionals — coming as real reviews arrive." },
+      { title: "Pet Owner Reviews · Love Vet AI" },
+      { name: "description", content: "See what a veterinarian and clinic review looks like on Love Vet AI: five clear criteria, written after a completed visit." },
+      { property: "og:title", content: "Pet Owner Reviews · Love Vet AI" },
+      { property: "og:description", content: "Reviews from completed veterinary visits, rated on five clear criteria." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -17,72 +17,77 @@ export const Route = createFileRoute("/ratings")({
   component: Ratings,
 });
 
-const clinicFilters = ["Species", "Specialty", "Location", "Service", "Rating"];
-const specialties = ["General Veterinary Care", "Emergency Care", "Exotic Animals", "Small Animals", "Surgery", "Dermatology", "Orthopedics", "Ophthalmology", "Diagnostic Imaging"];
+const CRITERIA = ["Attentiveness", "Professional Expertise", "Quality of Service", "Kindness to Animals", "Value for Money"] as const;
 
-function RankingSection({
-  id, icon: Icon, eyebrow, title, intro, filters, columns, empty,
-}: { id: string; icon: LucideIcon; eyebrow: string; title: string; intro: string; filters: string[]; columns: string[]; empty: string }) {
+type DemoReview = { vet: string; specialty: string; initials: string; visit: string; scores: [number, number, number, number, number]; text: string; owner: string };
+
+const DEMO: DemoReview[] = [
+  { vet: "Dr. Aiko Brennan", specialty: "Veterinary dermatology", initials: "AB", visit: "Dog · ear and skin consultation", owner: "Fictional owner · Max's family",
+    scores: [5, 5, 5, 5, 4],
+    text: "Dr. Brennan was attentive and explained the next steps clearly. She was gentle with our dog and took time to answer our questions. The appointment felt organized and we appreciated having the case information prepared before the visit." },
+  { vet: "Dr. Noor Castellan", specialty: "Exotic & small-mammal medicine", initials: "NC", visit: "Rabbit · consultation", owner: "Fictional owner · Clover's family",
+    scores: [5, 5, 4, 5, 4],
+    text: "Our rabbit was eating less and we were worried. Dr. Castellan already knew what we had reported and had seen the video, so the visit started right away. She handled Clover calmly and explained everything in plain language." },
+  { vet: "Dr. Sofia Lindqvist", specialty: "Feline medicine", initials: "SL", visit: "Cat · routine checkup", owner: "Fictional owner · Miso's family",
+    scores: [4, 5, 4, 5, 4],
+    text: "A calm, unhurried checkup for a very nervous cat. Dr. Lindqvist let Miso settle before examining her and gave us clear notes on what to watch at home. Waiting time was short." },
+];
+
+function Stars({ value, size = "sm" }: { value: number; size?: "sm" | "lg" }) {
   return (
-    <section id={id} aria-labelledby={`${id}-h`} className="scroll-mt-28">
-      <div className="flex items-center gap-3">
-        <span className="grid size-9 place-items-center rounded-full border border-ice-lum/70 bg-white/40 text-deep"><Icon className="size-4" strokeWidth={1.6} aria-hidden /></span>
-        <p className="text-xs font-semibold tracking-[0.2em] text-primary uppercase">{eyebrow}</p>
-      </div>
-      <h2 id={`${id}-h`} className="mt-3 text-2xl font-bold tracking-[-0.03em] sm:text-3xl">{title}</h2>
-      <p className="mt-2 max-w-2xl text-graphite">{intro}</p>
+    <span className="inline-flex gap-0.5" aria-label={`${value} out of 5`}>
+      {[1, 2, 3, 4, 5].map((n) => <Star key={n} aria-hidden className={cn(size === "lg" ? "size-5" : "size-3.5", n <= Math.round(value) ? "fill-primary text-primary" : "text-silver-strong")} strokeWidth={1.5} />)}
+    </span>
+  );
+}
 
-      <div className="mt-6 flex flex-wrap gap-2" aria-label="Filters (available once ratings exist)">
-        {filters.map((f) => (
-          <span key={f} className="rounded-full border border-white/50 bg-white/30 px-3 py-1 text-xs font-semibold text-deep/70 backdrop-blur">{f}</span>
+function ReviewCard({ r }: { r: DemoReview }) {
+  const overall = r.scores.reduce((a, b) => a + b, 0) / r.scores.length;
+  return (
+    <article className="glass rounded-3xl p-6">
+      <div className="flex flex-wrap items-start gap-4">
+        <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-full bg-ice font-bold text-deep">{r.initials}</span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[0.62rem] font-extrabold tracking-[0.14em] text-primary uppercase">Demo review · Fictional</p>
+          <h2 className="text-lg font-bold text-navy">{r.vet}</h2>
+          <p className="text-sm text-graphite">{r.specialty} · Willowbrook Demo Veterinary Clinic</p>
+          <p className="text-xs text-graphite">{r.visit}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-3xl font-extrabold text-navy">{overall.toFixed(1)}</p>
+          <Stars value={overall} size="lg" />
+          <p className="text-[0.65rem] text-graphite">Overall</p>
+        </div>
+      </div>
+      <dl className="mt-5 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+        {CRITERIA.map((c, i) => (
+          <div key={c} className="flex items-center justify-between gap-3 border-b border-ice-lum/30 pb-1.5">
+            <dt className="text-sm text-navy">{c}</dt>
+            <dd className="flex items-center gap-2"><Stars value={r.scores[i]!} /><span className="w-3 text-xs font-bold text-deep">{r.scores[i]}</span></dd>
+          </div>
         ))}
-      </div>
-
-      <div className="mt-6 hidden grid-cols-[3rem_2fr_1fr_1fr_1fr] gap-4 border-b border-ice-lum/50 pb-2 text-[0.68rem] font-semibold tracking-[0.12em] text-primary/70 uppercase sm:grid">
-        <span>#</span>{columns.map((c) => <span key={c}>{c}</span>)}
-      </div>
-      <div className="py-12 text-center">
-        <p className="font-semibold text-deep">{empty}</p>
-        <p className="mx-auto mt-2 max-w-md text-sm text-graphite">Only reviews linked to a completed appointment will count. No sample ratings are shown.</p>
-      </div>
-    </section>
+      </dl>
+      <p className="mt-4 text-sm leading-relaxed text-navy/85">"{r.text}"</p>
+      <p className="mt-2 text-xs text-graphite">{r.owner}</p>
+    </article>
   );
 }
 
 function Ratings() {
   return (
     <PublicPage>
-      <div className="mx-auto max-w-5xl px-6 pt-14 pb-10">
+      <div className="mx-auto max-w-4xl px-6 pt-14 pb-10">
         <p className="text-xs font-semibold tracking-[0.2em] text-primary uppercase">Ratings</p>
-        <h1 className="mt-3 text-4xl font-extrabold tracking-[-0.035em] sm:text-5xl"><span className="text-gradient-hero">Highly rated veterinary care</span></h1>
-        <p className="mt-4 max-w-2xl text-lg text-graphite">
-          Discover veterinary clinics and professionals through verified reviews from pet owners who completed a visit.
-          Ratings help you choose, but species and specialty suitability always come first.
-        </p>
-        <nav aria-label="Ratings sections" className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold">
-          <a href="#clinics" className="text-deep hover:underline">Top Veterinary Clinics</a>
-          <a href="#professionals" className="text-deep hover:underline">Top Veterinary Professionals</a>
-        </nav>
+        <h1 className="mt-3 text-4xl font-extrabold tracking-[-0.035em] sm:text-5xl"><span className="text-gradient-hero">Pet Owner Reviews</span></h1>
+        <p className="mt-4 max-w-2xl text-lg text-graphite">Reviews from completed veterinary visits help owners understand the experience with a veterinarian or clinic.</p>
+        <p className="mt-2 text-sm text-graphite">The examples below are fictional demo reviews showing how a review looks. Real reviews can only be written after a completed Love Vet AI appointment.</p>
 
-        <div className="mt-16 space-y-20">
-          <RankingSection
-            id="clinics" icon={Building2} eyebrow="Clinics" title="Top Veterinary Clinics"
-            intro="Future rankings will show each clinic's location, verified rating and review count, species supported, services, specialties, emergency availability and a short review summary."
-            filters={clinicFilters} columns={["Clinic", "Verified rating", "Species", "Emergency"]}
-            empty="Clinic ratings will appear here as verified Love Vet AI reviews become available."
-          />
-          <RankingSection
-            id="professionals" icon={Stethoscope} eyebrow="Professionals" title="Top Veterinary Professionals"
-            intro="Future rankings will show each veterinarian's photo, clinic, specialty, species treated, verified rating, review count and a short professional profile."
-            filters={specialties} columns={["Veterinarian", "Verified rating", "Specialty", "Clinic"]}
-            empty="Veterinarian ratings will appear here as verified Love Vet AI reviews become available."
-          />
+        <div className="mt-10 space-y-5">{DEMO.map((r) => <ReviewCard key={r.vet} r={r} />)}</div>
+
+        <div className="mt-12 flex flex-wrap items-center gap-4 border-t border-ice-lum/40 pt-6">
+          <Link to="/review" search={{}} className="lv-cta inline-flex h-10 items-center gap-1.5 px-5 text-sm">Write a Review <ArrowRight className="size-4" /></Link>
+          <p className="text-sm text-graphite">Reviews are available after a completed visit.</p>
         </div>
-
-        <p className="mt-16 border-t border-ice-lum/40 pt-6 text-sm text-graphite">
-          Had a completed visit?{" "}
-          <Link to="/review" search={{}} className="inline-flex items-center gap-1 font-semibold text-deep hover:underline">Write a review <ArrowRight className="size-3.5" /></Link>
-        </p>
       </div>
     </PublicPage>
   );
