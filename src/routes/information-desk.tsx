@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ClinicQuestion } from "@/components/care/ClinicQuestion";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, MessageCircle } from "lucide-react";
+import { ARTICLES, type Article } from "@/lib/info-articles";
 import horse from "@/assets/horse-health-ai.jpg";
 import { PublicPage } from "@/components/layout/PublicPage";
 
@@ -27,13 +27,25 @@ const categories = [
   { id: "news", title: "Animal World News" },
 ];
 
-const upcoming: Record<string, string> = {
-  nutrition: "Editorial nutrition content and recipes are being prepared and will be published here.",
-  supplements: "Articles about vitamins and supplements are being prepared. Always discuss supplements with a veterinarian.",
-  travel: "Guides to travelling with pets are being prepared.",
-  documents: "Information about pet travel documents and requirements is being prepared. Official rules vary by country.",
-  news: "News from the animal world will appear here once published.",
-};
+function ArticleCard({ a, label }: { a: Article; label: string }) {
+  return (
+    <article className="glass flex flex-col rounded-3xl p-5">
+      <p className="text-[0.66rem] font-bold tracking-[0.16em] text-deep uppercase">{label}</p>
+      <h3 className="mt-2 text-lg font-bold leading-snug text-navy">{a.title}</h3>
+      <p className="mt-2 text-sm text-graphite">{a.description}</p>
+      <details className="group mt-auto pt-4">
+        <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-sm font-semibold text-deep hover:underline">
+          <span className="group-open:hidden">Read more</span><span className="hidden group-open:inline">Show less</span> <ArrowUpRight className="size-3.5" />
+        </summary>
+        <div className="mt-3 space-y-2 text-sm leading-relaxed text-navy/85">{a.body.map((p, i) => <p key={i}>{p}</p>)}</div>
+      </details>
+    </article>
+  );
+}
+
+function Cards({ cat, label }: { cat: string; label: string }) {
+  return <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{ARTICLES.filter((a) => a.category === cat).map((a) => <ArticleCard key={a.id} a={a} label={label} />)}</div>;
+}
 
 function InformationDesk() {
   return (
@@ -49,7 +61,7 @@ function InformationDesk() {
             <a key={c.id} href={`#${c.id}`} className="lv-pill px-3 py-1 text-xs">{c.title}</a>
           ))}
         </nav>
-        <ClinicQuestion />
+        <p className="mt-6 text-sm text-graphite">Editorial information for pet owners — not medical advice. For your own pet's concern or an appointment, <Link to="/chat" className="inline-flex items-center gap-1 font-semibold text-deep hover:underline"><MessageCircle className="size-3.5" /> chat with Love Vet AI</Link>.</p>
       </section>
 
       <div className="mx-auto mt-12 max-w-5xl divide-y divide-ice-lum/50 px-6">
@@ -80,22 +92,26 @@ function InformationDesk() {
               </a>
             </div>
           </article>
+          <Cards cat="innovations" label="Veterinary Innovations" />
         </section>
 
         {categories.slice(1).map((c, i) => (
-          <section key={c.id} id={c.id} aria-labelledby={`${c.id}-h`} className="scroll-mt-24 grid gap-2 py-8 sm:grid-cols-[280px_1fr] sm:gap-8">
-            <div>
-              <p className="text-[0.7rem] font-bold tracking-[0.18em] text-deep uppercase">0{i + 2} · Category</p>
-              <h2 id={`${c.id}-h`} className="mt-1 text-xl font-bold text-navy">{c.title}</h2>
-            </div>
-            <p className="text-sm text-graphite sm:pt-5">{upcoming[c.id]}</p>
+          <section key={c.id} id={c.id} aria-labelledby={`${c.id}-h`} className="scroll-mt-24 py-10">
+            <p className="text-[0.7rem] font-bold tracking-[0.18em] text-deep uppercase">0{i + 2} · Category</p>
+            <h2 id={`${c.id}-h`} className="mt-2 text-2xl font-bold text-navy">{c.title}</h2>
+            {c.id === "documents" && <p className="mt-2 max-w-2xl text-sm text-graphite">Requirements depend on your destination and transport provider. Always verify the official rules for your actual trip.</p>}
+            {c.id === "news" && <p className="mt-2 max-w-2xl text-sm text-graphite">Editorial features — not live news.</p>}
+            <Cards cat={c.id} label={c.title} />
           </section>
         ))}
       </div>
 
       <section className="mx-auto mt-10 max-w-5xl border-t border-ice-lum/50 px-6 pt-10 text-center">
         <p className="text-lg font-bold text-navy">For veterinary professionals and clinics</p>
-        <Link to="/join/veterinarian" className="lv-cta mt-4 h-9 px-5 text-sm">Join Love Vet AI</Link>
+        <div className="mt-4 flex flex-wrap justify-center gap-3">
+          <Link to="/chat" className="lv-pill px-4 py-1.5 text-sm">Chat with Love Vet AI</Link>
+          <Link to="/join/veterinarian" className="lv-cta h-9 px-5 text-sm">Join Love Vet AI</Link>
+        </div>
       </section>
     </PublicPage>
   );
