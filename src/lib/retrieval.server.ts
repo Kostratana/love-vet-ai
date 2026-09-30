@@ -29,10 +29,11 @@ export type VetRecord = {
   id: string; name: string; title: string; specialty: string; secondary_specialties: string[]; interests: string[]; conditions: string[];
   species: string[]; languages: string[]; years_experience: number; bio: string; initials: string; appointment_types: string[];
   appointment_durations: Record<string, number>; urgent_care: boolean;
+  provider_type: string; clinic_id: string | null; home_visit: boolean; home_visit_types: string[]; service_area: string[];
   clinic: { name: string; address: string } | null;
 };
 
-const VET_COLS = "id,name,title,specialty,secondary_specialties,interests,conditions,species,languages,years_experience,bio,initials,appointment_types,appointment_durations,urgent_care,clinics(name,street,city,region,postal_code,country)";
+const VET_COLS = "id,name,title,specialty,secondary_specialties,interests,conditions,species,languages,years_experience,bio,initials,appointment_types,appointment_durations,urgent_care,provider_type,home_visit,home_visit_types,service_area,clinic_id,clinics(name,street,city,region,postal_code,country)";
 
 type Row = Omit<VetRecord, "clinic" | "appointment_durations"> & { appointment_durations: unknown; clinics: { name: string; street: string; city: string; region: string; postal_code: string; country: string } | null };
 const toRecord = (r: Row): VetRecord => ({
@@ -52,16 +53,33 @@ export async function retrieveVets(queryVec: number[], count = 10) {
   return list.flatMap((h) => { const r = byId.get(h.id); return r ? [{ ...r, similarity: h.similarity }] : []; });
 }
 
-/** Real, unbooked, future slots from structured availability. */
-export async function nextSlots(vetId: string, limit: number) {
+/** Local clinic hour (US Eastern, where the demo clinic operates) of a slot. */
+export function clinicHour(iso: string) {
+  const p = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "numeric", hourCycle: "h23" }).formatToParts(new Date(iso));
+  return Number(p.find((x) => x.type === "hour")?.value ?? 0) + Number(p.find((x) => x.type === "minute")?.value ?? 0) / 60;
+}
+
+/** Real, unbooked, future slots from structured availability, optionally inside a clinic-local hour window [from, to). */
+export async function nextSlots(vetId: string, limit: number, window?: { from: number; to: number } | null) {
   const { data } = await publicDb().from("vet_slots").select("id,starts_at,duration_min").eq("veterinarian_id", vetId).eq("booked", false)
-    .gte("starts_at", new Date(Date.now() + 3600_000).toISOString()).order("starts_at").limit(limit);
-  return data ?? [];
+    .gte("starts_at", new Date(Date.now() + 3600_000).toISOString()).order("starts_at").limit(window ? 200 : limit);
+  const rows = data ?? [];
+  if (!window) return rows;
+  return rows.filter((r) => { const h = clinicHour(r.starts_at); return h >= window.from && h < window.to; }).slice(0, limit);
+}
+
+/** True when the stored service area of a home-visit provider covers the owner's stated location. */
+export function servesArea(v: Pick<VetRecord, "service_area">, location: string) {
+  const loc = location.toLowerCase().trim();
+  if (!loc) return false;
+  return v.service_area.some((a) => loc.includes(a.toLowerCase()) || a.toLowerCase().includes(loc));
 }
 
 export function vetFacts(v: VetRecord, next?: string | null) {
   return [
     `${v.name} — ${v.title} (DEMO veterinarian)`,
+    `Provider type: ${v.provider_type === "home_visit" ? "independent / home-visit veterinarian (visits the owner's home)" : "clinic veterinarian"}`,
+    v.home_visit ? `Home visits: ${v.home_visit_types.join(", ")}. Stored service area ONLY: ${v.service_area.join(", ")}` : "",
     `Specialty: ${v.specialty.replace(/_/g, " ")}; also: ${[...v.secondary_specialties, ...v.interests].join(", ")}`,
     `Species: ${v.species.join(", ")}`,
     `Problems seen: ${v.conditions.join(", ")}`,

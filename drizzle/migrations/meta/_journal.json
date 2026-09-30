@@ -57,6 +57,13 @@
       "when": 1790736250017,
       "tag": "0007_demo_slots_follow_clinic_hours",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790738905529,
+      "tag": "0008_providers_case_package_reviews",
+      "breakpoints": true
     }
   ]
 }

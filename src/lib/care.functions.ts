@@ -125,7 +125,8 @@ export const addKnowledge = createServerFn({ method: "POST" })
 export type VetMatch = {
   id: string; name: string; title: string; specialty: string; expertise: string[]; species: string[]; languages: string[];
   years_experience: number; bio: string; initials: string; urgent_care: boolean; appointment_types: string[];
-  clinic_name: string; clinic_address: string;
+  clinic_name: string; clinic_address: string; clinic_id: string | null;
+  provider_type: string; home_visit: boolean; service_area: string[];
   reason: string; slots: { id: string; starts_at: string; duration_min: number }[];
 };
 
@@ -142,10 +143,14 @@ export const matchVeterinarians = createServerFn({ method: "POST" })
     symptoms: z.array(z.string().max(200)).max(12).default([]),
     summary: z.string().max(2000).default(""),
     urgency: z.enum(URGENCIES),
+    /** Preferred clinic-local hour window, e.g. afternoon = 12–17. */
+    window: z.object({ from: z.number().min(0).max(24), to: z.number().min(0).max(24) }).nullable().optional().default(null),
+    homeVisit: z.boolean().optional().default(false),
+    location: z.string().max(120).optional().default(""),
   }).parse(d))
-  .handler(async ({ data }): Promise<{ specialty: string; vets: VetMatch[]; error?: string }> => {
+  .handler(async ({ data }): Promise<{ specialty: string; vets: VetMatch[]; note?: string; error?: string }> => {
     const { jev, embed } = await import("./ai.server");
-    const { ensureIndexed, retrieveVets, nextSlots, publicDb } = await import("./retrieval.server");
+    const { ensureIndexed, retrieveVets, nextSlots, publicDb, servesArea } = await import("./retrieval.server");
     await Promise.all([publicDb().rpc("ensure_demo_slots"), ensureIndexed()]);
     let specialty = "general";
     const [spec, vec] = await Promise.all([
@@ -169,17 +174,23 @@ export const matchVeterinarians = createServerFn({ method: "POST" })
     if (spec) specialty = spec;
     if (!vec) return { specialty, vets: [], error: "Could not search the veterinarian directory right now." };
     const sp = data.species.toLowerCase().trim();
-    const cands = await retrieveVets(vec, 10);
+    const cands = await retrieveVets(vec, 16);
+    let note: string | undefined;
     // Structured validation: the stored record must list this species.
     const treats = (v: { species: string[] }) => !sp || v.species.some((s) => sp.includes(s) || s.includes(sp));
     const urgentCase = data.urgency === "urgent";
-    const ranked = cands.filter(treats).filter((v) => !urgentCase || v.urgent_care || v.specialty === specialty)
+    const pool = data.homeVisit ? cands.filter((v) => v.home_visit && servesArea(v, data.location)) : cands.filter((v) => !v.home_visit);
+    if (data.homeVisit) {
+      if (!data.location.trim()) return { specialty, vets: [], note: "Tell us your town or ZIP code so we can check whether the stored home-visit provider covers your area." };
+      if (!pool.length) note = "No home-visit veterinarian in the demo directory covers this location. You can book a visit at the demo clinic instead.";
+    }
+    const ranked = pool.filter(treats).filter((v) => !urgentCase || v.urgent_care || v.specialty === specialty)
       .map((v) => ({ v, score: v.similarity * 4 + (v.specialty === specialty ? 2 : 0) + (urgentCase && v.urgent_care ? 2 : 0) }))
       .sort((a, b) => b.score - a.score);
     const out: VetMatch[] = [];
     for (const { v } of ranked) {
       if (out.length >= 3) break;
-      const slots = await nextSlots(v.id, urgentCase ? 4 : 8);
+      const slots = await nextSlots(v.id, urgentCase ? 4 : 8, data.window);
       if (!slots.length) continue;
       const text = `${data.symptoms.join(" ")} ${data.summary}`.toLowerCase();
       const hit = v.conditions.filter((c) => c.split(" ").some((w) => w.length > 3 && text.includes(w.slice(0, -1)))).slice(0, 2);
@@ -188,12 +199,15 @@ export const matchVeterinarians = createServerFn({ method: "POST" })
         hit.length ? `sees ${hit.join(" and ")}` : "",
         sp ? `treats ${sp}s` : "",
         urgentCase && v.urgent_care ? "offers same-day urgent visits" : "",
+        v.home_visit ? `home visits in the stored service area (${v.service_area.join(", ")})` : "",
       ].filter(Boolean).join(" · ");
       out.push({
         id: v.id, name: v.name, title: v.title, specialty: SPECIALTY_LABEL[v.specialty] ?? v.specialty, expertise: [...v.secondary_specialties, ...v.interests].slice(0, 5),
         species: v.species, languages: v.languages, years_experience: v.years_experience, bio: v.bio, initials: v.initials, urgent_care: v.urgent_care,
         appointment_types: v.appointment_types, clinic_name: v.clinic?.name ?? "", clinic_address: v.clinic?.address ?? "", reason, slots,
+        clinic_id: v.clinic_id, provider_type: v.provider_type, home_visit: v.home_visit, service_area: v.service_area,
       });
     }
-    return { specialty, vets: out };
+    if (!out.length && !note && data.window) note = "No stored open times match that time preference. Try a wider time range.";
+    return { specialty, vets: out, ...(note ? { note } : {}) };
   });

@@ -81,7 +81,7 @@ function Ratings() {
 
         <p className="mt-16 border-t border-ice-lum/40 pt-6 text-sm text-graphite">
           Had a completed visit?{" "}
-          <Link to="/review" className="inline-flex items-center gap-1 font-semibold text-deep hover:underline">Write a review <ArrowRight className="size-3.5" /></Link>
+          <Link to="/review" search={{}} className="inline-flex items-center gap-1 font-semibold text-deep hover:underline">Write a review <ArrowRight className="size-3.5" /></Link>
         </p>
       </div>
     </PublicPage>
