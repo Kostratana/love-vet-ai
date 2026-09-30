@@ -5,6 +5,7 @@ import { ArrowUp, FileVideo, Globe, ImageIcon, Mic, ShieldCheck, Square, Trash2,
 import { AssistantAvatar } from "@/components/chat/AssistantAvatar";
 import { ChatDecor } from "@/components/chat/ChatDecor";
 import { RoutingCard } from "@/components/chat/CareActions";
+import { ListenButton, RichText } from "@/components/chat/RichText";
 import { supabase } from "@/integrations/supabase/client";
 import { useAccount } from "@/lib/account-store";
 import { runTriage, type Triage } from "@/lib/care.functions";
@@ -287,7 +288,7 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
         <div className="mx-auto max-w-3xl space-y-6">
           <AssistantBubble text={OPENING_MESSAGE} />
           {loadingThread && <p role="status" className="text-center text-xs text-graphite">Loading your conversation…</p>}
-          {messages.map((m) => (m.role === "user" ? <UserBubble key={m.id} m={m} /> : m.content ? <AssistantBubble key={m.id} text={m.content} /> : null))}
+          {messages.map((m) => (m.role === "user" ? <UserBubble key={m.id} m={m} /> : m.content ? <AssistantBubble key={m.id} text={m.content} listen={!busy || m.id !== messages[messages.length - 1]?.id} /> : null))}
           {lastIsEmptyAssistant && (
             <p role="status" className="mx-auto w-fit rounded-full border border-ice-lum/60 bg-card/70 px-4 py-1.5 text-center text-xs font-medium text-graphite">
               Love Vet AI is thinking…
@@ -350,15 +351,16 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
   );
 }
 
-function AssistantBubble({ text }: { text: string }) {
+function AssistantBubble({ text, listen = false }: { text: string; listen?: boolean }) {
   return (
     <div className="flex gap-3">
       <AssistantAvatar className="mt-5 size-9 shrink-0" />
       <div className="min-w-0 max-w-[85%]">
         <p className="mb-1 text-[0.7rem] font-bold tracking-[0.08em] text-deep uppercase">Love Vet AI</p>
-        <div className="rounded-2xl rounded-tl-md border border-[rgb(236_170_205/0.6)] bg-[linear-gradient(150deg,rgb(255_247_251/0.92),rgb(252_228_242/0.78)_55%,rgb(240_226_255/0.72))] px-4 py-3 text-[0.95rem] leading-relaxed whitespace-pre-line text-navy shadow-[inset_0_1px_0_rgb(255_255_255/0.9),0_8px_24px_-16px_rgb(214_110_170/0.55)] backdrop-blur">
-          {text}
+        <div className="rounded-2xl rounded-tl-md border border-[rgb(236_170_205/0.6)] bg-[linear-gradient(150deg,rgb(255_247_251/0.92),rgb(252_228_242/0.78)_55%,rgb(240_226_255/0.72))] px-4 py-3 text-[0.95rem] leading-relaxed text-navy shadow-[inset_0_1px_0_rgb(255_255_255/0.9),0_8px_24px_-16px_rgb(214_110_170/0.55)] backdrop-blur">
+          <RichText text={text} />
         </div>
+        {listen && <ListenButton text={text} />}
       </div>
     </div>
   );

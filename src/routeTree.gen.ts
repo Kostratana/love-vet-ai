@@ -23,6 +23,7 @@ import { Route as WorkspaceRouteRouteImport } from './routes/workspace/route'
 import { Route as ApiAnalyzeMediaRouteImport } from './routes/api/analyze-media'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
+import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ChatIndexRouteImport } from './routes/chat/index'
 import { Route as ChatThreadIdRouteImport } from './routes/chat/$threadId'
 import { Route as JoinIndexRouteImport } from './routes/join.index'
@@ -106,6 +107,11 @@ const ApiTranscribeRoute = ApiTranscribeRouteImport.update({
   path: '/api/transcribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTtsRoute = ApiTtsRouteImport.update({
+  id: '/api/tts',
+  path: '/api/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatIndexRoute = ChatIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -182,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/api/analyze-media': typeof ApiAnalyzeMediaRoute
   '/api/chat': typeof ApiChatRoute
   '/api/transcribe': typeof ApiTranscribeRoute
+  '/api/tts': typeof ApiTtsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/join/business': typeof JoinBusinessRoute
   '/join/owner': typeof JoinOwnerRoute
@@ -208,6 +215,7 @@ export interface FileRoutesByTo {
   '/api/analyze-media': typeof ApiAnalyzeMediaRoute
   '/api/chat': typeof ApiChatRoute
   '/api/transcribe': typeof ApiTranscribeRoute
+  '/api/tts': typeof ApiTtsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/join/business': typeof JoinBusinessRoute
   '/join/owner': typeof JoinOwnerRoute
@@ -237,6 +245,7 @@ export interface FileRoutesById {
   '/api/analyze-media': typeof ApiAnalyzeMediaRoute
   '/api/chat': typeof ApiChatRoute
   '/api/transcribe': typeof ApiTranscribeRoute
+  '/api/tts': typeof ApiTtsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/join/business': typeof JoinBusinessRoute
   '/join/owner': typeof JoinOwnerRoute
@@ -267,6 +276,7 @@ export interface FileRouteTypes {
     | '/api/analyze-media'
     | '/api/chat'
     | '/api/transcribe'
+    | '/api/tts'
     | '/chat/$threadId'
     | '/join/business'
     | '/join/owner'
@@ -293,6 +303,7 @@ export interface FileRouteTypes {
     | '/api/analyze-media'
     | '/api/chat'
     | '/api/transcribe'
+    | '/api/tts'
     | '/chat/$threadId'
     | '/join/business'
     | '/join/owner'
@@ -321,6 +332,7 @@ export interface FileRouteTypes {
     | '/api/analyze-media'
     | '/api/chat'
     | '/api/transcribe'
+    | '/api/tts'
     | '/chat/$threadId'
     | '/join/business'
     | '/join/owner'
@@ -350,6 +362,7 @@ export interface RootRouteChildren {
   ApiAnalyzeMediaRoute: typeof ApiAnalyzeMediaRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiTranscribeRoute: typeof ApiTranscribeRoute
+  ApiTtsRoute: typeof ApiTtsRoute
   JoinBusinessRoute: typeof JoinBusinessRoute
   JoinOwnerRoute: typeof JoinOwnerRoute
   JoinVeterinarianRoute: typeof JoinVeterinarianRoute
@@ -454,6 +467,13 @@ declare module '@tanstack/react-router' {
       path: '/api/transcribe'
       fullPath: '/api/transcribe'
       preLoaderRoute: typeof ApiTranscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tts': {
+      id: '/api/tts'
+      path: '/api/tts'
+      fullPath: '/api/tts'
+      preLoaderRoute: typeof ApiTtsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat/': {
@@ -592,6 +612,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAnalyzeMediaRoute: ApiAnalyzeMediaRoute,
   ApiChatRoute: ApiChatRoute,
   ApiTranscribeRoute: ApiTranscribeRoute,
+  ApiTtsRoute: ApiTtsRoute,
   JoinBusinessRoute: JoinBusinessRoute,
   JoinOwnerRoute: JoinOwnerRoute,
   JoinVeterinarianRoute: JoinVeterinarianRoute,
