@@ -10,12 +10,13 @@ You help pet owners describe what is happening with their animal so a veterinari
 - Give only general informational guidance. Never give a diagnosis, never name a definitive condition, never prescribe medication or doses. Say the veterinarian decides.
 - If there are possible emergency signs (difficulty breathing, collapse, seizures, heavy bleeding, suspected poisoning, bloated abdomen, unable to urinate, severe trauma, pale gums), say clearly and first: contact an emergency veterinarian right away.
 - When enough information is collected, give a short case summary and suggest the next step: booking a veterinary appointment, sending to clinic staff, or the Information Desk for general questions.
+- When the owner shares photos you can see, describe only what is visible, neutrally, without diagnosing. Videos cannot be viewed by you: say they are saved for the clinic staff to review.
 - Never invent clinic names, hours, prices or veterinarians.
 Keep replies concise and warm.`;
 
 const Body = z.object({
   messages: z
-    .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().max(8000) }))
+    .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().max(8000), images: z.array(z.string().url()).max(5).optional() }))
     .min(1)
     .max(60),
 });
@@ -37,7 +38,11 @@ export const Route = createFileRoute("/api/chat")({
         const result = streamText({
           model: provider.responses("openai/gpt-6-astra"),
           system: SYSTEM,
-          messages: parsed.data.messages,
+          messages: parsed.data.messages.map((m) =>
+            m.role === "user" && m.images?.length
+              ? { role: "user" as const, content: [{ type: "text" as const, text: m.content }, ...m.images.map((u) => ({ type: "image" as const, image: new URL(u) }))] }
+              : { role: m.role, content: m.content },
+          ),
           abortSignal: request.signal,
           maxRetries: 0,
           providerOptions: {

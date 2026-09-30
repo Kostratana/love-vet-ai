@@ -21,6 +21,7 @@ import { Route as ReviewRouteImport } from './routes/review'
 import { Route as VeterinarianProfileRouteImport } from './routes/veterinarian-profile'
 import { Route as WorkspaceRouteRouteImport } from './routes/workspace/route'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
 import { Route as ChatIndexRouteImport } from './routes/chat/index'
 import { Route as ChatThreadIdRouteImport } from './routes/chat/$threadId'
 import { Route as JoinIndexRouteImport } from './routes/join.index'
@@ -92,6 +93,11 @@ const WorkspaceRouteRoute = WorkspaceRouteRouteImport.update({
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTranscribeRoute = ApiTranscribeRouteImport.update({
+  id: '/api/transcribe',
+  path: '/api/transcribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatIndexRoute = ChatIndexRouteImport.update({
@@ -168,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/transcribe': typeof ApiTranscribeRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/join/business': typeof JoinBusinessRoute
   '/join/owner': typeof JoinOwnerRoute
@@ -192,6 +199,7 @@ export interface FileRoutesByTo {
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/transcribe': typeof ApiTranscribeRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/join/business': typeof JoinBusinessRoute
   '/join/owner': typeof JoinOwnerRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/transcribe': typeof ApiTranscribeRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/join/business': typeof JoinBusinessRoute
   '/join/owner': typeof JoinOwnerRoute
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/review'
     | '/veterinarian-profile'
     | '/api/chat'
+    | '/api/transcribe'
     | '/chat/$threadId'
     | '/join/business'
     | '/join/owner'
@@ -271,6 +281,7 @@ export interface FileRouteTypes {
     | '/review'
     | '/veterinarian-profile'
     | '/api/chat'
+    | '/api/transcribe'
     | '/chat/$threadId'
     | '/join/business'
     | '/join/owner'
@@ -297,6 +308,7 @@ export interface FileRouteTypes {
     | '/review'
     | '/veterinarian-profile'
     | '/api/chat'
+    | '/api/transcribe'
     | '/chat/$threadId'
     | '/join/business'
     | '/join/owner'
@@ -324,6 +336,7 @@ export interface RootRouteChildren {
   ReviewRoute: typeof ReviewRoute
   VeterinarianProfileRoute: typeof VeterinarianProfileRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiTranscribeRoute: typeof ApiTranscribeRoute
   JoinBusinessRoute: typeof JoinBusinessRoute
   JoinOwnerRoute: typeof JoinOwnerRoute
   JoinVeterinarianRoute: typeof JoinVeterinarianRoute
@@ -414,6 +427,13 @@ declare module '@tanstack/react-router' {
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/transcribe': {
+      id: '/api/transcribe'
+      path: '/api/transcribe'
+      fullPath: '/api/transcribe'
+      preLoaderRoute: typeof ApiTranscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat/': {
@@ -550,6 +570,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReviewRoute: ReviewRoute,
   VeterinarianProfileRoute: VeterinarianProfileRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiTranscribeRoute: ApiTranscribeRoute,
   JoinBusinessRoute: JoinBusinessRoute,
   JoinOwnerRoute: JoinOwnerRoute,
   JoinVeterinarianRoute: JoinVeterinarianRoute,
