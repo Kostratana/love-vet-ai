@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { indexCaseHistory } from "@/lib/history.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
 import { BookOpen, CalendarDays, CheckCircle2, MessageCircle, Stethoscope, TriangleAlert } from "lucide-react";
@@ -155,6 +156,7 @@ function DoctorBooking({ ctx, triage, onDone, onCancel }: { ctx: Ctx; triage: Tr
     if (apptId) {
       const { error: ue } = await supabase.from("appointments").update({ case_package: pkg, clinic_id: vet.clinic_id, visit_location: homeVisit ? locQuery : "" }).eq("id", apptId as string);
       attached = !ue;
+      if (ctx.conversationId) void indexCaseHistory({ data: { conversationId: ctx.conversationId } }).catch(() => null);
     }
     const n = media.photos + media.videos + media.voice;
     onDone([
