@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
 import { BookOpen, CalendarDays, CheckCircle2, MessageCircle, Stethoscope, TriangleAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import type { Triage } from "@/lib/care.functions";
+import { matchVeterinarians, type Triage, type VetMatch } from "@/lib/care.functions";
 import type { Pet } from "@/lib/account-store";
 import { cn } from "@/lib/utils";
 
@@ -56,15 +57,15 @@ export function RoutingCard({ triage, ctx, onContinue }: { triage: Triage; ctx: 
       <p className="mt-2 text-[0.68rem] text-graphite">This is routing help, not a diagnosis. A veterinarian decides.</p>
 
       {sent ? (
-        <p role="status" className="mt-3 flex items-center gap-1.5 font-semibold text-deep"><CheckCircle2 className="size-4" /> {sent}</p>
+        <div role="status" className="mt-3 rounded-xl bg-ice p-3 font-semibold text-deep"><p className="flex items-start gap-1.5"><CheckCircle2 className="mt-0.5 size-4 shrink-0" /> {sent}</p><Link to="/account" className="mt-2 inline-block text-xs underline">View in my account</Link></div>
       ) : mode === "booking" ? (
-        <BookingForm ctx={ctx} triage={triage} onDone={(m) => { setSent(m); setMode("idle"); }} onCancel={() => setMode("idle")} />
+        <DoctorBooking ctx={ctx} triage={triage} onDone={(m) => { setSent(m); setMode("idle"); }} onCancel={() => setMode("idle")} />
       ) : (
         <div className="mt-3 flex flex-wrap gap-2">
           {ctx.userId ? (
             <>
               <button type="button" disabled={busy} onClick={escalate} className={cn(btn, triage.suggested_destination === "clinic_staff" ? "bg-primary text-primary-foreground" : "bg-ice text-deep hover:bg-ice-lum/60")}><Stethoscope className="size-3.5" /> {busy ? "Sending…" : "Send to clinic staff"}</button>
-              <button type="button" onClick={() => setMode("booking")} className={cn(btn, triage.suggested_destination === "booking" ? "bg-primary text-primary-foreground" : "bg-ice text-deep hover:bg-ice-lum/60")}><CalendarDays className="size-3.5" /> Book appointment</button>
+              {triage.urgency !== "emergency" && <button type="button" onClick={() => setMode("booking")} className={cn(btn, triage.suggested_destination === "booking" ? "bg-primary text-primary-foreground" : "bg-ice text-deep hover:bg-ice-lum/60")}><CalendarDays className="size-3.5" /> Find a veterinarian & book</button>}
             </>
           ) : (
             <Link to="/join/owner" search={{ redirect: "/chat" }} className={cn(btn, "bg-primary text-primary-foreground")}>Sign in to send to clinic staff or book</Link>
@@ -80,41 +81,96 @@ export function RoutingCard({ triage, ctx, onContinue }: { triage: Triage; ctx: 
 
 const TYPES = ["Consultation", "Follow-up", "Vaccination", "Routine checkup", "Urgent visit"];
 
-function BookingForm({ ctx, triage, onDone, onCancel }: { ctx: Ctx; triage: Triage; onDone: (m: string) => void; onCancel: () => void }) {
-  const [when, setWhen] = useState("");
-  const [type, setType] = useState(triage.urgency === "urgent" ? "Urgent visit" : "Consultation");
+function DoctorBooking({ ctx, triage, onDone, onCancel }: { ctx: Ctx; triage: Triage; onDone: (m: string) => void; onCancel: () => void }) {
+  const match = useServerFn(matchVeterinarians);
   const [pet, setPet] = useState(ctx.petId ?? ctx.pets[0]?.id ?? "");
-  const [notes, setNotes] = useState("");
+  const species = ctx.pets.find((p) => p.id === pet)?.species ?? "";
+  const [vets, setVets] = useState<VetMatch[] | null>(null);
+  const [loadErr, setLoadErr] = useState<string | null>(null);
+  const [vetId, setVetId] = useState<string | null>(null);
+  const [slotId, setSlotId] = useState<string | null>(null);
+  const [type, setType] = useState(triage.urgency === "urgent" ? "Urgent visit" : "Consultation");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const input = "h-10 w-full rounded-xl border border-silver-strong/70 bg-card px-3 text-sm text-navy outline-none focus:border-ice-lum";
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!ctx.userId) return;
-    const d = new Date(when);
-    if (!when || isNaN(d.getTime()) || d.getTime() < Date.now()) return setErr("Please choose a future date and time.");
+  useEffect(() => {
+    let off = false;
+    setVets(null); setLoadErr(null); setVetId(null); setSlotId(null);
+    match({ data: { species, symptoms: triage.symptoms, summary: triage.short_summary, urgency: triage.urgency } })
+      .then((r) => { if (off) return; if (r.error) setLoadErr(r.error); setVets(r.vets); })
+      .catch(() => { if (!off) { setLoadErr("Could not find veterinarians right now."); setVets([]); } });
+    return () => { off = true; };
+  }, [species, triage, match]);
+
+  const vet = vets?.find((v) => v.id === vetId) ?? null;
+  const slot = vet?.slots.find((s) => s.id === slotId) ?? null;
+
+  async function book() {
+    if (!vet || !slot) return;
     setBusy(true); setErr(null);
-    const { error } = await supabase.from("appointments").insert({
-      user_id: ctx.userId, pet_id: pet || null, intake_id: ctx.intakeId, conversation_id: ctx.conversationId,
-      requested_at: d.toISOString(), appointment_type: type, status: "requested", notes: notes || triage.short_summary,
+    const { error } = await supabase.rpc("book_slot", {
+      _slot_id: slot.id, _pet_id: (pet || null) as string, _intake_id: ctx.intakeId as string, _conversation_id: ctx.conversationId as string,
+      _appointment_type: type, _notes: triage.short_summary,
     });
     setBusy(false);
-    if (error) return setErr("Could not save the appointment. Please try again.");
-    onDone(`Appointment requested for ${d.toLocaleString()} (${type}). Status: requested — the clinic will confirm. See it in your account.`);
+    if (error) {
+      setErr(error.message.includes("unavailable") ? "That time was just taken. Please choose another." : "Could not book this appointment. Please try again.");
+      if (error.message.includes("unavailable")) setVets((vs) => vs?.map((v) => v.id === vet.id ? { ...v, slots: v.slots.filter((s) => s.id !== slot.id) } : v) ?? null);
+      setSlotId(null);
+      return;
+    }
+    const petName = ctx.pets.find((p) => p.id === pet)?.name;
+    onDone(`You’re booked: ${type}${petName ? ` for ${petName}` : ""} with ${vet.name} on ${new Date(slot.starts_at).toLocaleString([], { dateStyle: "full", timeStyle: "short" })}. It’s saved in your account with this case.`);
   }
 
+  const input = "h-9 rounded-xl border border-silver-strong/70 bg-card px-3 text-xs text-navy outline-none focus:border-ice-lum";
   return (
-    <form onSubmit={submit} className="mt-3 grid gap-2 sm:grid-cols-2">
-      <label className="text-xs font-semibold text-deep">Date & time<input type="datetime-local" required className={input} value={when} onChange={(e) => setWhen(e.target.value)} /></label>
-      <label className="text-xs font-semibold text-deep">Type<select className={input} value={type} onChange={(e) => setType(e.target.value)}>{TYPES.map((t) => <option key={t}>{t}</option>)}</select></label>
-      <label className="text-xs font-semibold text-deep">Pet<select className={input} value={pet} onChange={(e) => setPet(e.target.value)}><option value="">Not specified</option>{ctx.pets.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.species})</option>)}</select></label>
-      <label className="text-xs font-semibold text-deep">Notes<input className={input} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional" /></label>
-      <div className="flex gap-2 sm:col-span-2">
-        <button type="submit" disabled={busy} className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground disabled:opacity-60">{busy ? "Saving…" : "Request appointment"}</button>
-        <button type="button" onClick={onCancel} className="rounded-full px-4 py-2 text-xs font-semibold text-deep hover:bg-ice">Cancel</button>
+    <div className="mt-3 space-y-3">
+      <div className="flex flex-wrap gap-2">
+        <label className="text-xs font-semibold text-deep">Pet <select className={input} value={pet} onChange={(e) => setPet(e.target.value)}><option value="">Not specified</option>{ctx.pets.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.species})</option>)}</select></label>
+        <label className="text-xs font-semibold text-deep">Visit type <select className={input} value={type} onChange={(e) => setType(e.target.value)}>{TYPES.map((t) => <option key={t}>{t}</option>)}</select></label>
       </div>
-      {err && <p role="alert" className="text-xs text-destructive sm:col-span-2">{err}</p>}
-    </form>
+      <p className="text-[0.68rem] text-graphite">Matching veterinarians from the demo clinic (fictional profiles and demo availability). Matching is scheduling help, not a diagnosis.</p>
+      {!vets && <p role="status" className="text-xs text-graphite">Finding matching veterinarians…</p>}
+      {loadErr && <p role="alert" className="text-xs text-destructive">{loadErr}</p>}
+      {vets && !vets.length && !loadErr && <p className="text-xs text-graphite">No veterinarian at this clinic treats this species. Please contact another clinic.</p>}
+      <ul className="space-y-2">
+        {vets?.map((v) => (
+          <li key={v.id} className={cn("rounded-2xl border bg-card/90 p-3", vetId === v.id ? "border-primary" : "border-ice-lum/60")}>
+            <div className="flex items-start gap-3">
+              <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-full bg-ice text-xs font-bold text-deep">{v.initials}</span>
+              <div className="min-w-0 flex-1">
+                <p className="font-bold text-navy">{v.name} <span className="ml-1 rounded-full bg-ice px-2 py-0.5 text-[0.6rem] font-bold text-deep uppercase">Demo</span></p>
+                <p className="text-xs text-deep">{v.title}</p>
+                <p className="mt-1 text-xs text-graphite">{v.bio}</p>
+                <p className="mt-1 text-[0.7rem] text-graphite">Species: {v.species.join(", ")} · Languages: {v.languages.join(", ")}</p>
+                <p className="mt-1 text-[0.7rem] font-semibold text-deep">Why: {v.reason}</p>
+                <p className="mt-1 text-[0.7rem] text-graphite">Next available: {v.slots[0] ? new Date(v.slots[0].starts_at).toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "no open times"}</p>
+              </div>
+              {vetId !== v.id && v.slots.length > 0 && (
+                <button type="button" onClick={() => { setVetId(v.id); setSlotId(null); }} className="shrink-0 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">Book</button>
+              )}
+            </div>
+            {vetId === v.id && (
+              <div className="mt-3" role="group" aria-label={`Available times with ${v.name}`}>
+                <div className="flex flex-wrap gap-1.5">
+                  {v.slots.map((s) => (
+                    <button key={s.id} type="button" aria-pressed={slotId === s.id} onClick={() => setSlotId(s.id)}
+                      className={cn("rounded-full px-3 py-1.5 text-[0.7rem] font-semibold", slotId === s.id ? "bg-primary text-primary-foreground" : "bg-ice text-deep hover:bg-ice-lum/60")}>
+                      {new Date(s.starts_at).toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </button>
+                  ))}
+                </div>
+                <button type="button" disabled={!slot || busy} onClick={() => void book()} className="mt-3 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground disabled:opacity-50">
+                  {busy ? "Booking…" : slot ? "Confirm booking" : "Choose a time"}
+                </button>
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+      <button type="button" onClick={onCancel} className="rounded-full px-4 py-2 text-xs font-semibold text-deep hover:bg-ice">Back</button>
+      {err && <p role="alert" className="text-xs text-destructive">{err}</p>}
+    </div>
   );
 }
