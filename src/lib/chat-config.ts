@@ -18,7 +18,7 @@ export const UPLOAD_LIMITS = {
 
 export const OPENING_MESSAGE = `Hello. I'm your veterinary appointment assistant.
 
-Tell me what's happening with your pet. I'll ask you for the information needed to help arrange your appointment and find appropriate veterinary care.
+I can help you find a suitable veterinarian and an available appointment. Tell me what kind of animal you have and what is happening — I'll ask only what's needed, step by step.
 
 You can type or leave a voice message in the language you're most comfortable with.
 
