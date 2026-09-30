@@ -1,3 +1,4 @@
+import type { CaseView } from "@/components/workspace/PreVisitCaseView";
 /** One clearly fictional pre-visit case used to demonstrate the workspace structure. */
 export const sampleCase = {
   id: "sample",
@@ -15,7 +16,6 @@ export const sampleCase = {
   media: { photos: 2, videos: 1, voice: 1, files: 0 },
 };
 
-import type { CaseView } from "@/components/workspace/PreVisitCaseView";
 
 /** The same fictional rabbit, in the exact structure real booked cases use. */
 export const sampleCaseView: CaseView = {
