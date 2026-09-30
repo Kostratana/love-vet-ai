@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CalendarDays } from "lucide-react";
 import { SectionPlaceholder } from "@/components/workspace/SectionPlaceholder";
+import { AppointmentList, StaffGate } from "@/components/workspace/StaffData";
 
 export const Route = createFileRoute("/workspace/appointments")({
   head: () => ({
@@ -13,5 +14,10 @@ export const Route = createFileRoute("/workspace/appointments")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: () => <SectionPlaceholder eyebrow="Clinic Staff Workspace" title="Appointments" description="Confirmed appointments booked through Love Vet AI." icon={CalendarDays} />,
+  component: () => (
+    <div className="space-y-6">
+      <SectionPlaceholder eyebrow="Clinic Staff Workspace" title="Appointments" description="Appointments requested through Love Vet AI. Staff confirm, complete or cancel them here." icon={CalendarDays} />
+      <StaffGate><AppointmentList scope="staff" /></StaffGate>
+    </div>
+  ),
 });
