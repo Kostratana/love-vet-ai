@@ -334,7 +334,7 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
             </p>
           )}
           {triage && !hideCard && !busy && (
-            <RoutingCard key={triage.id ?? JSON.stringify(triage.t)} triage={triage.t} onContinue={() => { setHideCard(true); taRef.current?.focus(); }}
+            <RoutingCard key={triage.id ?? JSON.stringify(triage.t)} triage={triage.t} onContinue={() => { setHideCard(true); taRef.current?.focus({ preventScroll: true }); }}
               ctx={{ userId, conversationId: convId, intakeId, triageId: triage.id, petId, pets }} />
           )}
         </div>

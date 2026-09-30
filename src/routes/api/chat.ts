@@ -20,7 +20,12 @@ Workflow: understand → collect minimum information → safety check → suitab
 - For general clinic questions (hours, preparation, policies, pet care info) you may also suggest the Information Desk.
 - If the user says they are a veterinarian or clinic representative, don't run pet intake: explain that Love Vet AI can help streamline patient intake and deliver structured pre-visit case information (pet profile, owner-reported concern, structured intake, triage, appointment, photos, short videos, voice transcripts, AI observations), and point them to "Register as a veterinarian or clinic" at /join/veterinarian. No revenue or outcome promises.
 - Label sources: "You mentioned…" (owner reported), "In the photo/video/recording I can see/hear…" (AI observed), "Your pet profile says…" (stored profile), "According to the clinic's records…" (retrieved clinic data).
-- A message marked as a transcribed voice message IS the owner's spoken words: respond to its content; never say you cannot access it.`;
+- A message marked as a transcribed voice message IS the owner's spoken words: respond to its content; never say you cannot access it.
+- MEDIA CONTINUITY: "[Case context]" blocks carry stored AI observations of photos/videos analyzed earlier in this conversation. They remain valid: never say you lack access to a photo/video whose observations are present, and never call an earlier description unfounded. Only media marked as failed was not seen.
+- VIDEO: describe only what is observable ("Observable in the video…"): gait, pace, weight bearing, visible asymmetry, posture. Never infer lameness, pain, neurological disease or any diagnosis from ordinary footage.
+- SEVERAL ANIMALS: if the owner clearly switches to a different animal (e.g. from a dog to a horse), say you'll treat it as a separate case, keep each animal's reports and media apart, and never attach one animal's photo/video to the other's case. If signed in with a selected pet profile that doesn't match the new animal, ask them to pick or add the right pet before saving/booking.
+- PROVIDER CONSISTENCY: veterinarians in "[Previously mentioned stored providers]" or RETRIEVED CLINIC DATA exist in the directory. Never claim an earlier-named stored veterinarian does not exist. If new information changes the best match, say "Based on the new information, another stored veterinarian may be a better match" and give the stored reason. The directory's species list is authoritative: if no stored veterinarian treats a species (e.g. horses), say so plainly and do not invent one.
+- "[Retrieved patient history]" blocks are this pet's own previous cases. You may mention a related previous case (date, veterinarian, what was reported) for continuity, but NEVER say it is the same disease or diagnose from history.`;
 
 const Body = z.object({
   messages: z
@@ -49,6 +54,14 @@ export const Route = createFileRoute("/api/chat")({
           const lastUser = [...parsed.data.messages].reverse().find((m) => m.role === "user")?.content ?? "";
           const { context } = await groundedContext(lastUser.slice(0, 2000), { withSlots: true });
           grounded = context;
+          // Keep earlier-named stored providers in context so the assistant never "un-names" a real record.
+          const named = [...new Set(parsed.data.messages.filter((m) => m.role === "assistant").flatMap((m) => m.content.match(/Dr\.\s+[A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)?/g) ?? []))].slice(0, 6);
+          if (named.length) {
+            const { publicDb, vetFacts } = await import("@/lib/retrieval.server");
+            const { data: rows } = await publicDb().from("veterinarians").select("id,name,title,specialty,species,conditions").in("name", named).eq("active", true);
+            if (rows?.length) grounded += `\n\n[Previously mentioned stored providers — these records EXIST]\n${rows.map((r) => `${r.name} — ${r.title}; specialty ${r.specialty.replace(/_/g, " ")}; species ${r.species.join(", ")}; problems seen ${r.conditions.join(", ")}`).join("\n")}`;
+            void vetFacts;
+          }
         } catch { /* no retrieval: assistant must say facts are unavailable */ }
         const result = streamText({
           model: provider.responses("openai/gpt-6-astra"),
