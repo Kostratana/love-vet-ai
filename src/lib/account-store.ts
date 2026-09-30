@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type Role = "owner" | "veterinarian" | "clinic";
 
-export type Pet = { id: string; name: string; species: string; breed?: string; age?: string; sex?: string; photoName?: string };
+export type Pet = { id: string; name: string; species: string; breed?: string; age?: string; sex?: string; photoName?: string; photoPath?: string | null; photoUrl?: string | undefined };
 
 export type OwnerProfile = { firstName: string; lastName: string; email: string; phone: string; location: string; pets: Pet[] };
 
@@ -55,7 +55,10 @@ async function load(user: User | null) {
     owner: {
       firstName: prof?.first_name ?? "", lastName: prof?.last_name ?? "", email: prof?.email || user.email || "",
       phone: prof?.phone ?? "", location: prof?.location ?? "",
-      pets: (pets ?? []).map((p) => ({ id: p.id, name: p.name, species: p.species, breed: p.breed ?? "", age: p.age ?? "", sex: p.sex ?? "" })),
+      pets: await Promise.all((pets ?? []).map(async (p) => ({
+        id: p.id, name: p.name, species: p.species, breed: p.breed ?? "", age: p.age ?? "", sex: p.sex ?? "", photoPath: p.photo_path,
+        photoUrl: p.photo_path ? (await supabase.storage.from("chat-media").createSignedUrl(p.photo_path, 3600)).data?.signedUrl : undefined,
+      }))),
     },
   });
 }
@@ -73,14 +76,14 @@ export const refreshAccount = async () => {
 };
 
 /** Saves profile + pets to the database for the signed-in user. */
-export async function saveOwner(userId: string, profile: OwnerProfile) {
+export async function saveOwner(userId: string, profile: OwnerProfile, photos: Record<string, File> = {}) {
   const { error } = await supabase.from("profiles").upsert({
     id: userId, email: profile.email, first_name: profile.firstName, last_name: profile.lastName,
     phone: profile.phone, location: profile.location,
   });
   if (error) throw new Error(error.message);
   const { data: existing } = await supabase.from("pets").select("id").eq("user_id", userId);
-  const keep = profile.pets.filter((p) => p.name || p.species);
+  const keep = profile.pets.filter((p) => p.name || p.species || photos[p.id]);
   const keepIds = new Set(keep.map((p) => p.id));
   const remove = (existing ?? []).filter((e) => !keepIds.has(e.id)).map((e) => e.id);
   if (remove.length) await supabase.from("pets").delete().in("id", remove);
@@ -90,6 +93,18 @@ export async function saveOwner(userId: string, profile: OwnerProfile) {
       breed: p.breed || null, age: p.age || null, sex: p.sex || null,
     })));
     if (pe) throw new Error(pe.message);
+  }
+  // Pet photos: private storage under the owner's folder; replacing removes the old file.
+  for (const p of keep) {
+    const f = photos[p.id];
+    if (!f) continue;
+    if (!f.type.startsWith("image/") || f.size > 10 * 1024 * 1024) throw new Error("Pet photos must be images up to 10 MB.");
+    const path = `${userId}/pets/${p.id}-${Date.now()}.${(f.name.split(".").pop() || "jpg").toLowerCase()}`;
+    const { error: ue } = await supabase.storage.from("chat-media").upload(path, f, { contentType: f.type });
+    if (ue) throw new Error("Could not upload the pet photo.");
+    const { error: we } = await supabase.from("pets").update({ photo_path: path }).eq("id", p.id);
+    if (we) throw new Error(we.message);
+    if (p.photoPath) await supabase.storage.from("chat-media").remove([p.photoPath]);
   }
   await refreshAccount();
 }
