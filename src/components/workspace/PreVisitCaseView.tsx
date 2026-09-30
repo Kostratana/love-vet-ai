@@ -11,7 +11,7 @@ export type CaseView = {
   intake: [string, string][];
   triage: { urgency: string; summary: string; destination: string; confidence: number | null } | null;
   media: { id: string; kind: "photo" | "video" | "voice"; label: string; url?: string | undefined; transcript?: string | null; observation?: string | null; ocr?: string | null; duration?: string }[];
-  appointment: { vet: string; specialty: string; clinic: string; address: string; when: string; type: string; status: string; homeVisit?: string };
+  appointment: { vet: string; specialty: string; clinic: string; address: string; when: string; type: string; status: string; homeVisit?: string | undefined };
 };
 
 const Tag = ({ children, tone = "ice" }: { children: ReactNode; tone?: "ice" | "ai" | "owner" | "triage" }) => (
