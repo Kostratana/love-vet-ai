@@ -29,6 +29,13 @@
       "when": 1790733584300,
       "tag": "0003_media_analysis_and_pet_photo",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790733599177,
+      "tag": "0004_own_media_update_delete",
+      "breakpoints": true
     }
   ]
 }
