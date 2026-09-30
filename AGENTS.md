@@ -16,3 +16,6 @@
 - Demo clinic/vets/slots are DB rows flagged is_demo; booking goes through the security-definer book_slot() RPC. Why: atomic, prevents double-booking, keeps RLS on appointments.
 - Clinic/vet facts come only from `src/lib/retrieval.server.ts` (clinics table + knowledge_documents + veterinarians.embedding via match_veterinarians); slots always read live from vet_slots. Why: embeddings never hold availability; LLM never invents doctors.
 - Voice is recorded as 16 kHz WAV (`src/lib/record-wav.ts`); failed transcripts are never sent to the assistant. Why: browser MediaRecorder containers (e.g. Safari fragmented MP4 labelled webm) failed to decode.
+- Appointment pre-visit case = `appointments.case_package` snapshot + live links (conversation_id → uploaded_files, pet_id, user_id → profiles); media stay private in chat-media. Why: one case, no private data in public RAG.
+- Reviews live in `public.reviews`; RLS insert only for the owner's own `completed` appointment. Why: no fake or pre-visit reviews.
+- Read-aloud uses `/api/tts` (google/gemini-3.1-flash-tts-preview, WAV, user-initiated). Why: supported zero-retention speech model.

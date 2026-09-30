@@ -15,3 +15,4 @@
 - [x] Pet photo persistence; workspace appointments empty-state fix
 - [x] Fictional demo clinic (Willowbrook Demo) in Information Desk; 6 demo veterinarians; rolling demo slots
 - [x] Doctor matching (jev-latest specialty + stored vets only) → doctor cards → slot booking (confirmed, no double-booking)
+- [x] Final pass: home-visit demo vet, time-window + service-area matching, case package on appointments, staff case view with original media, reviews table (completed visits only), Listen (TTS), safe markdown, concierge prompt
