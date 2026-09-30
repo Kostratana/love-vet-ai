@@ -6,6 +6,8 @@ import { EmptyState, PageShell } from "@/components/kit/form";
 import { GlowButton, buttonVariants } from "@/components/kit/primitives";
 import { signOutLocal, useAccount } from "@/lib/account-store";
 import { cn } from "@/lib/utils";
+import { OwnerConversations, OwnerMedia } from "@/components/owner/OwnerData";
+import { AppointmentList } from "@/components/workspace/StaffData";
 
 export const Route = createFileRoute("/account")({
   head: () => ({
@@ -43,7 +45,7 @@ function Account() {
 
   const empty = {
     conversations: <EmptyState icon={MessageCircle} title="No saved conversations yet" action={<Link to="/chat" className={buttonVariants()}>Chat with AI</Link>} />,
-    upcoming: <EmptyState icon={CalendarDays} title="No upcoming appointments">Appointments you confirm will appear here.</EmptyState>,
+    upcoming: <p className="text-xs text-graphite">Book an appointment from Chat with AI after describing your pet’s concern.</p>,
     history: <EmptyState icon={History} title="No appointment history yet" />,
     visits: <EmptyState icon={History} title="No completed visits yet">Completed visits appear here. This is your organized history — not a veterinary medical record.</EmptyState>,
     media: <EmptyState icon={ImageIcon} title="No uploaded media">Photos, videos and voice messages you share in conversations will appear here.</EmptyState>,
@@ -90,7 +92,10 @@ function Account() {
                 </div>
               </div>
             )}
-            {tab !== "pets" && tab !== "profile" && empty[tab]}
+            {tab === "conversations" && <OwnerConversations empty={empty.conversations} />}
+            {tab === "upcoming" && <div className="space-y-4"><AppointmentList scope="own" />{empty.upcoming}</div>}
+            {tab === "media" && <OwnerMedia empty={empty.media} />}
+            {(tab === "history" || tab === "visits" || tab === "reviews") && empty[tab]}
           </section>
         </div>
       </PageShell>
