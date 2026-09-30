@@ -1,28 +1,73 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { ArrowUp, FileVideo, Globe, ImageIcon, Mic, ShieldCheck, Square, Trash2, Video, X } from "lucide-react";
 import { AssistantAvatar } from "@/components/chat/AssistantAvatar";
 import { ChatDecor } from "@/components/chat/ChatDecor";
+import { RoutingCard } from "@/components/chat/CareActions";
+import { supabase } from "@/integrations/supabase/client";
+import { useAccount } from "@/lib/account-store";
+import { runTriage, type Triage } from "@/lib/care.functions";
 import { OPENING_MESSAGE, UPLOAD_LIMITS, formatBytes, type AttachmentMeta } from "@/lib/chat-config";
 import { cn } from "@/lib/utils";
 
-type Pending = AttachmentMeta & { id: string; url: string };
-type Msg = { id: string; role: string; content: string; attachments: AttachmentMeta[]; created_at: string };
+type Pending = AttachmentMeta & { id: string; url: string; file: Blob };
+type Msg = { id: string; role: string; content: string; attachments: AttachmentMeta[]; created_at: string; images?: string[] };
 
-/** Frontend-only chat. Messages live in memory until the assistant backend is connected. */
-export function ChatWindow(_props: { threadId: string | null }) {
+const BUCKET = "chat-media";
+const blobToDataUrl = (b: Blob) => new Promise<string>((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = rej; r.readAsDataURL(b); });
+
+/** Chat with AI. Signed-in chats, media and triage are saved; guests chat in memory only. */
+export function ChatWindow({ threadId }: { threadId: string | null }) {
+  const acct = useAccount();
+  const userId = acct.user?.id ?? null;
+  const pets = acct.owner?.pets ?? [];
+  const navigate = useNavigate();
+  const doTriage = useServerFn(runTriage);
   const [text, setText] = useState("");
   const [pending, setPending] = useState<Pending[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [convId, setConvId] = useState<string | null>(threadId);
+  const [petId, setPetId] = useState<string | null>(null);
+  const [intakeId, setIntakeId] = useState<string | null>(null);
+  const [triage, setTriage] = useState<{ t: Triage; id: string | null } | null>(null);
+  const [hideCard, setHideCard] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+  const [loadingThread, setLoadingThread] = useState(!!threadId);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
 
+  // Load a saved conversation.
+  useEffect(() => {
+    if (!threadId || acct.loading) return;
+    if (!userId) { setLoadingThread(false); return; }
+    let off = false;
+    (async () => {
+      const [{ data: conv }, { data: msgs }, { data: tri }, { data: intake }] = await Promise.all([
+        supabase.from("conversations").select("*").eq("id", threadId).maybeSingle(),
+        supabase.from("conversation_messages").select("*").eq("conversation_id", threadId).order("created_at"),
+        supabase.from("triage_results").select("*").eq("conversation_id", threadId).order("created_at", { ascending: false }).limit(1),
+        supabase.from("veterinary_intakes").select("id").eq("conversation_id", threadId).limit(1),
+      ]);
+      if (off) return;
+      if (!conv) { setError("This conversation was not found."); setLoadingThread(false); return; }
+      setPetId(conv.pet_id);
+      setMessages((msgs ?? []).map((m) => ({ id: m.id, role: m.role, content: m.content, attachments: (m.attachments as AttachmentMeta[]) ?? [], created_at: m.created_at })));
+      const t = tri?.[0];
+      if (t) setTriage({ id: t.id, t: { request_type: t.request_type, urgency: t.urgency as Triage["urgency"], suggested_destination: t.suggested_destination as Triage["suggested_destination"], symptoms: t.symptoms, short_summary: t.short_summary, confidence: t.confidence } });
+      setIntakeId(intake?.[0]?.id ?? null);
+      setLoadingThread(false);
+    })();
+    return () => { off = true; };
+  }, [threadId, userId, acct.loading]);
+
   useEffect(() => {
     const el = listRef.current;
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-  }, [messages.length]);
+  }, [messages.length, triage]);
 
   function addFiles(files: FileList | null, kind: "photo" | "video") {
     if (!files) return;
@@ -34,37 +79,95 @@ export function ChatWindow(_props: { threadId: string | null }) {
       if (!(lim.accept as readonly string[]).includes(f.type)) { setError(`${f.name}: please use ${lim.extensions}.`); continue; }
       if (f.size > lim.maxBytes) { setError(`${f.name} is larger than ${formatBytes(lim.maxBytes)}.`); continue; }
       if (existing + next.length >= lim.maxCount) { setError(`You can add up to ${lim.maxCount} ${kind === "photo" ? "photos" : "video"}.`); break; }
-      next.push({ id: crypto.randomUUID(), kind, name: f.name, size: f.size, url: URL.createObjectURL(f) });
+      next.push({ id: crypto.randomUUID(), kind, name: f.name, size: f.size, mime: f.type, url: URL.createObjectURL(f), file: f });
     }
     setPending((p) => [...p, ...next]);
   }
 
+  async function ensureConversation(firstText: string) {
+    if (!userId) return null;
+    if (convId) return convId;
+    const { data, error: e } = await supabase.from("conversations").insert({ user_id: userId, pet_id: petId, title: (firstText || "Conversation").slice(0, 60) }).select("id").single();
+    if (e || !data) throw new Error("Could not save the conversation.");
+    setConvId(data.id);
+    return data.id;
+  }
+
+  async function uploadAll(atts: Pending[], cid: string | null): Promise<{ meta: AttachmentMeta[]; images: string[] }> {
+    const meta: AttachmentMeta[] = [];
+    const images: string[] = [];
+    for (const a of atts) {
+      const m: AttachmentMeta = { kind: a.kind, name: a.name, size: a.size, durationSec: a.durationSec, mime: a.mime, transcription: a.transcription };
+      if (userId && cid) {
+        const path = `${userId}/${cid}/${crypto.randomUUID()}-${a.name.replace(/[^\w.-]/g, "_")}`;
+        const { error: ue } = await supabase.storage.from(BUCKET).upload(path, a.file, { contentType: a.mime });
+        if (ue) throw new Error(`Upload failed for ${a.name}. Please try again.`);
+        await supabase.from("uploaded_files").insert({ user_id: userId, conversation_id: cid, pet_id: petId, intake_id: intakeId, kind: a.kind, mime_type: a.mime ?? "application/octet-stream", size_bytes: a.size, storage_path: path, transcription: a.transcription ?? null });
+        m.path = path;
+        if (a.kind === "photo") {
+          const { data: s } = await supabase.storage.from(BUCKET).createSignedUrl(path, 3600);
+          if (s?.signedUrl) images.push(s.signedUrl);
+        }
+      } else if (a.kind === "photo") {
+        images.push(await blobToDataUrl(a.file));
+      }
+      meta.push(m);
+    }
+    return { meta, images };
+  }
+
   const [busy, setBusy] = useState(false);
+
+  async function transcribe(v: Pending): Promise<string> {
+    setStatus("Transcribing your voice message…");
+    const fd = new FormData();
+    fd.append("file", new File([v.file], "voice.webm", { type: "audio/webm" }));
+    const res = await fetch("/api/transcribe", { method: "POST", body: fd });
+    const j = (await res.json().catch(() => ({}))) as { text?: string; error?: string };
+    if (!res.ok || !j.text) throw new Error(j.error ?? "The voice message could not be transcribed.");
+    return j.text;
+  }
 
   async function send(extra?: Pending) {
     if (busy) return;
-    const atts = extra ? [...pending, extra] : pending;
-    const content = text.trim();
-    if (!content && atts.length === 0) return;
-    const meta: AttachmentMeta[] = atts.map(({ kind, name, size, durationSec }) => ({ kind, name, size, durationSec }));
-    const userMsg: Msg = { id: crypto.randomUUID(), role: "user", content, attachments: meta, created_at: new Date().toISOString() };
-    const history = [...messages, userMsg];
-    setMessages(history);
-    setText("");
-    setPending([]);
-    setError(null);
-
-    const attNote = (m: Msg) =>
-      m.attachments.length ? `\n[Owner attached: ${m.attachments.map((a) => (a.kind === "voice" ? "a voice message" : `${a.kind} ${a.name}`)).join(", ")}]` : "";
-    const payload = history.map((m) => ({ role: m.role as "user" | "assistant", content: (m.content || "(attachment only)") + (m.role === "user" ? attNote(m) : "") }));
-    const aid = crypto.randomUUID();
-    setMessages((m) => [...m, { id: aid, role: "assistant", content: "", attachments: [], created_at: new Date().toISOString() }]);
     setBusy(true);
+    setError(null);
     try {
+      let voice = extra;
+      if (voice) voice = { ...voice, transcription: await transcribe(voice) };
+      const atts = voice ? [...pending, voice] : pending;
+      const typed = text.trim();
+      const content = [typed, voice?.transcription].filter(Boolean).join("\n\n");
+      if (!content && atts.length === 0) { setBusy(false); setStatus(null); return; }
+      setStatus(atts.length ? "Uploading…" : null);
+      const cid = await ensureConversation(content);
+      const { meta, images } = await uploadAll(atts, cid);
+      setStatus(null);
+      const userMsg: Msg = { id: crypto.randomUUID(), role: "user", content, attachments: meta, created_at: new Date().toISOString(), images };
+      if (cid && userId) await supabase.from("conversation_messages").insert({ id: userMsg.id, conversation_id: cid, user_id: userId, role: "user", content, attachments: meta });
+      const history = [...messages, userMsg];
+      setMessages(history);
+      setText("");
+      setPending([]);
+      setHideCard(false);
+
+      const attNote = (m: Msg) => {
+        const vids = m.attachments.filter((a) => a.kind === "video");
+        const parts = [];
+        if (m.attachments.some((a) => a.kind === "voice")) parts.push("the text above is a transcribed voice message");
+        if (vids.length) parts.push(`${vids.length} video(s) saved for clinic staff review (you cannot view videos)`);
+        return parts.length ? `\n[${parts.join("; ")}]` : "";
+      };
+      const payload = history.map((m) => ({
+        role: m.role as "user" | "assistant",
+        content: (m.content || "(attachment only)") + (m.role === "user" ? attNote(m) : ""),
+        ...(m.id === userMsg.id && images.length ? { images } : {}),
+      }));
+      const aid = crypto.randomUUID();
+      setMessages((m) => [...m, { id: aid, role: "assistant", content: "", attachments: [], created_at: new Date().toISOString() }]);
       const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: payload }) });
       if (!res.ok || !res.body) {
-        const msg = res.status === 429 ? "The assistant is busy right now. Please try again in a moment." : res.status === 402 ? "The assistant is temporarily unavailable (AI credits exhausted)." : "The assistant could not reply. Please try again.";
-        throw new Error(msg);
+        throw new Error(res.status === 429 ? "The assistant is busy right now. Please try again in a moment." : res.status === 402 ? "The assistant is temporarily unavailable (AI credits exhausted)." : "The assistant could not reply. Please try again.");
       }
       const reader = res.body.getReader();
       const dec = new TextDecoder();
@@ -76,12 +179,49 @@ export function ChatWindow(_props: { threadId: string | null }) {
         setMessages((m) => m.map((x) => (x.id === aid ? { ...x, content: acc } : x)));
       }
       if (!acc.trim()) throw new Error("The assistant returned no reply. Please try again.");
+      if (cid && userId) {
+        await supabase.from("conversation_messages").insert({ id: aid, conversation_id: cid, user_id: userId, role: "assistant", content: acc, attachments: [] });
+        await supabase.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", cid);
+      }
+      const full = [...history, { id: aid, role: "assistant", content: acc, attachments: [], created_at: "" }];
+      if (!threadId && cid) navigate({ to: "/chat/$threadId", params: { threadId: cid }, replace: true });
+      void triageAfter(full, cid);
     } catch (e) {
-      setMessages((m) => m.filter((x) => x.id !== aid || x.content));
-      setError(e instanceof Error ? e.message : "The assistant could not reply.");
+      setMessages((m) => m.filter((x) => x.role !== "assistant" || x.content));
+      setError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
       setBusy(false);
+      setStatus(null);
     }
+  }
+
+  async function triageAfter(history: Msg[], cid: string | null) {
+    if (history.filter((m) => m.role === "user").length < 1) return;
+    const r = await doTriage({ data: { messages: history.map((m) => ({ role: m.role as "user" | "assistant", content: m.content || "(attachment)" })) } }).catch(() => null);
+    if (!r?.triage) return;
+    const t = r.triage;
+    let tid: string | null = null;
+    if (userId && cid) {
+      let iid = intakeId;
+      if (!iid) {
+        const { data } = await supabase.from("veterinary_intakes").insert({ user_id: userId, conversation_id: cid, pet_id: petId, summary: t.short_summary, symptoms: t.symptoms }).select("id").single();
+        iid = data?.id ?? null;
+        setIntakeId(iid);
+        if (iid) await supabase.from("uploaded_files").update({ intake_id: iid }).eq("conversation_id", cid).is("intake_id", null);
+      } else {
+        await supabase.from("veterinary_intakes").update({ summary: t.short_summary, symptoms: t.symptoms, pet_id: petId, updated_at: new Date().toISOString() }).eq("id", iid);
+      }
+      const { data } = await supabase.from("triage_results").insert({ user_id: userId, conversation_id: cid, intake_id: iid, ...t }).select("id").single();
+      tid = data?.id ?? null;
+    }
+    setTriage({ t, id: tid });
+  }
+
+  async function choosePet(id: string) {
+    const v = id || null;
+    setPetId(v);
+    if (convId) await supabase.from("conversations").update({ pet_id: v }).eq("id", convId);
+    if (intakeId) await supabase.from("veterinary_intakes").update({ pet_id: v }).eq("id", intakeId);
   }
 
   const lastIsEmptyAssistant = busy && messages[messages.length - 1]?.role === "assistant" && !messages[messages.length - 1]?.content;
@@ -95,20 +235,31 @@ export function ChatWindow(_props: { threadId: string | null }) {
           <p className="text-sm font-bold text-navy">Love Vet AI</p>
           <p className="truncate text-xs font-medium text-deep/80">AI Veterinary Appointment Assistant</p>
         </div>
-        <div className="ml-auto hidden items-center gap-4 text-xs font-medium text-graphite md:flex">
-          <span className="inline-flex items-center gap-1.5"><Globe className="size-3.5 text-deep" strokeWidth={1.6} /> Language detection is automatic</span>
-          <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-3.5 text-deep" strokeWidth={1.6} /> Automatic safety analysis</span>
+        <div className="ml-auto flex items-center gap-4 text-xs font-medium text-graphite">
+          {userId && pets.length > 0 && (
+            <select aria-label="Which pet is this about?" value={petId ?? ""} onChange={(e) => void choosePet(e.target.value)} className="h-8 rounded-full border border-silver-strong/70 bg-card/80 px-3 text-xs font-semibold text-navy outline-none">
+              <option value="">Which pet?</option>
+              {pets.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.species})</option>)}
+            </select>
+          )}
+          <span className="hidden items-center gap-1.5 md:inline-flex"><Globe className="size-3.5 text-deep" strokeWidth={1.6} /> Language detection is automatic</span>
+          <span className="hidden items-center gap-1.5 lg:inline-flex"><ShieldCheck className="size-3.5 text-deep" strokeWidth={1.6} /> Automatic safety analysis</span>
         </div>
       </header>
 
       <div ref={listRef} className="relative flex-1 overflow-y-auto overscroll-contain px-4 py-6 sm:px-8">
         <div className="mx-auto max-w-3xl space-y-6">
           <AssistantBubble text={OPENING_MESSAGE} />
+          {loadingThread && <p role="status" className="text-center text-xs text-graphite">Loading your conversation…</p>}
           {messages.map((m) => (m.role === "user" ? <UserBubble key={m.id} m={m} /> : m.content ? <AssistantBubble key={m.id} text={m.content} /> : null))}
           {lastIsEmptyAssistant && (
             <p role="status" className="mx-auto w-fit rounded-full border border-ice-lum/60 bg-card/70 px-4 py-1.5 text-center text-xs font-medium text-graphite">
               Love Vet AI is thinking…
             </p>
+          )}
+          {triage && !hideCard && !busy && (
+            <RoutingCard key={triage.id ?? JSON.stringify(triage.t)} triage={triage.t} onContinue={() => { setHideCard(true); taRef.current?.focus(); }}
+              ctx={{ userId, conversationId: convId, intakeId, triageId: triage.id, petId, pets }} />
           )}
         </div>
       </div>
@@ -133,6 +284,7 @@ export function ChatWindow(_props: { threadId: string | null }) {
               ))}
             </div>
           )}
+          {status && <p role="status" className="mb-2 text-xs font-medium text-deep">{status}</p>}
           {error && <p role="alert" className="mb-2 text-xs font-medium text-destructive">{error}</p>}
           <Composer
             text={text}
@@ -145,7 +297,7 @@ export function ChatWindow(_props: { threadId: string | null }) {
             disabled={busy}
           />
           <p className="mt-2 text-center text-[0.68rem] font-medium text-graphite">
-            Photos: {UPLOAD_LIMITS.photo.extensions} · up to {UPLOAD_LIMITS.photo.maxCount}, {formatBytes(UPLOAD_LIMITS.photo.maxBytes)} each · Video: {UPLOAD_LIMITS.video.extensions} · {UPLOAD_LIMITS.video.maxCount}, up to {formatBytes(UPLOAD_LIMITS.video.maxBytes)} · The assistant does not diagnose.
+            Photos: {UPLOAD_LIMITS.photo.extensions} · up to {UPLOAD_LIMITS.photo.maxCount}, {formatBytes(UPLOAD_LIMITS.photo.maxBytes)} each · Video: {UPLOAD_LIMITS.video.extensions} · {UPLOAD_LIMITS.video.maxCount}, up to {formatBytes(UPLOAD_LIMITS.video.maxBytes)} · {userId ? "Saved to your account." : "Not saved — sign in to keep this chat."} · The assistant does not diagnose.
           </p>
           <input ref={photoRef} type="file" hidden multiple accept={UPLOAD_LIMITS.photo.accept.join(",")} onChange={(e) => { addFiles(e.target.files, "photo"); e.target.value = ""; }} />
           <input ref={videoRef} type="file" hidden accept={UPLOAD_LIMITS.video.accept.join(",")} onChange={(e) => { addFiles(e.target.files, "video"); e.target.value = ""; }} />
@@ -183,7 +335,7 @@ function UserBubble({ m }: { m: Msg }) {
           {m.attachments.map((a, i) => (
             <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-ice-lum/60 bg-card/80 px-3 py-1 text-xs font-medium text-deep">
               {a.kind === "photo" ? <ImageIcon className="size-3.5" /> : a.kind === "video" ? <Video className="size-3.5" /> : <Mic className="size-3.5" />}
-              {a.kind === "voice" ? `Voice message · ${a.durationSec ?? 0}s` : a.name}
+              {a.kind === "voice" ? `Voice message · ${a.durationSec ?? 0}s · transcribed` : a.kind === "video" ? `${a.name}${a.path ? " · saved for clinic staff review" : ""}` : a.name}
             </span>
           ))}
         </div>
@@ -241,7 +393,7 @@ function Composer(props: {
         stream.getTracks().forEach((t) => t.stop());
         if (!cancelled.current) {
           const blob = new Blob(chunks.current, { type: r.mimeType });
-          props.onVoice({ id: crypto.randomUUID(), kind: "voice", name: "voice-message", size: blob.size, durationSec: secsRef.current, url: URL.createObjectURL(blob) });
+          props.onVoice({ id: crypto.randomUUID(), kind: "voice", name: "voice-message.webm", mime: "audio/webm", size: blob.size, durationSec: secsRef.current, url: URL.createObjectURL(blob), file: new Blob([blob], { type: "audio/webm" }) });
         }
         setRec(null);
         setSecs(0);
@@ -287,7 +439,7 @@ function Composer(props: {
           rows={1}
           className="max-h-40 min-h-10 flex-1 resize-none bg-transparent py-2.5 text-[0.95rem] text-navy outline-none placeholder:text-graphite/80"
         />
-        <IconBtn label="Record voice message" onClick={start}><Mic className="size-[19px]" strokeWidth={1.6} /></IconBtn>
+        <IconBtn label="Record voice message" onClick={() => { if (!props.disabled) void start(); }}><Mic className="size-[19px]" strokeWidth={1.6} /></IconBtn>
         <IconBtn label="Add photos" onClick={props.onPhoto}><ImageIcon className="size-[19px]" strokeWidth={1.6} /></IconBtn>
         <IconBtn label="Add a short video" onClick={props.onVideo}><Video className="size-[19px]" strokeWidth={1.6} /></IconBtn>
         <button

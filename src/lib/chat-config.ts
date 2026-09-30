@@ -29,6 +29,10 @@ export type AttachmentMeta = {
   name: string;
   size: number;
   durationSec?: number | undefined;
+  mime?: string | undefined;
+  /** Storage path when saved to the signed-in user's private media. */
+  path?: string | undefined;
+  transcription?: string | undefined;
 };
 
 /**
