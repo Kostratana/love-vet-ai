@@ -50,6 +50,13 @@
       "when": 1790736220683,
       "tag": "0006_clinics_and_vet_retrieval",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790736250017,
+      "tag": "0007_demo_slots_follow_clinic_hours",
+      "breakpoints": true
     }
   ]
 }
