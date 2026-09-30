@@ -151,21 +151,26 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
     setError(null);
     try {
       let voice = extra;
-      if (voice) voice = { ...voice, transcription: await transcribe(voice) };
+      let voiceFailed = false;
+      if (voice) {
+        try { voice = { ...voice, transcription: await transcribe(voice) }; }
+        catch (e) { voiceFailed = true; setError(`${e instanceof Error ? e.message : "Transcription failed."} ${userId ? "Your recording is saved for clinic staff." : "Please type your message instead."}`); }
+      }
       const atts = voice ? [...pending, voice] : pending;
       const typed = text.trim();
-      const content = [typed, voice?.transcription].filter(Boolean).join("\n\n");
+      if (voiceFailed && !userId && !typed) { setBusy(false); setStatus(null); return; }
+      const content = [typed, voice?.transcription ?? (voiceFailed ? "(Voice message — transcription unavailable)" : "")].filter(Boolean).join("\n\n");
       if (!content && atts.length === 0) { setBusy(false); setStatus(null); return; }
       setStatus(atts.length ? "Uploading…" : null);
       const cid = await ensureConversation(content);
       const { meta, images } = await uploadAll(atts, cid);
       setStatus(null);
-      if (meta.some((m) => m.analysisStatus === "failed")) setError("Automated analysis was unavailable for some media. The files are saved for clinic staff to review.");
+      if (meta.some((m) => m.analysisStatus === "failed") && !voiceFailed) setError("Automated analysis was unavailable for some media. The files are saved for clinic staff to review.");
       const userMsg: Msg = { id: crypto.randomUUID(), role: "user", content, attachments: meta, created_at: new Date().toISOString(), images };
       if (cid && userId) await supabase.from("conversation_messages").insert({ id: userMsg.id, conversation_id: cid, user_id: userId, role: "user", content, attachments: meta });
       const history = [...messages, userMsg];
       setMessages(history);
-      if (!meta.some((m) => m.analysisStatus === "failed")) setError(null);
+      if (!meta.some((m) => m.analysisStatus === "failed") && !voiceFailed) setError(null);
       setText("");
       setPending([]);
       setHideCard(false);
