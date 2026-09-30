@@ -88,38 +88,23 @@ export const runTriage = createServerFn({ method: "POST" })
     }
   });
 
-/** Information Desk: answers only from stored clinic knowledge. */
+/** Information Desk: answers only from stored clinic knowledge + stored veterinarian records + stored slots. */
 export const askInformationDesk = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ question: z.string().min(2).max(1000) }).parse(d))
   .handler(async ({ data }): Promise<{ answer: string; sources: { title: string; category: string }[]; available: boolean; error?: string }> => {
-    const { embed, generate, GatewayError } = await import("./ai.server");
-    const { createClient } = await import("@supabase/supabase-js");
-    const sb = createClient(process.env["SUPABASE_URL"]!, process.env["SUPABASE_PUBLISHABLE_KEY"]!, { auth: { persistSession: false } });
+    const { generate, GatewayError } = await import("./ai.server");
+    const { groundedContext, publicDb } = await import("./retrieval.server");
     const NA = "This information is not available yet. The clinic has not added it to Love Vet AI. Please contact the clinic directly.";
     try {
-      // Embed any clinic entries that were added without an embedding (e.g. the demo clinic seed).
-      try {
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: pending } = await supabaseAdmin.from("knowledge_documents").select("id,title,content").is("embedding", null).limit(20);
-        if (pending?.length) {
-          const vecs = await embed(pending.map((p) => `${p.title}\n${p.content}`));
-          await Promise.all(pending.map((p, i) => supabaseAdmin.from("knowledge_documents").update({ embedding: JSON.stringify(vecs[i]) }).eq("id", p.id)));
-        }
-      } catch { /* answer with what is already indexed */ }
-      const { count } = await sb.from("knowledge_documents").select("id", { count: "exact", head: true });
-      if (!count) return { answer: NA, sources: [], available: false };
-      const [vec] = await embed([data.question]);
-      const { data: hits, error } = await sb.rpc("match_knowledge", { query_embedding: JSON.stringify(vec), match_count: 5, min_similarity: 0.5 });
-      if (error) throw error;
-      const list = (hits ?? []) as { title: string; category: string; content: string }[];
-      if (!list.length) return { answer: NA, sources: [], available: false };
-      const ctx = list.map((h, i) => `[${i + 1}] (${h.category}) ${h.title}\n${h.content}`).join("\n\n");
+      await publicDb().rpc("ensure_demo_slots");
+      const { context, sources } = await groundedContext(data.question, { withSlots: true });
+      if (!context) return { answer: NA, sources: [], available: false };
       const answer = await generate(
-        `You answer questions about a veterinary clinic using ONLY the numbered entries provided. If the entries do not contain the answer, reply exactly: "${NA}" Never invent facts, prices, hours or names. Reply in the language of the question. No medical diagnosis.`,
-        `Entries:\n${ctx}\n\nQuestion: ${data.question}`,
+        `You are the Information Desk of a DEMO veterinary clinic. Answer using ONLY the numbered entries ([K] clinic entries, [V] veterinarian records with stored next slots). Copy names, addresses, times and numbers exactly as written. If the entries do not contain the answer, reply with this sentence translated into the question's language: "${NA}" Never invent facts, prices, hours, doctors, addresses or times, and never use general knowledge. Only list veterinarians whose record actually matches the question. Reply in the language of the question, concisely. No medical diagnosis.`,
+        `Entries:\n${context}\n\nQuestion: ${data.question}`,
       );
-      const available = !answer.includes("not available yet");
-      return { answer, available, sources: available ? list.map((h) => ({ title: h.title, category: h.category })) : [] };
+      const available = !/not available yet|no está disponible|n'est pas encore disponible|nicht verfügbar|недоступн/i.test(answer);
+      return { answer, available, sources: available ? sources : [] };
     } catch (e) {
       return { answer: "", sources: [], available: false, error: e instanceof GatewayError ? e.message : "The Information Desk could not answer right now." };
     }
