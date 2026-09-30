@@ -5,6 +5,7 @@ import { PublicPage } from "@/components/layout/PublicPage";
 import { ChipToggle, Field, PageShell, SectionTitle, Select, TextArea, TextInput } from "@/components/kit/form";
 import { GlowButton, buttonVariants } from "@/components/kit/primitives";
 import { SPECIES } from "@/lib/account-store";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/join/veterinarian")({
   head: () => ({
@@ -82,7 +83,8 @@ function ClinicRegistration() {
             <ChipToggle label="Veterinarian specialties" options={SPECIALTIES} value={specialties} onChange={setSpecialties} />
             <ChipToggle label="Clinic capabilities" options={CAPABILITIES} value={caps} onChange={setCaps} />
             <Field label="Opening hours"><TextArea rows={3} placeholder="e.g. Mon–Fri 9:00–18:00, Sat 10:00–14:00" /></Field>
-            <GlowButton type="submit" className="w-full">Submit registration</GlowButton>
+            <GlowButton type="submit" className="w-full" disabled={busy}>{busy ? "Creating account…" : "Submit registration"}</GlowButton>
+            {err && <p role="alert" className="text-sm font-medium text-destructive">{err}</p>}
           </form>
         )}
       </PageShell>
