@@ -17,10 +17,12 @@ export type Database = {
       appointments: {
         Row: {
           appointment_type: string
+          conversation_id: string | null
           created_at: string
           id: string
           intake_id: string | null
           notes: string
+          owner_email_sent: boolean
           pet_id: string | null
           requested_at: string
           status: string
@@ -29,10 +31,12 @@ export type Database = {
         }
         Insert: {
           appointment_type?: string
+          conversation_id?: string | null
           created_at?: string
           id?: string
           intake_id?: string | null
           notes?: string
+          owner_email_sent?: boolean
           pet_id?: string | null
           requested_at: string
           status?: string
@@ -41,10 +45,12 @@ export type Database = {
         }
         Update: {
           appointment_type?: string
+          conversation_id?: string | null
           created_at?: string
           id?: string
           intake_id?: string | null
           notes?: string
+          owner_email_sent?: boolean
           pet_id?: string | null
           requested_at?: string
           status?: string
@@ -52,6 +58,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "appointments_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "appointments_intake_id_fkey"
             columns: ["intake_id"]
@@ -70,39 +83,55 @@ export type Database = {
       }
       clinic_staff_requests: {
         Row: {
+          conversation_id: string | null
           created_at: string
           id: string
           intake_id: string | null
           pet_id: string | null
           status: string
           summary: string
+          symptoms: string[]
           triage_id: string | null
           updated_at: string
+          urgency: string
           user_id: string
         }
         Insert: {
+          conversation_id?: string | null
           created_at?: string
           id?: string
           intake_id?: string | null
           pet_id?: string | null
           status?: string
           summary?: string
+          symptoms?: string[]
           triage_id?: string | null
           updated_at?: string
+          urgency?: string
           user_id: string
         }
         Update: {
+          conversation_id?: string | null
           created_at?: string
           id?: string
           intake_id?: string | null
           pet_id?: string | null
           status?: string
           summary?: string
+          symptoms?: string[]
           triage_id?: string | null
           updated_at?: string
+          urgency?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "clinic_staff_requests_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "clinic_staff_requests_intake_id_fkey"
             columns: ["intake_id"]
@@ -301,6 +330,7 @@ export type Database = {
           conversation_id: string | null
           created_at: string
           id: string
+          intake_id: string | null
           request_type: string
           short_summary: string
           suggested_destination: string
@@ -313,6 +343,7 @@ export type Database = {
           conversation_id?: string | null
           created_at?: string
           id?: string
+          intake_id?: string | null
           request_type: string
           short_summary?: string
           suggested_destination: string
@@ -325,6 +356,7 @@ export type Database = {
           conversation_id?: string | null
           created_at?: string
           id?: string
+          intake_id?: string | null
           request_type?: string
           short_summary?: string
           suggested_destination?: string
@@ -340,6 +372,13 @@ export type Database = {
             referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "triage_results_intake_id_fkey"
+            columns: ["intake_id"]
+            isOneToOne: false
+            referencedRelation: "veterinary_intakes"
+            referencedColumns: ["id"]
+          },
         ]
       }
       uploaded_files: {
@@ -347,6 +386,7 @@ export type Database = {
           conversation_id: string | null
           created_at: string
           id: string
+          intake_id: string | null
           kind: string
           mime_type: string
           pet_id: string | null
@@ -359,6 +399,7 @@ export type Database = {
           conversation_id?: string | null
           created_at?: string
           id?: string
+          intake_id?: string | null
           kind: string
           mime_type: string
           pet_id?: string | null
@@ -371,6 +412,7 @@ export type Database = {
           conversation_id?: string | null
           created_at?: string
           id?: string
+          intake_id?: string | null
           kind?: string
           mime_type?: string
           pet_id?: string | null
@@ -385,6 +427,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uploaded_files_intake_id_fkey"
+            columns: ["intake_id"]
+            isOneToOne: false
+            referencedRelation: "veterinary_intakes"
             referencedColumns: ["id"]
           },
           {
@@ -476,6 +525,20 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      match_knowledge: {
+        Args: {
+          match_count?: number
+          min_similarity?: number
+          query_embedding: string
+        }
+        Returns: {
+          category: string
+          content: string
+          id: string
+          similarity: number
+          title: string
+        }[]
       }
     }
     Enums: {
