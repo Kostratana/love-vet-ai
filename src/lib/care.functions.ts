@@ -97,6 +97,15 @@ export const askInformationDesk = createServerFn({ method: "POST" })
     const sb = createClient(process.env["SUPABASE_URL"]!, process.env["SUPABASE_PUBLISHABLE_KEY"]!, { auth: { persistSession: false } });
     const NA = "This information is not available yet. The clinic has not added it to Love Vet AI. Please contact the clinic directly.";
     try {
+      // Embed any clinic entries that were added without an embedding (e.g. the demo clinic seed).
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: pending } = await supabaseAdmin.from("knowledge_documents").select("id,title,content").is("embedding", null).limit(20);
+        if (pending?.length) {
+          const vecs = await embed(pending.map((p) => `${p.title}\n${p.content}`));
+          await Promise.all(pending.map((p, i) => supabaseAdmin.from("knowledge_documents").update({ embedding: JSON.stringify(vecs[i]) }).eq("id", p.id)));
+        }
+      } catch { /* answer with what is already indexed */ }
       const { count } = await sb.from("knowledge_documents").select("id", { count: "exact", head: true });
       if (!count) return { answer: NA, sources: [], available: false };
       const [vec] = await embed([data.question]);
