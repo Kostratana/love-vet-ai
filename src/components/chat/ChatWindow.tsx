@@ -9,6 +9,7 @@ import { ListenButton, RichText } from "@/components/chat/RichText";
 import { supabase } from "@/integrations/supabase/client";
 import { useAccount } from "@/lib/account-store";
 import { runTriage, type Triage } from "@/lib/care.functions";
+import { indexCaseHistory, relatedPetHistory } from "@/lib/history.functions";
 import { OPENING_MESSAGE, UPLOAD_LIMITS, formatBytes, type AttachmentMeta } from "@/lib/chat-config";
 import { cn } from "@/lib/utils";
 import { recordWav } from "@/lib/record-wav";
@@ -17,6 +18,7 @@ type Pending = AttachmentMeta & { id: string; url: string; file: Blob };
 type Msg = { id: string; role: string; content: string; attachments: AttachmentMeta[]; created_at: string; images?: string[] };
 
 const BUCKET = "chat-media";
+const GUEST_VIDEO_MAX = 20 * 1024 * 1024;
 const blobToDataUrl = (b: Blob) => new Promise<string>((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = rej; r.readAsDataURL(b); });
 
 /** Chat with AI. Signed-in chats, media and triage are saved; guests chat in memory only. */
@@ -26,6 +28,9 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
   const pets = acct.owner?.pets ?? [];
   const navigate = useNavigate();
   const doTriage = useServerFn(runTriage);
+  const doIndex = useServerFn(indexCaseHistory);
+  const doHistory = useServerFn(relatedPetHistory);
+  const nearBottom = useRef(true);
   const [text, setText] = useState("");
   const [pending, setPending] = useState<Pending[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -66,10 +71,12 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
     return () => { off = true; };
   }, [threadId, userId, acct.loading]);
 
+  // Follow new content only when the reader is already near the bottom; never scroll the page itself.
+  const lastLen = messages[messages.length - 1]?.content.length ?? 0;
   useEffect(() => {
     const el = listRef.current;
-    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-  }, [messages.length, triage]);
+    if (el && nearBottom.current) el.scrollTop = el.scrollHeight;
+  }, [messages.length, lastLen, triage, status]);
 
   function addFiles(files: FileList | null, kind: "photo" | "video") {
     if (!files) return;
@@ -80,6 +87,7 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
     for (const f of Array.from(files)) {
       if (!(lim.accept as readonly string[]).includes(f.type)) { setError(`${f.name}: please use ${lim.extensions}.`); continue; }
       if (f.size > lim.maxBytes) { setError(`${f.name} is larger than ${formatBytes(lim.maxBytes)}.`); continue; }
+      if (kind === "video" && !userId && f.size > GUEST_VIDEO_MAX) { setError(`${f.name}: guest videos can be up to ${formatBytes(GUEST_VIDEO_MAX)}. Sign in for larger videos.`); continue; }
       if (existing + next.length >= lim.maxCount) { setError(`You can add up to ${lim.maxCount} ${kind === "photo" ? "photos" : "video"}.`); break; }
       next.push({ id: crypto.randomUUID(), kind, name: f.name, size: f.size, mime: f.type, url: URL.createObjectURL(f), file: f });
     }
@@ -98,6 +106,7 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
   async function uploadAll(atts: Pending[], cid: string | null): Promise<{ meta: AttachmentMeta[]; images: string[] }> {
     const meta: AttachmentMeta[] = [];
     const images: string[] = [];
+    const guest: [AttachmentMeta, Blob][] = [];
     for (const a of atts) {
       const m: AttachmentMeta = { kind: a.kind, name: a.name, size: a.size, durationSec: a.durationSec, mime: a.mime, transcription: a.transcription };
       if (userId && cid) {
@@ -114,8 +123,8 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
       } else if (a.kind === "photo") {
         images.push(await blobToDataUrl(a.file));
       }
-      else if (a.kind === "video") m.analysisStatus = "not_available";
       meta.push(m);
+      if (!userId && (a.kind === "photo" || a.kind === "video")) guest.push([m, a.file]);
     }
     // Analyze stored photos (observations + OCR) and videos (observations) before the assistant replies.
     const toAnalyze = meta.filter((m) => m.fileId && (m.kind === "photo" || m.kind === "video"));
@@ -126,6 +135,20 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
       await Promise.all(toAnalyze.map(async (m) => {
         try {
           const r = await fetch("/api/analyze-media", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ fileId: m.fileId }) });
+          const j = (await r.json().catch(() => ({}))) as { analysis?: string; ocr_text?: string | null };
+          if (!r.ok || !j.analysis) { m.analysisStatus = "failed"; return; }
+          m.analysis = j.analysis; m.ocrText = j.ocr_text ?? undefined; m.analysisStatus = "done";
+        } catch { m.analysisStatus = "failed"; }
+      }));
+    }
+    // Guests: temporary in-memory analysis (nothing stored); observations stay in this conversation's context.
+    if (guest.length) {
+      setStatus(guest.some(([m]) => m.kind === "video") ? "Analyzing your video (not saved)…" : "Reading your photos (not saved)…");
+      await Promise.all(guest.map(async ([m, file]) => {
+        try {
+          const fd = new FormData();
+          fd.append("file", new File([file], m.name, { type: m.mime ?? "" }));
+          const r = await fetch("/api/analyze-guest-media", { method: "POST", body: fd });
           const j = (await r.json().catch(() => ({}))) as { analysis?: string; ocr_text?: string | null };
           if (!r.ok || !j.analysis) { m.analysisStatus = "failed"; return; }
           m.analysis = j.analysis; m.ocrText = j.ocr_text ?? undefined; m.analysisStatus = "done";
@@ -171,7 +194,7 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
       const cid = await ensureConversation(content);
       const { meta, images } = await uploadAll(atts, cid);
       setStatus(null);
-      if (meta.some((m) => m.analysisStatus === "failed")) setError("Automated analysis was unavailable for some media. The files are saved for clinic staff to review.");
+      if (meta.some((m) => m.analysisStatus === "failed")) setError(userId ? "Automated analysis was unavailable for some media. The files are saved for clinic staff to review." : "Automated analysis was unavailable for some media.");
       const userMsg: Msg = { id: crypto.randomUUID(), role: "user", content, attachments: meta, created_at: new Date().toISOString(), images };
       if (cid && userId) await supabase.from("conversation_messages").insert({ id: userMsg.id, conversation_id: cid, user_id: userId, role: "user", content, attachments: meta });
       const history = [...messages, userMsg];
@@ -181,16 +204,18 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
       setPending([]);
       setHideCard(false);
 
-      const attNote = (m: Msg) => {
+      const attNote = (m: Msg, earlier: boolean) => {
         const parts: string[] = [];
+        if (earlier && m.attachments.some((a) => a.analysisStatus === "done")) parts.push("Media below was attached and SUCCESSFULLY analyzed earlier in this conversation. You did see it; these stored observations remain valid context. Never claim it was unavailable.");
         if (m.attachments.some((a) => a.kind === "voice")) parts.push("The owner's text above is a transcribed voice message.");
         m.attachments.forEach((a, i) => {
           if (a.kind === "photo") {
-            if (a.analysis) parts.push(`Photo ${i + 1} observations (automated, not a diagnosis): ${a.analysis}`);
+            if (a.analysis) parts.push(`Photo ${i + 1} (${a.name}) observations (automated, not a diagnosis): ${a.analysis}`);
+            else if (a.analysisStatus === "failed") parts.push(`Photo ${i + 1} (${a.name}): automated analysis failed; do not describe it.`);
             if (a.ocrText) parts.push(`Photo ${i + 1} text read from image: ${a.ocrText}`);
           } else if (a.kind === "video") {
             if (a.analysisStatus === "done" && a.analysis) parts.push(`Video observations (automated, not a diagnosis):\n${a.analysis}`);
-            else parts.push(a.path ? "A video was saved for clinic staff; automated video analysis was unavailable, so you have not seen it." : "A video was attached but not saved or analyzed (owner not signed in); you have not seen it.");
+            else parts.push(a.path ? "A video was saved for clinic staff; automated video analysis was unavailable, so you have not seen it." : "A video was attached but automated analysis failed; you have not seen it.");
           }
         });
         return parts.length ? `\n\n[Case context]\n${parts.join("\n")}` : "";
@@ -199,11 +224,17 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
       const pet = pets.find((p) => p.id === petId);
       const known = [
         o ? `[Owner account] Signed in. First name: ${o.firstName || "unknown"}; last name: ${o.lastName || "unknown"}; phone: ${o.phone ? "on file" : "missing"}; email: ${o.email ? "on file" : "missing"}; area: ${o.location || "unknown"}.` : "[Owner account] Guest (not signed in).",
-        pet ? `[Pet profile] Name: ${pet.name}; species: ${pet.species}; breed: ${pet.breed || "unknown"}; age: ${pet.age || "unknown"}; sex: ${pet.sex || "unknown"}.` : "",
+        pet ? `[Pet profile — the selected pet for THIS case; media and history belong to it only] Name: ${pet.name}; species: ${pet.species}; breed: ${pet.breed || "unknown"}; age: ${pet.age || "unknown"}; sex: ${pet.sex || "unknown"}.` : "",
       ].filter(Boolean).join("\n");
+      // RAG 3: private history for THIS pet only (server-side, RLS-scoped). Continuity, never a diagnosis.
+      let histBlock = "";
+      if (userId && petId && content.length > 1) {
+        const h = await doHistory({ data: { petId, query: content.slice(0, 2000), excludeConversationId: cid } }).catch(() => null);
+        if (h?.cases.length) histBlock = `\n\n[Retrieved patient history — this pet only; related previous cases, NOT a diagnosis and not proof it is the same problem]\n${h.cases.map((c, i) => `H${i + 1}. ${c.date.slice(0, 10)}${c.vet ? ` · ${c.vet}` : ""} · media: ${c.media.photo} photo, ${c.media.video} video, ${c.media.voice} voice\n${c.snippets.map((s) => s.text).join("\n")}`).join("\n\n")}`;
+      }
       const payload = history.map((m, idx) => ({
         role: m.role as "user" | "assistant",
-        content: (idx === 0 && m.role === "user" ? `${known}\n\n` : "") + (m.content || "(attachment only)") + (m.role === "user" ? attNote(m) : ""),
+        content: (idx === 0 && m.role === "user" ? `${known}\n\n` : "") + (m.content || "(attachment only)") + (m.role === "user" ? attNote(m, m.id !== userMsg.id) : "") + (m.id === userMsg.id ? histBlock : ""),
         ...(m.id === userMsg.id && images.length ? { images } : {}),
       }));
       const aid = crypto.randomUUID();
@@ -258,6 +289,7 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
       tid = data?.id ?? null;
     }
     setTriage({ t, id: tid });
+    if (userId && cid && petId) void doIndex({ data: { conversationId: cid } }).catch(() => null);
   }
 
   async function choosePet(id: string) {
@@ -270,7 +302,7 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
   const lastIsEmptyAssistant = busy && messages[messages.length - 1]?.role === "assistant" && !messages[messages.length - 1]?.content;
 
   return (
-    <div className="chat-frame relative flex h-[min(78vh,760px)] min-h-[520px] flex-col overflow-hidden rounded-3xl">
+    <div className="chat-frame relative flex h-[calc(100dvh-8.5rem)] max-h-[820px] min-h-[460px] w-full min-w-0 flex-col overflow-hidden rounded-3xl">
       <ChatDecor />
       <header className="relative flex items-center gap-3 border-b border-ice-lum/40 px-5 py-3.5">
         <AssistantAvatar className="size-10" />
@@ -290,7 +322,7 @@ export function ChatWindow({ threadId }: { threadId: string | null }) {
         </div>
       </header>
 
-      <div ref={listRef} className="relative flex-1 overflow-y-auto overscroll-contain px-4 py-6 sm:px-8">
+      <div ref={listRef} onScroll={(e) => { const el = e.currentTarget; nearBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 120; }} className="relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain [overflow-anchor:none] px-3 py-6 sm:px-8">
         <div className="mx-auto max-w-3xl space-y-6">
           <AssistantBubble text={OPENING_MESSAGE} />
           {loadingThread && <p role="status" className="text-center text-xs text-graphite">Loading your conversation…</p>}
@@ -386,7 +418,7 @@ function UserBubble({ m }: { m: Msg }) {
           {m.attachments.map((a, i) => (
             <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-ice-lum/60 bg-card/80 px-3 py-1 text-xs font-medium text-deep">
               {a.kind === "photo" ? <ImageIcon className="size-3.5" /> : a.kind === "video" ? <Video className="size-3.5" /> : <Mic className="size-3.5" />}
-              {a.kind === "voice" ? `Voice message · ${a.durationSec ?? 0}s · transcribed` : `${a.name}${a.analysisStatus === "done" ? " · analyzed" : a.analysisStatus === "failed" ? " · analysis unavailable, saved for staff" : a.kind === "video" && !a.path ? " · sign in to save and analyze" : ""}${a.ocrText ? " · text read" : ""}`}
+              {a.kind === "voice" ? `Voice message · ${a.durationSec ?? 0}s · transcribed` : `${a.name}${a.analysisStatus === "done" ? " · analyzed" : a.analysisStatus === "failed" ? " · analysis unavailable, saved for staff" : !a.path && a.analysisStatus === "done" ? "" : ""}${!a.path && a.kind !== "voice" ? " · not saved" : ""}${a.ocrText ? " · text read" : ""}`}
             </span>
           ))}
         </div>
