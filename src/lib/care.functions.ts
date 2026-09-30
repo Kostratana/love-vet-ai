@@ -122,3 +122,78 @@ export const addKnowledge = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export type VetMatch = {
+  id: string; name: string; title: string; specialty: string; expertise: string[]; species: string[]; languages: string[];
+  years_experience: number; bio: string; initials: string; urgent_care: boolean; appointment_types: string[];
+  clinic_name: string; clinic_address: string;
+  reason: string; slots: { id: string; starts_at: string; duration_min: number }[];
+};
+
+const SPECIALTY_LABEL: Record<string, string> = {
+  general: "general veterinary medicine", emergency: "urgent care", dermatology: "dermatology", internal_medicine: "internal medicine",
+  surgery: "surgery", exotics: "rabbit & small-mammal medicine", feline_medicine: "feline medicine", canine_medicine: "canine medicine",
+  senior_care: "senior & chronic care",
+};
+
+/** Retrieves stored veterinarians for the case, validates against structured records, attaches real slots. Never generates a doctor. */
+export const matchVeterinarians = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({
+    species: z.string().max(60).optional().default(""),
+    symptoms: z.array(z.string().max(200)).max(12).default([]),
+    summary: z.string().max(2000).default(""),
+    urgency: z.enum(URGENCIES),
+  }).parse(d))
+  .handler(async ({ data }): Promise<{ specialty: string; vets: VetMatch[]; error?: string }> => {
+    const { jev, embed } = await import("./ai.server");
+    const { ensureIndexed, retrieveVets, nextSlots, publicDb } = await import("./retrieval.server");
+    await Promise.all([publicDb().rpc("ensure_demo_slots"), ensureIndexed()]);
+    let specialty = "general";
+    const [spec, vec] = await Promise.all([
+      jev({ species: data.species || "unknown", symptoms: data.symptoms, summary: data.summary, urgency: data.urgency }, {
+        specialty: {
+          type: "choice",
+          instructions: "Which clinic service best fits a first visit for this animal, based only on `species`, `symptoms`, `summary` and `urgency`? This is scheduling, not a diagnosis.",
+          criteria: {
+            exotics: "The animal is a rabbit, guinea pig, hamster, chinchilla, ferret, bird or reptile.",
+            emergency: "Dog or cat with urgency 'urgent' needing a same-day visit.",
+            dermatology: "Dog or cat with mainly skin, coat, itching, scratching, hair loss or ear concerns.",
+            internal_medicine: "Dog or cat with vomiting, diarrhoea, appetite, drinking, urination or weight changes.",
+            surgery: "Dog or cat with lumps, wounds, lameness or post-operative checks.",
+            senior_care: "An older dog or cat with slowing down, stiffness or a long-term condition.",
+            general: "Routine care, vaccination, checkups, or anything else.",
+          },
+        },
+      }).then((a) => a["specialty"]?.choice).catch(() => undefined),
+      embed([`Species: ${data.species || "unknown"}. Concern: ${data.symptoms.join(", ")}. ${data.summary} Urgency: ${data.urgency}.`]).then((v) => v[0]).catch(() => undefined),
+    ]);
+    if (spec) specialty = spec;
+    if (!vec) return { specialty, vets: [], error: "Could not search the veterinarian directory right now." };
+    const sp = data.species.toLowerCase().trim();
+    const cands = await retrieveVets(vec, 10);
+    // Structured validation: the stored record must list this species.
+    const treats = (v: { species: string[] }) => !sp || v.species.some((s) => sp.includes(s) || s.includes(sp));
+    const urgentCase = data.urgency === "urgent";
+    const ranked = cands.filter(treats).filter((v) => !urgentCase || v.urgent_care || v.specialty === specialty)
+      .map((v) => ({ v, score: v.similarity * 4 + (v.specialty === specialty ? 2 : 0) + (urgentCase && v.urgent_care ? 2 : 0) }))
+      .sort((a, b) => b.score - a.score);
+    const out: VetMatch[] = [];
+    for (const { v } of ranked) {
+      if (out.length >= 3) break;
+      const slots = await nextSlots(v.id, urgentCase ? 4 : 8);
+      if (!slots.length) continue;
+      const text = `${data.symptoms.join(" ")} ${data.summary}`.toLowerCase();
+      const hit = v.conditions.filter((c) => c.split(" ").some((w) => w.length > 3 && text.includes(w.slice(0, -1)))).slice(0, 2);
+      const reason = [
+        `${SPECIALTY_LABEL[v.specialty] ?? v.specialty.replace(/_/g, " ")}${v.specialty === specialty ? ", the service that fits this concern" : ""}`,
+        hit.length ? `sees ${hit.join(" and ")}` : "",
+        sp ? `treats ${sp}s` : "",
+        urgentCase && v.urgent_care ? "offers same-day urgent visits" : "",
+      ].filter(Boolean).join(" · ");
+      out.push({
+        id: v.id, name: v.name, title: v.title, specialty: SPECIALTY_LABEL[v.specialty] ?? v.specialty, expertise: [...v.secondary_specialties, ...v.interests].slice(0, 5),
+        species: v.species, languages: v.languages, years_experience: v.years_experience, bio: v.bio, initials: v.initials, urgent_care: v.urgent_care,
+        appointment_types: v.appointment_types, clinic_name: v.clinic?.name ?? "", clinic_address: v.clinic?.address ?? "", reason, slots,
+      });
+    }
+    return { specialty, vets: out };
+  });
