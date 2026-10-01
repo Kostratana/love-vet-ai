@@ -9,6 +9,7 @@ const links = [
   { label: "Clinic Staff", to: "/workspace", exact: false },
   { label: "Information Desk", to: "/information-desk", exact: false },
   { label: "Ratings", to: "/ratings", exact: false },
+  { label: "Payment", to: "/payment", exact: false },
   { label: "Write Review", to: "/review", exact: false },
 ] as const;
 
