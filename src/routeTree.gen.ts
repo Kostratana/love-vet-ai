@@ -16,6 +16,7 @@ import { Route as ChatRouteImport } from './routes/chat'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as InformationDeskRouteImport } from './routes/information-desk'
 import { Route as OwnerRouteImport } from './routes/owner'
+import { Route as PaymentRouteImport } from './routes/payment'
 import { Route as RatingsRouteImport } from './routes/ratings'
 import { Route as ReviewRouteImport } from './routes/review'
 import { Route as VeterinarianProfileRouteImport } from './routes/veterinarian-profile'
@@ -71,6 +72,11 @@ const InformationDeskRoute = InformationDeskRouteImport.update({
 const OwnerRoute = OwnerRouteImport.update({
   id: '/owner',
   path: '/owner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentRoute = PaymentRouteImport.update({
+  id: '/payment',
+  path: '/payment',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RatingsRoute = RatingsRouteImport.update({
@@ -188,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/home': typeof HomeRoute
   '/information-desk': typeof InformationDeskRoute
   '/owner': typeof OwnerRoute
+  '/payment': typeof PaymentRoute
   '/ratings': typeof RatingsRoute
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/home': typeof HomeRoute
   '/information-desk': typeof InformationDeskRoute
   '/owner': typeof OwnerRoute
+  '/payment': typeof PaymentRoute
   '/ratings': typeof RatingsRoute
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
@@ -247,6 +255,7 @@ export interface FileRoutesById {
   '/home': typeof HomeRoute
   '/information-desk': typeof InformationDeskRoute
   '/owner': typeof OwnerRoute
+  '/payment': typeof PaymentRoute
   '/ratings': typeof RatingsRoute
   '/review': typeof ReviewRoute
   '/veterinarian-profile': typeof VeterinarianProfileRoute
@@ -279,6 +288,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/information-desk'
     | '/owner'
+    | '/payment'
     | '/ratings'
     | '/review'
     | '/veterinarian-profile'
@@ -307,6 +317,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/information-desk'
     | '/owner'
+    | '/payment'
     | '/ratings'
     | '/review'
     | '/veterinarian-profile'
@@ -337,6 +348,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/information-desk'
     | '/owner'
+    | '/payment'
     | '/ratings'
     | '/review'
     | '/veterinarian-profile'
@@ -368,6 +380,7 @@ export interface RootRouteChildren {
   HomeRoute: typeof HomeRoute
   InformationDeskRoute: typeof InformationDeskRoute
   OwnerRoute: typeof OwnerRoute
+  PaymentRoute: typeof PaymentRoute
   RatingsRoute: typeof RatingsRoute
   ReviewRoute: typeof ReviewRoute
   VeterinarianProfileRoute: typeof VeterinarianProfileRoute
@@ -431,6 +444,13 @@ declare module '@tanstack/react-router' {
       path: '/owner'
       fullPath: '/owner'
       preLoaderRoute: typeof OwnerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payment': {
+      id: '/payment'
+      path: '/payment'
+      fullPath: '/payment'
+      preLoaderRoute: typeof PaymentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ratings': {
@@ -626,6 +646,7 @@ const rootRouteChildren: RootRouteChildren = {
   HomeRoute: HomeRoute,
   InformationDeskRoute: InformationDeskRoute,
   OwnerRoute: OwnerRoute,
+  PaymentRoute: PaymentRoute,
   RatingsRoute: RatingsRoute,
   ReviewRoute: ReviewRoute,
   VeterinarianProfileRoute: VeterinarianProfileRoute,
